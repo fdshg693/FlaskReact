@@ -21,6 +21,7 @@ function App() {
       <Message text={msg} />
       <p>カウント: {count}</p>
       <Button onClick={() => alert('クリック！')}>押してみて</Button>
+      <Image></Image>
     </div>
   );
 }
