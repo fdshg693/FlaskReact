@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>分割したReact＋Flask App</title>
+  <!-- React/CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- コンポーネント順に読み込む -->
+  <script type="text/babel" src="js/Message.jsx"></script>
+  <script type="text/babel" src="js/Button.jsx"></script>
+  <script type="text/babel" src="js/api.js"></script>
+  <script type="text/babel" src="js/App.jsx"></script>
+</body>
+</html>
