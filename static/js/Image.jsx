@@ -1,28 +1,49 @@
 function Image() {
-    const [file, setFile] = useState(null);
-    const [letter, setLetter] = useState('');
+  const [fileUrl, setFileUrl] = useState(null);
+  const [letter, setLetter] = useState('');
 
-    // ファイル選択時のハンドラ
-    const handleChange = (e) => {
+  // fileUrl が変わったら文字認識を呼び出す
+  useEffect(() => {
+    if (!fileUrl) return;
+
+    (async () => {
+      try {
+        // fetchImage は fileUrl からサーバーに投げるなど適宜実装
+        const result = await fetchImage(fileUrl);
+        console.log(result);
+        setLetter(result);
+      } catch (e) {
+        setLetter('取得失敗');
+      }
+    })();
+  }, [fileUrl]);
+
+  // ファイル選択時のハンドラ
+  const handleChange = (e) => {
     const selected = e.target.files[0];
     if (!selected) return;
-    setFile(URL.createObjectURL(selected));  // 画像プレビュー用
-    // ランダムなローマ字１文字を生成（大文字 A–Z）
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const rand = letters[Math.floor(Math.random() * letters.length)];
-    setLetter(rand);
-    };
+    // プレビュー用 URL を state に保存
+    setFileUrl(URL.createObjectURL(selected));
+    // letter は次の useEffect でセットされる
+    setLetter('…認識中…');
+  };
 
-    return (
+  return (
     <div>
-        <h1>画像を選択してね</h1>
-        <input type="file" accept="image/*" onChange={handleChange} />
-        {file && (
+      <h1>画像を選択してね</h1>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleChange}
+      />
+      {fileUrl && (
         <>
-            <img src={file} alt="preview" className="preview" width="100" />
-            <div className="letter">{letter}</div>
+          <img src={fileUrl} alt="preview" width="100" />
+          <div className="letter">
+            判定された文字：{letter}
+          </div>
         </>
-        )}
+      )}
     </div>
-    )
+  );
 }

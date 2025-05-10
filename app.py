@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
-import os
+import math
+import random
+
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
@@ -8,6 +10,12 @@ CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
 @app.route("/api/message")
 def message():
     return jsonify({"text": "こんにちは、React＋Flask アプリです！"})
+
+@app.route("/api/image")
+def image():
+    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    randomLetter = letters[math.floor(random.random() * len(letters))]
+    return jsonify({"text": randomLetter})
 
 @app.route("/")
 def root():
