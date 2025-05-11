@@ -22,9 +22,16 @@ function Iris() {
       alert('すべての値を小数点以下1桁の数値で入力してください。例: 5.1');
       return;
     }
-    // Randomly pick a species
-    const randomSpecies = speciesList[Math.floor(Math.random() * speciesList.length)];
-    setSpecies(randomSpecies);
+    (async () => {
+      try {
+        // fetchImage は fileUrl からサーバーに投げるなど適宜実装
+        const result = await fetchIrisSpecies(inputs);
+        console.log(result);
+        setSpecies(result);
+      } catch (e) {
+        setSpecies('取得失敗');
+      }
+    })();
     setClicked(false);
   }, [clicked]);
 

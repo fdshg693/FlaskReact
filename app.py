@@ -15,7 +15,17 @@ def message():
 def image():
     letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     randomLetter = letters[math.floor(random.random() * len(letters))]
-    return jsonify({"text": randomLetter})
+    return jsonify({"letter": randomLetter})
+
+@app.route("/api/iris", methods=['POST'])
+def iris():
+    irisSpecies = [
+        "setosa",
+        "versicolor",
+        "virginica"
+    ]
+    randomSpecies = irisSpecies[math.floor(random.random() * len(irisSpecies))]
+    return jsonify({"species": randomSpecies})
 
 @app.route("/")
 def root():
