@@ -1,13 +1,16 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 import math
 import random
+import base64
 
+from llm.image import AnalyzeImage
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
 
 
+# ルーティングの設定
 @app.route("/")
 def root():
     return send_from_directory(app.static_folder + "/home", "index.html")
@@ -30,11 +33,26 @@ def image():
     return send_from_directory(app.static_folder + "/image", "index.html")
 
 
-@app.route("/api/image")
+# APIエンドポイントの設定
+
+
+# 画像解析API
+@app.route("/api/image", methods=["POST"])
 def apiImage():
-    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    randomLetter = letters[math.floor(random.random() * len(letters))]
-    return jsonify({"letter": randomLetter})
+    """
+    画像解析APIエンドポイント
+    画像ファイルを受け取り、LLMで解析して結果を返す
+    """
+    # リクエストから画像ファイルを取得
+    if "image" not in request.files:
+        return {"error": "no file"}, 400
+    f = request.files.get("image")
+    image_data = base64.b64encode(f.read()).decode(
+        "utf-8"
+    )  # 画像データをBase64エンコード
+    result = AnalyzeImage(image_data)  # LLMで画像を解析
+
+    return jsonify({"description": result})
 
 
 @app.route("/api/iris", methods=["POST"])
@@ -47,7 +65,7 @@ def iris():
 @app.route("/api/userData", methods=["POST"])
 def userData():
     userData = {"name": "太郎", "age": 30}
-    return jsonify({"userData": "finished"})
+    return jsonify({"userData": userData})
 
 
 # データ配信用

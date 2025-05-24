@@ -1,6 +1,7 @@
 function Image() {
   const [fileUrl, setFileUrl] = useState(null);
-  const [letter, setLetter] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // fileUrl が変わったら文字認識を呼び出す
   useEffect(() => {
@@ -8,24 +9,22 @@ function Image() {
 
     (async () => {
       try {
-        // fetchImage は fileUrl からサーバーに投げるなど適宜実装
-        const result = await fetchImage(fileUrl);
-        console.log(result);
-        setLetter(result);
+        const result = await analyzeImage(selectedFile);
+        setDescription(result);
       } catch (e) {
-        setLetter('取得失敗');
+        setDescription('取得失敗');
       }
     })();
   }, [fileUrl]);
 
   // ファイル選択時のハンドラ
   const handleChange = (e) => {
-    const selected = e.target.files[0];
-    if (!selected) return;
+    const file = e.target.files[0];
+    setSelectedFile(file);
     // プレビュー用 URL を state に保存
-    setFileUrl(URL.createObjectURL(selected));
-    // letter は次の useEffect でセットされる
-    setLetter('…認識中…');
+    setFileUrl(URL.createObjectURL(file));
+    // description は次の useEffect でセットされる
+    setDescription('…認識中…');
   };
 
   return (
@@ -40,8 +39,8 @@ function Image() {
       {fileUrl && (
         <>
           <img src={fileUrl} alt="preview" width="100" className="mb-2 rounded shadow" />
-          <div className="letter text-lg text-gray-700">
-            判定された文字：{letter}
+          <div className="description text-lg text-gray-700">
+            判定された画像：{description}
           </div>
         </>
       )}

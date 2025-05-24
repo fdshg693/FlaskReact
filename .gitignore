@@ -181,3 +181,9 @@ cython_debug/
 */*.png
 *.pth
 *.jpg
+*.jpeg
+*.png
+*.gif
+*.csv
+/data/
+/.vscode/
