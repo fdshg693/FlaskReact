@@ -30,7 +30,7 @@ function Image() {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-blue-300 rounded-2xl shadow-md space-y-4">
-      <h1 className="text-2xl font-bold mb-4">画像を選択してね</h1>
+      <h1 className="text-2xl font-bold mb-4">判定したい画像をアップロードしてください</h1>
       <input
         type="file"
         accept="image/*"

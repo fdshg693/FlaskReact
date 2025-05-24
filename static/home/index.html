@@ -20,7 +20,7 @@
 <body class="bg-gray-50 text-gray-800 antialiased">
   <div class="max-w-3xl mx-auto p-6">
     <nav>
-      <ul class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <ul class="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <li>
           <a href="/" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
             <span class="font-semibold">トップ</span>
@@ -29,16 +29,21 @@
         </li>
         <li>
           <a href="/home" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <span class="font-semibold">Home</span>
-            <p class="text-sm text-gray-500">ダッシュボード</p>
+            <span class="font-semibold">アイリス</span>
+            <p class="text-sm text-gray-500">アイリス種別判定</p>
           </a>
         </li>
         <li>
           <a href="/csvTest" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <span class="font-semibold">CSV Test</span>
-            <p class="text-sm text-gray-500">CSV を読み込んで表示</p>
+            <span class="font-semibold">CSV</span>
+            <p class="text-sm text-gray-500">CSVを読み込んで表示</p>
           </a>
         </li>
+        <li>
+          <a href="/image" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
+            <span class="font-semibold">画像判定</span>
+            <p class="text-sm text-gray-500">画像をアップロードして判定</p>
+          </a>
       </ul>
     </nav>
 
@@ -47,7 +52,6 @@
   </div>
 
   <!-- 各コンポーネントの読み込み -->
-  <script type="text/babel" src="home/js/Image.jsx"></script>
   <script type="text/babel" src="home/js/Iris.jsx"></script>
   <script type="text/babel" src="home/js/multipleIris.jsx"></script>
   <script type="text/babel" src="home/js/api.js"></script>

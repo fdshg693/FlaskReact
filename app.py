@@ -19,8 +19,19 @@ def home():
     return send_from_directory(app.static_folder + "/home", "index.html")
 
 
-@app.route("/api/image")
+@app.route("/csvTest")
+def static_proxy():
+    # Flaskのstaticフォルダから静的ファイルを提供
+    return send_from_directory(app.static_folder + "/csvTest", "index.html")
+
+
+@app.route("/image")
 def image():
+    return send_from_directory(app.static_folder + "/image", "index.html")
+
+
+@app.route("/api/image")
+def apiImage():
     letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     randomLetter = letters[math.floor(random.random() * len(letters))]
     return jsonify({"letter": randomLetter})
@@ -31,12 +42,6 @@ def iris():
     irisSpecies = ["setosa", "versicolor", "virginica"]
     randomSpecies = irisSpecies[math.floor(random.random() * len(irisSpecies))]
     return jsonify({"species": randomSpecies})
-
-
-@app.route("/csvTest")
-def static_proxy():
-    # Flaskのstaticフォルダから静的ファイルを提供
-    return send_from_directory(app.static_folder + "/csvTest", "index.html")
 
 
 @app.route("/api/userData", methods=["POST"])
