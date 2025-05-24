@@ -3,8 +3,10 @@ from flask_cors import CORS
 import math
 import random
 import base64
+import tempfile
 
 from llm.image import AnalyzeImage
+from llm.pdf import ExtractTextFromPDF
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
@@ -53,6 +55,29 @@ def apiImage():
     result = AnalyzeImage(image_data)  # LLMで画像を解析
 
     return jsonify({"description": result})
+
+
+# PDF文字起こしAPI
+@app.route("/api/pdf", methods=["POST"])
+def apiPdf():
+    """
+    PDF文字起こしAPIエンドポイント
+    PDFファイルを受け取り、LLMで文字起こしして結果を返す
+    """
+    if "pdf" not in request.files:
+        return {"error": "no file"}, 400
+    f = request.files.get("pdf")
+    # 一時ファイルに保存
+    with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
+        content = f.read()
+        tmp.write(content)
+        tmp.flush()
+        tmp.seek(0)
+        # LLMでPDFを解析
+        # テキスト抽出
+        raw_text = ExtractTextFromPDF(tmp.name)
+
+    return jsonify({"text": raw_text})
 
 
 @app.route("/api/iris", methods=["POST"])

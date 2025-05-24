@@ -3,7 +3,7 @@ function Image() {
   const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // fileUrl が変わったら文字認識を呼び出す
+  // fileUrl が変わったら画像認識を呼び出す
   useEffect(() => {
     if (!fileUrl) return;
 
@@ -29,7 +29,8 @@ function Image() {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-blue-300 rounded-2xl shadow-md space-y-4">
-      <h1 className="text-2xl font-bold mb-4">判定したい画像をアップロードしてください</h1>
+      <h3 className="text-2xl font-bold mb-4">画像判定</h3>
+      <p className="text-2xl font-bold mb-4">判定したい画像をアップロードしてください</p>
       <input
         type="file"
         accept="image/*"

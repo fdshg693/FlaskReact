@@ -2,8 +2,15 @@ const { useState, useEffect } = React;
 
 function App() {
     return (
-        <div style={{ fontFamily: 'sans-serif', padding: '20px' }}>
-            <Image></Image>
+        <div className="font-sans p-5">
+            <div className="flex space-x-5">
+                <div className="w-1/2">
+                    <Image />
+                </div>
+                <div className="w-1/2">
+                    <PDF />
+                </div>
+            </div>
         </div>
     );
 }
