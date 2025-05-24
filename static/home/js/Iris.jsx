@@ -1,6 +1,6 @@
 function Iris() {
-    const speciesList = ['setosa', 'versicolor', 'virginica'];
-    // State for each measurement input
+  const speciesList = ['setosa', 'versicolor', 'virginica'];
+  // State for each measurement input
   const [sepalLength, setSepalLength] = useState('');
   const [sepalWidth, setSepalWidth] = useState('');
   const [petalLength, setPetalLength] = useState('');
@@ -20,6 +20,7 @@ function Iris() {
     const isValid = inputs.every(val => /^\d+(\.\d)?$/.test(val));
     if (!isValid) {
       alert('すべての値を小数点以下1桁の数値で入力してください。例: 5.1');
+      setClicked(false);
       return;
     }
     (async () => {

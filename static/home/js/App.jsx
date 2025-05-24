@@ -5,6 +5,7 @@ function App() {
     <div style={{ fontFamily: 'sans-serif', padding: '20px' }}>
       <Image></Image>
       <Iris></Iris>
+      <MultipleIris></MultipleIris>
     </div>
   );
 }

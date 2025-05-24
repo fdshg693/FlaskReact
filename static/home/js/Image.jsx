@@ -29,17 +29,18 @@ function Image() {
   };
 
   return (
-    <div>
-      <h1>画像を選択してね</h1>
+    <div className="max-w-md mx-auto p-6 bg-blue-300 rounded-2xl shadow-md space-y-4">
+      <h1 className="text-2xl font-bold mb-4">画像を選択してね</h1>
       <input
         type="file"
         accept="image/*"
         onChange={handleChange}
+        className="mb-4"
       />
       {fileUrl && (
         <>
-          <img src={fileUrl} alt="preview" width="100" />
-          <div className="letter">
+          <img src={fileUrl} alt="preview" width="100" className="mb-2 rounded shadow" />
+          <div className="letter text-lg text-gray-700">
             判定された文字：{letter}
           </div>
         </>
