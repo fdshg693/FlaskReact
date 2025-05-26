@@ -7,6 +7,7 @@ import tempfile
 
 from llm.image import AnalyzeImage
 from llm.pdf import ExtractTextFromPDF
+from llm.textSplit import split_text
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
@@ -36,6 +37,22 @@ def image():
 
 
 # APIエンドポイントの設定
+
+
+# テキスト分割API
+@app.route("/api/textSplit", methods=["POST"])
+def apiTextSplit():
+    """
+    テキスト分割APIエンドポイント
+    テキストを受け取り、指定されたサイズとオーバーラップで分割して結果を返す
+    """
+    data = request.json
+    text = data.get("text", "")
+    chunk_size = data.get("chunk_size", 1000)
+    chunk_overlap = data.get("chunk_overlap", 200)
+
+    chunks = split_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    return jsonify({"chunks": chunks})
 
 
 # 画像解析API

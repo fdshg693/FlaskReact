@@ -31,3 +31,17 @@ async function analyzePDF(selectedFile) {
     const data = await res.json();
     return data.text[0].page_content;
 }
+
+//　テキスト分割APIを呼び出す
+async function splitTextAPI(text, chunk_size = 1000, chunk_overlap = 200) {
+    const res = await fetch('/api/textSplit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, chunk_size, chunk_overlap }),
+    });
+    if (!res.ok) throw new Error('APIエラー');
+    const data = await res.json();
+    return data.chunks;
+}

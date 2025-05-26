@@ -35,5 +35,5 @@ if __name__ == "__main__":
     pdf_path = os.path.join(os.path.dirname(__file__), "../data/sample.pdf")
     docs = ExtractTextFromPDF(pdf_path)
     for doc in docs:
-        print(doc.page_content)
+        print(doc["page_content"])
     # Expected output: Text content of the PDF file in the data/sample.pdf

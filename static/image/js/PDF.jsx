@@ -2,6 +2,7 @@ function PDF() {
     const [fileUrl, setFileUrl] = useState(null);
     const [description, setDescription] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
+    const [splitTextRaw, setSplitTextRaw] = useState('');
 
     // fileUrl が変わったらPDF認識を呼び出す
     useEffect(() => {
@@ -16,6 +17,11 @@ function PDF() {
             }
         })();
     }, [fileUrl]);
+
+    // descriptionが変わったらsplitTextRawも更新
+    useEffect(() => {
+        setSplitTextRaw(description);
+    }, [description]);
 
     // ファイル選択時のハンドラ
     const handleChange = (e) => {
@@ -42,6 +48,7 @@ function PDF() {
                     <div className="description text-lg text-gray-700">
                         PDFの内容：{description}
                     </div>
+                    <TextSplit rawText={splitTextRaw} setRawText={setSplitTextRaw} />
                 </>
             )}
         </div>
