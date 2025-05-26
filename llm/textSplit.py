@@ -1,4 +1,4 @@
-from langchain_text_splitters.spacy import SpacyTextSplitter
+from langchain_text_splitters.character import CharacterTextSplitter
 
 
 def split_text(
@@ -15,7 +15,7 @@ def split_text(
     Returns:
         list[str]: A list of text chunks.
     """
-    splitter = SpacyTextSplitter(
+    splitter = CharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )
