@@ -1,7 +1,7 @@
 from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, ToolMessage
-from functionTools import getLocalDocuments
+from functionTools import getLocalDocuments, searchLocalDocuments
 
 load_dotenv()
 
@@ -14,22 +14,24 @@ def functionCalling(tools, query):
     llm_with_tools = llm.bind_tools(tools)
 
     messages = [HumanMessage(query)]
-    ai_msg = llm_with_tools.invoke(messages)
-    messages.append(ai_msg)
-
     toolsDict = {tool.name.lower(): tool for tool in tools}
+    while True:
+        ai_msg = llm_with_tools.invoke(messages)
+        messages.append(ai_msg)
 
-    for tool_call in ai_msg.tool_calls:
-        selected_tool = toolsDict[tool_call["name"].lower()]
-        tool_output = selected_tool.invoke(tool_call["args"])
-        messages.append(ToolMessage(tool_output, tool_call_id=tool_call["id"]))
+        if not ai_msg.tool_calls:
+            break
+        else:
+            for tool_call in ai_msg.tool_calls:
+                selected_tool = toolsDict[tool_call["name"].lower()]
+                tool_output = selected_tool.invoke(tool_call["args"])
+                messages.append(ToolMessage(tool_output, tool_call_id=tool_call["id"]))
 
-    final_answer = llm_with_tools.invoke(messages)
-    return final_answer.content
+    return ai_msg.content
 
 
 if __name__ == "__main__":
-    tools = [getLocalDocuments]
-    query = "株式会社ヘッドウォーターズについての最新のドキュメントについて簡単に要約してください"
+    tools = [getLocalDocuments, searchLocalDocuments]
+    query = "株式会社ヘッドウォーターズについての作ったアプリについて教えてください。"
     result = functionCalling(tools, query)
     print(result)

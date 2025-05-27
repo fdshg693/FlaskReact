@@ -32,7 +32,7 @@ def ExtractTextFromPDF(pdf_path):
 
 if __name__ == "__main__":
     # Fetch PDF data from local file
-    pdf_path = os.path.join(os.path.dirname(__file__), "../data/headwaters20250523.pdf")
+    pdf_path = os.path.join(os.path.dirname(__file__), "../data/headwaters20250521.pdf")
     docs = ExtractTextFromPDF(pdf_path)
     # save the documents to a file
     output_file = os.path.join(os.path.dirname(__file__), "../data/extracted_docs.txt")
