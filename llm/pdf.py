@@ -32,8 +32,12 @@ def ExtractTextFromPDF(pdf_path):
 
 if __name__ == "__main__":
     # Fetch PDF data from local file
-    pdf_path = os.path.join(os.path.dirname(__file__), "../data/sample.pdf")
+    pdf_path = os.path.join(os.path.dirname(__file__), "../data/headwaters20250523.pdf")
     docs = ExtractTextFromPDF(pdf_path)
-    for doc in docs:
-        print(doc["page_content"])
-    # Expected output: Text content of the PDF file in the data/sample.pdf
+    # save the documents to a file
+    output_file = os.path.join(os.path.dirname(__file__), "../data/extracted_docs.txt")
+    with open(output_file, "w") as f:
+        for doc in docs:
+            f.write(f"{doc['page_content']}\n")
+    print(f"Extracted {len(docs)} documents from {pdf_path}.")
+    print(f"Saved extracted documents to {output_file}.")
