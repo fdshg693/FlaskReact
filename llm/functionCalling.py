@@ -32,6 +32,6 @@ def functionCalling(tools, query):
 
 if __name__ == "__main__":
     tools = [getLocalDocuments, searchLocalDocuments]
-    query = "株式会社ヘッドウォーターズについての作ったアプリについて教えてください。"
+    query = "株式会社ヘッドウォーターズの作ったアプリについて教えてください。"
     result = functionCalling(tools, query)
     print(result)

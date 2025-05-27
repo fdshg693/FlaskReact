@@ -1,10 +1,25 @@
 from langchain_core.tools import tool
 import os
+from langchain_community.tools.tavily_search import TavilySearchResults
+
+
+@tool
+def searchHeadwatersCompany(query: str) -> TavilySearchResults:
+    """Searches for information about headwaters Company using Tavily search engine.
+    Args:
+        query (str): The search query to find information about headwaters Company.
+    Returns:
+        TavilySearchResults: The search results containing relevant information.
+    """
+    return TavilySearchResults(query=query, engine="tavily", num_results=5)
 
 
 @tool
 def searchLocalDocuments() -> str:
-    """Lists all names and summary content of text files about headwaters Company."""
+    """Lists all names and summary content of text files about headwaters Company.
+    Returns:
+        str: A string containing the names and first line of each text file.
+    """
 
     data_path = os.path.join(os.path.dirname(__file__), "../data/")
     # data_pathの直下にあるTXTファイルを検索する
