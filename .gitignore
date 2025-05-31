@@ -187,3 +187,4 @@ cython_debug/
 *.csv
 /data/
 /.vscode/
+memo.md
