@@ -3,8 +3,7 @@ const { useState, useEffect } = React;
 function App() {
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '20px' }}>
-      <Image></Image>
-      <Iris></Iris>
+      <CsvLoader></CsvLoader>
     </div>
   );
 }

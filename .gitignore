@@ -172,3 +172,19 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+*/log/*
+*/param/*
+*/save/*
+*/*.pth
+.DS_Store
+*/*.png
+*.pth
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.csv
+/data/
+/.vscode/
+memo.md
