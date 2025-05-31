@@ -29,7 +29,7 @@ function TextSplit({ rawText, setRawText }) {
                 onChange={(e) => setRawText(e.target.value)}
             />
             <button onClick={() => setClicked(true)}>分割</button>
-            {rawText && (
+            {splitText && (
                 <>
                     <div className="split-text text-lg text-gray-700 mt-4">
                         分割されたテキスト：<br />

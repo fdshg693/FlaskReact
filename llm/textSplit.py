@@ -1,4 +1,4 @@
-from langchain_text_splitters.character import CharacterTextSplitter
+from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 
 
 def split_text(
@@ -15,18 +15,19 @@ def split_text(
     Returns:
         list[str]: A list of text chunks.
     """
-    splitter = CharacterTextSplitter(
+    splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
+        separator="\n",
     )
     return splitter.split_text(text)
 
 
 if __name__ == "__main__":
     sample_text = (
-        "This is a sample text that will be split into smaller chunks. "
-        "The text is long enough to demonstrate the splitting functionality. "
-        "Each chunk will have a specified size and overlap with the next chunk."
+        f"This is a sample text that will be split into smaller chunks.\n"
+        f"The text is long enough to demonstrate the splitting functionality.\n"
+        f"Each chunk will have a specified size and overlap with the next chunk."
     )
     chunks = split_text(sample_text, chunk_size=50, chunk_overlap=10)
     for i, chunk in enumerate(chunks):

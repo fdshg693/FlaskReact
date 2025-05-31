@@ -1,14 +1,10 @@
-import base64
 import os
-from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 
 
 def ExtractTextFromPDF(pdf_path):
     load_dotenv("../.env")
-    # Pass to LLM
-    llm = init_chat_model("openai:gpt-4o")
     loader = PyPDFLoader(
         file_path=pdf_path,
         # headers = None
