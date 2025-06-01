@@ -20,6 +20,20 @@ def saveData2Curve(data, label_name, file_path):
     print(f"{file_path} に保存しました。")
 
 
+def saveData2CSV(data, file_path, mode="w"):
+    """
+    データをCSV形式で保存する関数
+    :param data: 保存するデータのリスト
+    :param file_path: 保存先のファイルパス
+    :param mode: ファイルの書き込みモード ('w' for write, 'a' for append)
+    """
+    import pandas as pd
+
+    df = pd.DataFrame(data)
+    df.to_csv(file_path, index=False, mode=mode)
+    print(f"{file_path} に保存しました。")
+
+
 def saveStudyParameter(dictionary, file_path):
     """
     学習に関するパラメータを保存する関数
