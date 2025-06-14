@@ -4,18 +4,22 @@ import math
 import random
 import base64
 import tempfile
+import os
+import sys
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from llm.image import AnalyzeImage
 from llm.pdf import ExtractTextFromPDF
 from llm.textSplit import split_text
 
-app = Flask(__name__, static_folder="static", static_url_path="")
+app = Flask(__name__, static_folder="../static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
 
 
 # ルーティングの設定
 @app.route("/")
 def root():
+    print("ルートパスにアクセスされました")
     return send_from_directory(app.static_folder + "/home", "index.html")
 
 
