@@ -15,6 +15,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from llm.image import analyze_image
 from llm.pdf import extract_text_from_pdf
 from llm.textSplit import split_text
+from eval import evaluateIris
+from evalBatch import evaluateIrisBatch
+from convertJSON import jsonTo2DemensionalArray
 
 app = Flask(__name__, static_folder="../static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
@@ -128,17 +131,22 @@ def api_pdf() -> Response | tuple[Response, int]:
     return jsonify({"text": raw_text})
 
 
+# irisデータセット用API
 @app.route("/api/iris", methods=["POST"])
-def iris() -> Response:
-    iris_species = ["setosa", "versicolor", "virginica"]
-    random_species = random.choice(iris_species)
-    return jsonify({"species": random_species})
+def iris():
+    irisData = request.json
+    result = evaluateIrisBatch([irisData])
+    print(f"Received iris data: {irisData}")
+    return jsonify({"species": result[0]})
 
 
+# CSV
 @app.route("/api/userData", methods=["POST"])
-def user_data() -> Response:
-    user_data_dict = {"name": "太郎", "age": 30}
-    return jsonify({"userData": user_data_dict})
+def userData():
+    irisData = request.json
+    convertedIrisData = jsonTo2DemensionalArray(irisData["data"])
+    resultArray = evaluateIrisBatch(convertedIrisData)
+    return jsonify({"userData": resultArray})
 
 
 # データ配信用
