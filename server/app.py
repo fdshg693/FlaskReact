@@ -12,6 +12,8 @@ from llm.image import AnalyzeImage
 from llm.pdf import ExtractTextFromPDF
 from llm.textSplit import split_text
 from eval import evaluateIris
+from evalBatch import evaluateIrisBatch
+from convertJSON import jsonTo2DemensionalArray
 
 app = Flask(__name__, static_folder="../static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
@@ -106,16 +108,18 @@ def apiPdf():
 @app.route("/api/iris", methods=["POST"])
 def iris():
     irisData = request.json
-    result = evaluateIris(irisData)
+    result = evaluateIrisBatch([irisData])
     print(f"Received iris data: {irisData}")
-    species = result.predicted_class
-    return jsonify({"species": species})
+    return jsonify({"species": result[0]})
 
 
+# CSV
 @app.route("/api/userData", methods=["POST"])
 def userData():
-    userData = {"name": "太郎", "age": 30}
-    return jsonify({"userData": userData})
+    irisData = request.json
+    convertedIrisData = jsonTo2DemensionalArray(irisData["data"])
+    resultArray = evaluateIrisBatch(convertedIrisData)
+    return jsonify({"userData": resultArray})
 
 
 # データ配信用

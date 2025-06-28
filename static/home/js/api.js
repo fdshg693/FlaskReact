@@ -12,7 +12,7 @@ async function fetchIrisSpecies(inputs) {
   return data.species;
 }
 
-//ユーザデータを学習するAPIを呼び出す
+//CSVから学習するAPIを呼び出す
 async function fetchMultipleIrisSpecies(inputs) {
   const res = await fetch('/api/userData', {
     method: 'POST',
@@ -23,9 +23,5 @@ async function fetchMultipleIrisSpecies(inputs) {
   });
   if (!res.ok) throw new Error('APIエラー');
   const data = await res.json();
-  if (data.userData == "finished") {
-    alert("学習が完了しました。");
-  } else if (data.userData == "error") {
-    alert("学習に失敗しました。");
-  }
+  return data.userData
 }

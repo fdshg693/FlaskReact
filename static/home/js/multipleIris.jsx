@@ -22,8 +22,8 @@ function MultipleIris() {
                 });
             });
             //　複数のユーザ入力を判定する
-            await fetchMultipleIrisSpecies(results);
-            setData(results.data);
+            const result = await fetchMultipleIrisSpecies(results);
+            setData(result);
         } catch (err) {
             setError(err.message);
         } finally {
