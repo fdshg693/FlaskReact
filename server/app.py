@@ -15,8 +15,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from llm.image import analyze_image
 from llm.pdf import extract_text_from_pdf
 from llm.textSplit import split_text
-from evalBatch import evaluate_iris_batch
-from util.convertJSON import jsonTo2DemensionalArray
+from machineLearning.evalBatch import evaluate_iris_batch
+from util.convertJSON import convert_json_to_two_dimensional_array
 
 app = Flask(__name__, static_folder="../static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
@@ -161,14 +161,16 @@ def handle_iris_prediction_request():
 
 
 # CSV
-@app.route("/api/userData", methods=["POST"])
+@app.route("/api/batch_iris", methods=["POST"])
 def handle_user_data_batch_request():
     user_submitted_data = request.json
     if not user_submitted_data or "data" not in user_submitted_data:
         return jsonify({"error": "No data provided or missing 'data' field"}), 400
 
     try:
-        converted_iris_data_array = jsonTo2DemensionalArray(user_submitted_data["data"])
+        converted_iris_data_array = convert_json_to_two_dimensional_array(
+            user_submitted_data["data"]
+        )
         batch_prediction_results = evaluate_iris_batch(converted_iris_data_array)
         return jsonify({"userData": batch_prediction_results})
     except (ValueError, TypeError, KeyError) as e:

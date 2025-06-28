@@ -25,31 +25,32 @@ jobs:
       - name: AI Review via OpenAI
         id: ai_review
         shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          # プロンプトを組み立て
-          PROMPT="以下の差分を読み取り、問題点・改善案を日本語で箇条書きにしてください。\n\n\`\`\`diff\n$(cat diff.patch)\n\`\`\`"
-          # API コール
-          RESPONSE=$(curl https://api.openai.com/v1/chat/completions \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-            -d '{
-              "model": "gpt-4o-mini",
-              "messages": [{"role": "user","content": '"'"$PROMPT"'"'}],
-              "max_tokens": 800
-            }' \
-          | jq -r '.choices[0].message.content')
-          # 結果を出力パラメータにセット
-          echo "::set-output name=review::$RESPONSE"
+          # assemble the prompt
+          PROMPT=$(printf '以下の差分を読み取り、問題点・改善案を日本語で箇条書きにしてください。\n\n```diff\n%s\n```' \
+            "$(cat diff.patch)")
 
-      # 4) PR にコメントを投稿
-      - name: Post review as PR comment
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const review = `**🤖 AI Code Review**\n\n${{ steps.ai_review.outputs.review }}`;
-            github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: review
-            });
+          # build a well-quoted JSON payload
+          PAYLOAD=$(
+            jq -n \
+              --arg model "gpt-4o-mini" \
+              --arg prompt "$PROMPT" \
+              --argjson max_tokens 800 \
+              '{model: $model, messages: [{role: "user", content: $prompt}], max_tokens: $max_tokens}'
+          )
+
+          # call OpenAI
+          RESPONSE=$(
+            curl -s https://api.openai.com/v1/chat/completions \
+              -H "Authorization: Bearer $OPENAI_API_KEY" \
+              -H "Content-Type: application/json" \
+              -d "$PAYLOAD" \
+            | jq -r '.choices[0].message.content'
+          )
+
+          # write to GITHUB_OUTPUT (set-output is deprecated)
+          echo "review<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESPONSE"     >> $GITHUB_OUTPUT
+          echo "EOF"          >> $GITHUB_OUTPUT
