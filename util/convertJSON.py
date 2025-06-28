@@ -1,22 +1,35 @@
 import json
 
 
-def jsonTo2DemensionalArray(inputData):
+def convert_json_to_two_dimensional_array(json_data_list, feature_keys=None):
+    """Convert a list of JSON objects to a 2D array with specified column order.
 
-    # 1. 出力したい列の順序をキー名のリストとして定義
-    desired_keys = ["sepal.length", "sepal.width", "petal.length", "petal.width"]
+    Args:
+        json_data_list: List of dictionaries containing data
+        feature_keys: List of key names to specify column order.
+                     If None, defaults to iris feature keys.
 
-    # 2. 定義したキーの順序に従って、各辞書から値を取得し2次元配列に変換
-    # lamda関数を別関数に代入させる。
+    Returns:
+        List of lists representing the data in 2D array format
+    """
+    # Use provided feature keys or default to iris feature keys
+    if feature_keys is None:
+        feature_keys = ["sepal.length", "sepal.width", "petal.length", "petal.width"]
+
+    # Convert each dictionary to a list of values following the specified key order
     two_dimensional_array = list(
-        map(lambda item: [item[key] for key in desired_keys], inputData)
+        map(
+            lambda json_item: [json_item[feature_key] for feature_key in feature_keys],
+            json_data_list,
+        )
     )
 
     return two_dimensional_array
 
 
 if __name__ == "__main__":
-    inputData = [
+    # Sample iris flower data for testing
+    sample_iris_data = [
         {
             "sepal.length": "5.1",
             "sepal.width": "3.5",
@@ -37,4 +50,8 @@ if __name__ == "__main__":
         },
     ]
 
-    print(jsonTo2DemensionalArray(inputData))
+    feature_keys = ["sepal.length", "sepal.width", "petal.length", "petal.width"]
+    converted_array = convert_json_to_two_dimensional_array(
+        sample_iris_data, feature_keys=feature_keys
+    )
+    print(converted_array)
