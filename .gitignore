@@ -185,11 +185,13 @@ cython_debug/
 *.png
 *.gif
 *.csv
+*.gz
 /data/
 /.vscode/
 memo.md
 
 /param/*
 /log/*
-param
+param/
 log
+scaler/
