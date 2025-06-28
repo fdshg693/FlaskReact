@@ -1,0 +1,55 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  ai_review:
+    runs-on: ubuntu-latest
+    steps:
+      # 1) コードをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # 2) ベースブランチとの差分を取得
+      - name: Generate diff
+        run: |
+          BASE=${{ github.event.pull_request.base.ref }}
+          git fetch origin $BASE
+          git diff origin/$BASE...HEAD --unified=0 > diff.patch
+
+      # 3) AI にレビューを依頼
+      - name: AI Review via OpenAI
+        id: ai_review
+        shell: bash
+        run: |
+          # プロンプトを組み立て
+          PROMPT="以下の差分を読み取り、問題点・改善案を日本語で箇条書きにしてください。\n\n\`\`\`diff\n$(cat diff.patch)\n\`\`\`"
+          # API コール
+          RESPONSE=$(curl https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+            -d '{
+              "model": "gpt-4o-mini",
+              "messages": [{"role": "user","content": '"'"$PROMPT"'"'}],
+              "max_tokens": 800
+            }' \
+          | jq -r '.choices[0].message.content')
+          # 結果を出力パラメータにセット
+          echo "::set-output name=review::$RESPONSE"
+
+      # 4) PR にコメントを投稿
+      - name: Post review as PR comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const review = `**🤖 AI Code Review**\n\n${{ steps.ai_review.outputs.review }}`;
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: review
+            });
