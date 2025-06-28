@@ -24,9 +24,9 @@ def split_text(
 
 if __name__ == "__main__":
     sample_text = (
-        f"This is a sample text that will be split into smaller chunks.\n"
-        f"The text is long enough to demonstrate the splitting functionality.\n"
-        f"Each chunk will have a specified size and overlap with the next chunk."
+        "This is a sample text that will be split into smaller chunks.\n"
+        "The text is long enough to demonstrate the splitting functionality.\n"
+        "Each chunk will have a specified size and overlap with the next chunk."
     )
     chunks = split_text(sample_text, chunk_size=50, chunk_overlap=10)
     for i, chunk in enumerate(chunks):

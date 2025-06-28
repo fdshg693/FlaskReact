@@ -1,15 +1,27 @@
 import base64
-import os
-from langchain.chat_models import init_chat_model
+from pathlib import Path
+from typing import Any, Dict, List, Union
+
 from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
 
 
-def AnalyzeImage(image_data):
-    load_dotenv("../.env")
+def analyze_image(image_data: str) -> str:
+    """Analyze an image using OpenAI's GPT-4o model.
+
+    Args:
+        image_data: Base64 encoded image data
+
+    Returns:
+        A description of the image in Japanese
+    """
+    # Load environment variables from .env file
+    env_path: Path = Path(__file__).parent.parent / ".env"
+    load_dotenv(env_path)
     # Pass to LLM
-    llm = init_chat_model("openai:gpt-4o")
+    llm = ChatOpenAI(model="gpt-4o")
 
-    message = {
+    message: Dict[str, Union[str, List[Dict[str, str]]]] = {
         "role": "user",
         "content": [
             {
@@ -24,15 +36,14 @@ def AnalyzeImage(image_data):
             },
         ],
     }
-    response = llm.invoke([message])
+    response: Any = llm.invoke([message])
     return response.content
 
 
 if __name__ == "__main__":
     # Fetch image data from local file
-    img_path = os.path.join(os.path.dirname(__file__), "../data/fish1.png")
-    with open(img_path, "rb") as img_file:
-        image_data = base64.b64encode(img_file.read()).decode("utf-8")
-    result = AnalyzeImage(image_data)
+    img_path: Path = Path(__file__).parent.parent / "data" / "fish1.png"
+    image_data: str = base64.b64encode(img_path.read_bytes()).decode("utf-8")
+    result: str = analyze_image(image_data)
     print(result)
     # Expected output: A description of the image in the data/fish1.png file
