@@ -1,30 +1,32 @@
-import os
+from pathlib import Path
+import time
+from typing import Tuple, List
+
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 import torch.nn as nn
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-import time
+
 from saveUtil import saveData2Curve, saveStudyParameter, saveData2CSV
 
 
 class sNet(nn.Module):
-    def __init__(self, input_dim=4, hidden_dim=16, output_dim=3):
+    def __init__(
+        self, input_dim: int = 4, hidden_dim: int = 16, output_dim: int = 3
+    ) -> None:
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = F.relu(self.fc1(x))
         return self.fc2(x)
 
 
 class mlClass:
-
-    def __init__(self, dataSet):
+    def __init__(self, dataSet) -> None:
         """
         コンストラクタ
         :param dataSet: sklearnのデータセットオブジェクト
@@ -38,7 +40,7 @@ class mlClass:
         self.data = dataSet.data
         self.target = dataSet.target
 
-    def splitTrainTest(self, test_size=0.2, random_state=42):
+    def splitTrainTest(self, test_size: float = 0.2, random_state: int = 42) -> None:
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             self.data,
             self.target,
@@ -47,11 +49,11 @@ class mlClass:
             stratify=self.target,
         )
 
-    def transform(self):
+    def transform(self) -> None:
         self.X_train = self.scaler.fit_transform(self.X_train)
         self.X_test = self.scaler.transform(self.X_test)
 
-    def changeToTensorDataset(self):
+    def changeToTensorDataset(self) -> None:
         self.train_ds = TensorDataset(
             torch.tensor(self.X_train, dtype=torch.float32),
             torch.tensor(self.y_train, dtype=torch.long),
@@ -61,14 +63,14 @@ class mlClass:
             torch.tensor(self.y_test, dtype=torch.long),
         )
 
-    def changeToDataLoader(self):
+    def changeToDataLoader(self) -> None:
         self.train_loader = DataLoader(self.train_ds, batch_size=16, shuffle=True)
         self.test_loader = DataLoader(self.test_ds, batch_size=16, shuffle=False)
 
-    def train(self, epochs=20):
-        loss_list = []
-        acc_list = []
-        for epoch in range(1, epochs + 1):
+    def train(self, epochs: int = 20) -> Tuple[List[float], List[float]]:
+        loss_list: List[float] = []
+        acc_list: List[float] = []
+        for _ in range(1, epochs + 1):
             self.model.train()
             total_loss = 0.0
             correct = 0
@@ -85,14 +87,14 @@ class mlClass:
                 correct += (preds == y_batch).sum().item()
 
             # 平均損失を計算
-            avg_loss = total_loss / len(self.train_loader.dataset)
+            avg_loss = total_loss / len(self.train_ds)
             loss_list.append(avg_loss)
             # 平均精度を計算
-            avg_acc = correct / len(self.train_loader.dataset)
+            avg_acc = correct / len(self.train_ds)
             acc_list.append(avg_acc)
         return acc_list, loss_list
 
-    def evaluate(self):
+    def evaluate(self) -> float:
         self.model.eval()
         correct = 0
         with torch.no_grad():
@@ -100,11 +102,11 @@ class mlClass:
                 preds = self.model(X_batch).argmax(dim=1)
                 correct += (preds == y_batch).sum().item()
 
-        accuracy = correct / len(self.test_loader.dataset)
+        accuracy = correct / len(self.test_ds)
         return accuracy
 
 
-def executeML(dataSet, epochs=20):
+def executeML(dataSet, epochs: int = 20):
     """
     機械学習の実行をまとめた関数
     :param dataSet: sklearnのデータセットオブジェクト
@@ -119,7 +121,9 @@ def executeML(dataSet, epochs=20):
     return machineLearning, machineLearning.model, acc_list, loss_list
 
 
-def save_model_and_curves(model, acc_list, loss_list):
+def save_model_and_curves(
+    model: nn.Module, acc_list: List[float], loss_list: List[float]
+) -> None:
     """
     モデルのパラメータと学習曲線を保存する関数
     :param model: 学習済みモデル
@@ -127,24 +131,31 @@ def save_model_and_curves(model, acc_list, loss_list):
     :param loss_list: 損失のリスト
     """
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    save_param_path = os.path.join(os.path.dirname(__file__), "../param")
-    saveStudyParameter(model.state_dict(), f"{save_param_path}/models_{timestamp}.pth")
+    current_file = Path(__file__).resolve()
 
-    save_curve_path = os.path.join(os.path.dirname(__file__), "../curveLog")
+    save_param_path = current_file.parent / "../param"
+    saveStudyParameter(
+        model.state_dict(), str(save_param_path / f"models_{timestamp}.pth")
+    )
+
+    save_curve_path = current_file.parent / "../curveLog"
     saveData2Curve(
         loss_list,
         "loss",
-        f"{save_curve_path}/loss_curve_{timestamp}.png",
+        str(save_curve_path / f"loss_curve_{timestamp}.png"),
     )
-    saveData2Curve(acc_list, "acc", f"{save_curve_path}/acc_curve_{timestamp}.png")
+    saveData2Curve(acc_list, "acc", str(save_curve_path / f"acc_curve_{timestamp}.png"))
 
-    save_csv_path = os.path.join(os.path.dirname(__file__), "../csvLog")
-    saveData2CSV(loss_list, f"{save_csv_path}/loss_{timestamp}.csv")
-    saveData2CSV(acc_list, f"{save_csv_path}/acc_{timestamp}.csv")
+    save_csv_path = current_file.parent / "../csvLog"
+    # Convert single lists to list of lists format expected by saveData2CSV
+    loss_data = [[i + 1, loss] for i, loss in enumerate(loss_list)]
+    acc_data = [[i + 1, acc] for i, acc in enumerate(acc_list)]
+    saveData2CSV(loss_data, str(save_csv_path / f"loss_{timestamp}.csv"))
+    saveData2CSV(acc_data, str(save_csv_path / f"acc_{timestamp}.csv"))
 
 
 if __name__ == "__main__":
-    from sklearn.datasets import load_iris, load_diabetes
+    from sklearn.datasets import load_iris
 
     # Irisデータセットでの実行
     iris_data = load_iris()

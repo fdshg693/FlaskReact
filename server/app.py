@@ -1,15 +1,19 @@
-from flask import Flask, jsonify, send_from_directory, request
-from flask_cors import CORS
-import math
-import random
-import base64
-import tempfile
-import os
-import sys
+from __future__ import annotations
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from llm.image import AnalyzeImage
-from llm.pdf import ExtractTextFromPDF
+import base64
+import random
+import sys
+import tempfile
+from pathlib import Path
+
+from flask import Flask, jsonify, send_from_directory, request, Response
+from flask_cors import CORS
+
+# Add parent directory to path for imports (must be done before local imports)
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from llm.image import analyze_image
+from llm.pdf import extract_text_from_pdf
 from llm.textSplit import split_text
 from eval import evaluateIris
 from evalBatch import evaluateIrisBatch
@@ -21,26 +25,38 @@ CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
 
 # ルーティングの設定
 @app.route("/")
-def root():
+def root() -> Response:
     print("ルートパスにアクセスされました")
-    return send_from_directory(app.static_folder + "/home", "index.html")
+    if app.static_folder:
+        static_path = Path(app.static_folder) / "home"
+        return send_from_directory(str(static_path), "index.html")
+    raise RuntimeError("Static folder not configured")
 
 
 @app.route("/home")
-def home():
+def home() -> Response:
     # Flaskのstaticフォルダから静的ファイルを提供
-    return send_from_directory(app.static_folder + "/home", "index.html")
+    if app.static_folder:
+        static_path = Path(app.static_folder) / "home"
+        return send_from_directory(str(static_path), "index.html")
+    raise RuntimeError("Static folder not configured")
 
 
 @app.route("/csvTest")
-def static_proxy():
+def static_proxy() -> Response:
     # Flaskのstaticフォルダから静的ファイルを提供
-    return send_from_directory(app.static_folder + "/csvTest", "index.html")
+    if app.static_folder:
+        static_path = Path(app.static_folder) / "csvTest"
+        return send_from_directory(str(static_path), "index.html")
+    raise RuntimeError("Static folder not configured")
 
 
 @app.route("/image")
-def image():
-    return send_from_directory(app.static_folder + "/image", "index.html")
+def image() -> Response:
+    if app.static_folder:
+        static_path = Path(app.static_folder) / "image"
+        return send_from_directory(str(static_path), "index.html")
+    raise RuntimeError("Static folder not configured")
 
 
 # APIエンドポイントの設定
@@ -48,15 +64,18 @@ def image():
 
 # テキスト分割API
 @app.route("/api/textSplit", methods=["POST"])
-def apiTextSplit():
+def api_text_split() -> Response | tuple[Response, int]:
     """
     テキスト分割APIエンドポイント
     テキストを受け取り、指定されたサイズとオーバーラップで分割して結果を返す
     """
     data = request.json
-    text = data.get("text", "")
-    chunk_size = data.get("chunk_size", 1000)
-    chunk_overlap = data.get("chunk_overlap", 200)
+    if not data:
+        return jsonify({"error": "No JSON data provided"}), 400
+
+    text: str = data.get("text", "")
+    chunk_size: int = data.get("chunk_size", 1000)
+    chunk_overlap: int = data.get("chunk_overlap", 200)
 
     chunks = split_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     return jsonify({"chunks": chunks})
@@ -64,42 +83,50 @@ def apiTextSplit():
 
 # 画像解析API
 @app.route("/api/image", methods=["POST"])
-def apiImage():
+def api_image() -> Response | tuple[Response, int]:
     """
     画像解析APIエンドポイント
     画像ファイルを受け取り、LLMで解析して結果を返す
     """
     # リクエストから画像ファイルを取得
     if "image" not in request.files:
-        return {"error": "no file"}, 400
-    f = request.files.get("image")
-    image_data = base64.b64encode(f.read()).decode(
+        return jsonify({"error": "no file"}), 400
+
+    file = request.files["image"]
+    if not file:
+        return jsonify({"error": "no file"}), 400
+
+    image_data = base64.b64encode(file.read()).decode(
         "utf-8"
     )  # 画像データをBase64エンコード
-    result = AnalyzeImage(image_data)  # LLMで画像を解析
+    result = analyze_image(image_data)  # LLMで画像を解析
 
     return jsonify({"description": result})
 
 
 # PDF文字起こしAPI
 @app.route("/api/pdf", methods=["POST"])
-def apiPdf():
+def api_pdf() -> Response | tuple[Response, int]:
     """
     PDF文字起こしAPIエンドポイント
     PDFファイルを受け取り、LLMで文字起こしして結果を返す
     """
     if "pdf" not in request.files:
-        return {"error": "no file"}, 400
-    f = request.files.get("pdf")
+        return jsonify({"error": "no file"}), 400
+
+    file = request.files["pdf"]
+    if not file:
+        return jsonify({"error": "no file"}), 400
+
     # 一時ファイルに保存
     with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
-        content = f.read()
+        content = file.read()
         tmp.write(content)
         tmp.flush()
         tmp.seek(0)
         # LLMでPDFを解析
         # テキスト抽出
-        raw_text = ExtractTextFromPDF(tmp.name)
+        raw_text = extract_text_from_pdf(tmp.name)
 
     return jsonify({"text": raw_text})
 
@@ -124,9 +151,12 @@ def userData():
 
 # データ配信用
 @app.route("/data/<path:path>")
-def data_proxy(path):
+def data_proxy(path: str) -> Response:
     # Flaskのstaticフォルダから静的ファイルを提供
-    return send_from_directory(app.static_folder + "/data", path)
+    if app.static_folder:
+        static_path = Path(app.static_folder) / "data"
+        return send_from_directory(str(static_path), path)
+    raise RuntimeError("Static folder not configured")
 
 
 if __name__ == "__main__":
