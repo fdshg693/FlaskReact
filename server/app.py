@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from llm.image import AnalyzeImage
 from llm.pdf import ExtractTextFromPDF
 from llm.textSplit import split_text
+from eval import evaluateIris
 
 app = Flask(__name__, static_folder="../static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ
@@ -101,11 +102,14 @@ def apiPdf():
     return jsonify({"text": raw_text})
 
 
+# irisデータセット用API
 @app.route("/api/iris", methods=["POST"])
 def iris():
-    irisSpecies = ["setosa", "versicolor", "virginica"]
-    randomSpecies = irisSpecies[math.floor(random.random() * len(irisSpecies))]
-    return jsonify({"species": randomSpecies})
+    irisData = request.json
+    result = evaluateIris(irisData)
+    print(f"Received iris data: {irisData}")
+    species = result.predicted_class
+    return jsonify({"species": species})
 
 
 @app.route("/api/userData", methods=["POST"])
