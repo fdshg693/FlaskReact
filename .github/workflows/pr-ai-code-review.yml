@@ -16,13 +16,11 @@ name: AI Code Review
 
 # Trigger: Manual execution only (can be extended to pull_request events)
 on: 
-  workflow_dispatch:
-    inputs:
-      target_branch:
-        description: 'Base branch to compare against (default: main)'
-        required: false
-        default: 'main'
-        type: string
+  push:
+    branches:
+      - main
+  pull_request:      # ここを追加
+    types: [opened, synchronize, reopened]
 
 jobs:
   ai_review:
@@ -227,10 +225,7 @@ jobs:
             echo "REVIEW_EOF"
           } >> "$GITHUB_OUTPUT"
           
-          echo "✅ AI code review completed successfully"
-          
-          # Optional: Save review to artifact for later reference
-          echo "$REVIEW_CONTENT" > ai_review_output.txt
+          echo "✅ AI code review completed successfully"          
 
       # ======================================================================
       # Step 4: Display Results
@@ -242,23 +237,29 @@ jobs:
           echo "## 🤖 AI Code Review Results"
           echo ""
           echo "${{ steps.ai_review.outputs.review }}"
-          
-      - name: No changes detected
-        if: steps.generate_diff.outputs.has_changes == 'false'
-        run: |
-          echo "DEBUG: No changes case (has_changes=${{ steps.generate_diff.outputs.has_changes }})"
-          echo "## ℹ️ No Changes Detected"
-          echo "No code changes found between the current branch and the base branch."
-          
       # ======================================================================
-      # Step 5: Upload Review as Artifact (Optional)
+      # Step 5: PR Commenting
       # ======================================================================
-      - name: Upload AI review as artifact
-        if: steps.generate_diff.outputs.has_changes == 'true'
-        uses: actions/upload-artifact@v4
+      - name: PRにコメントを投稿
+        if: steps.generate_diff.outputs.has_changes == 'true' && github.event.pull_request
+        uses: actions/github-script@v6
+        env:
+          REVIEW_CONTENT: ${{ steps.ai_review.outputs.review }}
         with:
-          name: ai-code-review-${{ github.run_number }}
-          path: |
-            ai_review_output.txt
-            diff.patch
-          retention-days: 30
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const reviewContent = process.env.REVIEW_CONTENT;
+            if (reviewContent && reviewContent.trim() !== '') {
+              console.log("Posting AI review comment to PR...");
+              const prNumber = context.payload.pull_request.number;
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🤖 AI Code Review Results\n\n${reviewContent}`
+              });
+              console.log(`✅ Successfully posted review comment to PR #${prNumber}`);
+            } else {
+              console.log("❌ No review content available to post.");
+            }
+          
