@@ -29,6 +29,14 @@ jobs:
     name: Generate AI Code Review
     runs-on: ubuntu-latest
     
+    # Configuration constants
+    env:
+      AI_MODEL: "gpt-4o-mini"
+      MAX_TOKENS: 1500
+      TEMPERATURE: 0.3
+      FETCH_DEPTH: 50  # Optimized for performance - gets recent commits only
+      TIMEOUT_MINUTES: 10
+    
     # Add timeout to prevent hanging jobs
     timeout-minutes: 10
     
@@ -36,12 +44,12 @@ jobs:
       # ======================================================================
       # Step 1: Repository Setup
       # ======================================================================
-      - name: Checkout repository with full history
+      - name: Checkout repository with optimized history
         uses: actions/checkout@v4  # Updated to v4 for better performance
         with:
-          # fetch-depth: 0 ensures we get the complete git history
-          # This is necessary for generating diffs against base branches
-          fetch-depth: 0
+          # fetch-depth: optimized for performance while ensuring diff generation
+          # Gets recent commits instead of full history for better performance
+          fetch-depth: ${{ env.FETCH_DEPTH }}
           
       # ======================================================================
       # Step 2: Generate Code Diff
@@ -76,15 +84,17 @@ jobs:
             --ignore-space-change \
             > diff.patch
           
-          # Check if there are any changes
+          # Check if there are any changes with detailed logging
           if [ ! -s diff.patch ]; then
-            echo "No changes detected between current branch and $BASE_BRANCH"
+            echo "ℹ️ No changes detected between current branch and $BASE_BRANCH"
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "DEBUG: has_changes set to false" # Debug output for troubleshooting
             exit 0
           fi
           
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
-          echo "Generated diff file ($(wc -l < diff.patch) lines)"
+          echo "DEBUG: has_changes set to true" # Debug output for troubleshooting
+          echo "✅ Generated diff file ($(wc -l < diff.patch) lines)"
 
       # ======================================================================
       # Step 3: AI Code Review via OpenAI API
@@ -97,17 +107,25 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          # Validate API key exists
+          # ====================================================================
+          # Security: Validate API key exists without exposing it
+          # ====================================================================
           if [ -z "$OPENAI_API_KEY" ]; then
-            echo "Error: OPENAI_API_KEY secret is not configured"
+            echo "❌ Error: OPENAI_API_KEY secret is not configured in repository settings"
+            echo "Please add the OPENAI_API_KEY secret to your repository."
             exit 1
           fi
           
-          # Read the diff file and escape it properly for JSON
+          echo "✅ API key validation successful"
+          
+          # ====================================================================
+          # Diff Processing: Read and prepare content for AI analysis
+          # ====================================================================
           DIFF_CONTENT=$(cat diff.patch)
           
-          # Create a comprehensive prompt for the AI reviewer
-          # The prompt is in Japanese as requested in the original code
+          # ====================================================================
+          # Prompt Engineering: Comprehensive Japanese review prompt
+          # ====================================================================
           PROMPT=$(cat << 'EOF'
           あなたは経験豊富なソフトウェアエンジニアです。以下のコード差分を詳細にレビューし、日本語で以下の観点から分析してください：
           
@@ -124,22 +142,23 @@ jobs:
           - 重要度（高・中・低）を明記する
           
           ## コード差分:
-          ```diff
+          ---BEGIN_DIFF---
           EOF
           )
           
-          # Append the actual diff content
+          # Append the actual diff content and closing markers
           PROMPT="${PROMPT}
           ${DIFF_CONTENT}
-          \`\`\`"
+          ---END_OF_DIFF---"
           
-          # Construct JSON payload for OpenAI API
-          # Using jq for safe JSON construction to prevent injection
+          # ====================================================================
+          # API Configuration: Use environment variables for maintainability
+          # ====================================================================
           PAYLOAD=$(jq -n \
-            --arg model "gpt-4o-mini" \
+            --arg model "$AI_MODEL" \
             --arg prompt "$PROMPT" \
-            --argjson max_tokens 1500 \
-            --argjson temperature 0.3 \
+            --argjson max_tokens "$MAX_TOKENS" \
+            --argjson temperature "$TEMPERATURE" \
             '{
               model: $model,
               messages: [
@@ -157,9 +176,11 @@ jobs:
             }'
           )
           
-          echo "Sending request to OpenAI API..."
+          echo "🔄 Sending request to OpenAI API..."
           
-          # Make API call to OpenAI with error handling
+          # ====================================================================
+          # Secure API Call: Improved error handling to prevent info leakage
+          # ====================================================================
           HTTP_CODE=$(curl -w "%{http_code}" -s \
             -X POST \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
@@ -169,22 +190,32 @@ jobs:
             https://api.openai.com/v1/chat/completions
           )
           
-          # Check HTTP response code
+          # Check HTTP response code with improved error messaging
           if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "Error: OpenAI API request failed with HTTP $HTTP_CODE"
-            echo "Response:"
-            cat api_response.json
+            echo "❌ Error: OpenAI API request failed with HTTP $HTTP_CODE"
+            
+            # Extract error details safely without exposing sensitive info
+            ERROR_TYPE=$(jq -r '.error.type // "unknown"' api_response.json 2>/dev/null || echo "unknown")
+            ERROR_MESSAGE=$(jq -r '.error.message // "API call failed"' api_response.json 2>/dev/null || echo "API call failed")
+            
+            echo "Error type: $ERROR_TYPE"
+            echo "Error message: $ERROR_MESSAGE"
+            echo "Please check your API key and try again."
             exit 1
           fi
           
-          # Extract the review content from the API response
-          REVIEW_CONTENT=$(jq -r '.choices[0].message.content // "No review content received"' api_response.json)
+          # ====================================================================
+          # Response Processing: Enhanced validation and error handling
+          # ====================================================================
+          REVIEW_CONTENT=$(jq -r '.choices[0].message.content // "No review content received"' api_response.json 2>/dev/null)
           
-          # Check if the API returned an error
-          if [ "$REVIEW_CONTENT" = "null" ] || [ "$REVIEW_CONTENT" = "No review content received" ]; then
-            echo "Error: No valid review content received from OpenAI"
-            echo "API Response:"
-            cat api_response.json
+          # Check if the API returned valid content
+          if [ "$REVIEW_CONTENT" = "null" ] || [ "$REVIEW_CONTENT" = "No review content received" ] || [ -z "$REVIEW_CONTENT" ]; then
+            echo "❌ Error: No valid review content received from OpenAI"
+            
+            # Check for API-level errors without exposing full response
+            API_ERROR=$(jq -r '.error.message // "Unknown API error"' api_response.json 2>/dev/null || echo "Response parsing failed")
+            echo "API indicated: $API_ERROR"
             exit 1
           fi
           
@@ -207,6 +238,7 @@ jobs:
       - name: Display review results
         if: steps.generate_diff.outputs.has_changes == 'true'
         run: |
+          echo "DEBUG: Displaying results (has_changes=${{ steps.generate_diff.outputs.has_changes }})"
           echo "## 🤖 AI Code Review Results"
           echo ""
           echo "${{ steps.ai_review.outputs.review }}"
@@ -214,6 +246,7 @@ jobs:
       - name: No changes detected
         if: steps.generate_diff.outputs.has_changes == 'false'
         run: |
+          echo "DEBUG: No changes case (has_changes=${{ steps.generate_diff.outputs.has_changes }})"
           echo "## ℹ️ No Changes Detected"
           echo "No code changes found between the current branch and the base branch."
           
