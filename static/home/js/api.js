@@ -14,7 +14,7 @@ async function fetchIrisSpecies(inputs) {
 
 //CSVから学習するAPIを呼び出す
 async function fetchMultipleIrisSpecies(inputs) {
-  const res = await fetch('/api/userData', {
+  const res = await fetch('/api/batch_iris', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
