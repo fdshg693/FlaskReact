@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from saveUtil import (
+from machineLearning.save_util import (
     save_training_data_to_curve_plot,
     save_training_parameters,
     save_data_to_csv_file,

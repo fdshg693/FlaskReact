@@ -15,8 +15,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from llm.image import analyze_image
 from llm.pdf import extract_text_from_pdf
 from llm.textSplit import split_text
-from machineLearning.evalBatch import evaluate_iris_batch
-from util.convertJSON import convert_json_to_two_dimensional_array
+from machineLearning.eval_batch import evaluate_iris_batch
+from util.convert_json import convert_json_to_two_dimensional_array
 
 app = Flask(__name__, static_folder="../static", static_url_path="")
 CORS(app)  # 同一オリジン外アクセスが必要な場合のみ

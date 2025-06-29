@@ -1,8 +1,6 @@
 name: AI Code Review
 
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+on: [workflow_dispatch]
 
 jobs:
   ai_review:
@@ -51,6 +49,6 @@ jobs:
           )
 
           # write to GITHUB_OUTPUT (set-output is deprecated)
-          echo "review<<EOF" >> $GITHUB_OUTPUT
-          echo "$RESPONSE"     >> $GITHUB_OUTPUT
-          echo "EOF"          >> $GITHUB_OUTPUT
+          echo "review<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$RESPONSE"     >> "$GITHUB_OUTPUT"
+          echo "EOF"          >> "$GITHUB_OUTPUT"

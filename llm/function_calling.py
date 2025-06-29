@@ -1,14 +1,38 @@
+# LLM Function Calling Implementation with LangChain
+# Provides a framework for executing function calls through Large Language Models
+# using LangChain's tool binding and message handling capabilities
+#
+# Key Components:
+# - functionCalling(): Main orchestrator that manages tool execution workflow
+# - Tool binding integration with OpenAI GPT-4o-mini model
+# - Message chain management for multi-turn conversations with tool calls
+# - Automatic tool selection and execution based on LLM decisions
+#
+# Dependencies:
+# - langchain (chat models, tools, messages)
+# - openai (via langchain model provider)
+# - dotenv (environment variable management)
+# - document_search_tools (local document search capabilities)
+#
+# Usage Context:
+# - Used for building AI agents that can execute functions based on natural language queries
+# - Supports Japanese language queries for document search and retrieval
+# - Designed for local document processing and search operations
+
 from typing import List, Dict
 from langchain.chat_models import init_chat_model
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, ToolMessage, BaseMessage
 from langchain_core.tools import BaseTool
-from functionTools import getLocalDocuments, searchLocalDocuments
+from document_search_tools import (
+    get_local_document_content,
+    search_local_text_documents,
+)
 
 load_dotenv()
 
 
-def functionCalling(tools: List[BaseTool], query: str) -> str:
+def function_calling(tools: List[BaseTool], query: str) -> str:
     """
     Demonstrates how to use function calling with an LLM.
 
@@ -48,7 +72,9 @@ def functionCalling(tools: List[BaseTool], query: str) -> str:
 
 
 if __name__ == "__main__":
-    tools: List[BaseTool] = [getLocalDocuments, searchLocalDocuments]
-    query: str = "株式会社ヘッドウォーターズの作ったアプリについて教えてください。"
-    result: str = functionCalling(tools, query)
-    print(result)
+    tools: List[BaseTool] = [get_local_document_content, search_local_text_documents]
+    search_query: str = (
+        "株式会社ヘッドウォーターズの作ったアプリについて教えてください。"
+    )
+    function_result: str = function_calling(tools, search_query)
+    print(function_result)

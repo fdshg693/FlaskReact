@@ -5,6 +5,7 @@ mode: agent
 # Python Code Refactoring: Rename Functions and Variables
 
 Refactor the Python code to use more descriptive names that follow Python naming conventions (PEP 8).
+And suggenst new filenames if the current names do not accurately reflect the file's purpose or content.
 
 ## Naming Rules
 
@@ -25,6 +26,10 @@ Refactor the Python code to use more descriptive names that follow Python naming
 ### Private Members
 - Prefix with single underscore `_` for internal use
 - Prefix with double underscore `__` for name mangling (rare cases)
+
+### File Name
+- Use `snake_case` for Python files
+- Ensure the filename reflects the file's purpose or content
 
 ## Examples
 
