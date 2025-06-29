@@ -5,7 +5,7 @@ mode: agent
 # Python Code Refactoring: Rename Functions and Variables
 
 Refactor the Python code to use more descriptive names that follow Python naming conventions (PEP 8).
-And suggenst new filenames if the current names do not accurately reflect the file's purpose or content.
+And suggest new filenames if the current names do not accurately reflect the file's purpose or content.
 
 ## Naming Rules
 
