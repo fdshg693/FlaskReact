@@ -243,10 +243,12 @@ jobs:
       - name: PRにコメントを投稿
         if: steps.generate_diff.outputs.has_changes == 'true' && github.event.pull_request
         uses: actions/github-script@v6
+        env:
+          REVIEW_CONTENT: ${{ steps.ai_review.outputs.review }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const reviewContent = `${{ steps.ai_review.outputs.review }}`;
+            const reviewContent = process.env.REVIEW_CONTENT;
             if (reviewContent && reviewContent.trim() !== '') {
               console.log("Posting AI review comment to PR...");
               const prNumber = context.payload.pull_request.number;
