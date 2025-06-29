@@ -1,54 +1,231 @@
+# ======================================================================
+# AI Code Review Workflow
+# ======================================================================
+# This workflow uses OpenAI's GPT-4o-mini to automatically review code changes
+# and provide feedback in Japanese. It can be triggered manually via workflow_dispatch.
+#
+# Prerequisites:
+# - OPENAI_API_KEY secret must be configured in the repository settings
+# - The workflow requires jq for JSON processing (pre-installed on Ubuntu runners)
+#
+# Output:
+# - AI review comments are available in the job output as 'review' variable
+# ======================================================================
+
 name: AI Code Review
 
-on: [workflow_dispatch]
+# Trigger: Manual execution only (can be extended to pull_request events)
+on: 
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Base branch to compare against (default: main)'
+        required: false
+        default: 'main'
+        type: string
 
 jobs:
   ai_review:
+    name: Generate AI Code Review
     runs-on: ubuntu-latest
+    
+    # Add timeout to prevent hanging jobs
+    timeout-minutes: 10
+    
     steps:
-      # 1) コードをチェックアウト
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # ======================================================================
+      # Step 1: Repository Setup
+      # ======================================================================
+      - name: Checkout repository with full history
+        uses: actions/checkout@v4  # Updated to v4 for better performance
         with:
+          # fetch-depth: 0 ensures we get the complete git history
+          # This is necessary for generating diffs against base branches
           fetch-depth: 0
-
-      # 2) ベースブランチとの差分を取得
-      - name: Generate diff
+          
+      # ======================================================================
+      # Step 2: Generate Code Diff
+      # ======================================================================
+      - name: Generate diff against base branch
+        id: generate_diff
         run: |
-          BASE=${{ github.event.pull_request.base.ref }}
-          git fetch origin $BASE
-          git diff origin/$BASE...HEAD --unified=0 > diff.patch
+          # Determine the base branch for comparison
+          # Priority: workflow input > PR base > default 'main'
+          if [ -n "${{ github.event.pull_request.base.ref }}" ]; then
+            BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+          else
+            BASE_BRANCH="${{ inputs.target_branch || 'main' }}"
+          fi
+          
+          echo "Comparing against base branch: $BASE_BRANCH"
+          
+          # Fetch the latest version of the base branch
+          git fetch origin "$BASE_BRANCH" || {
+            echo "Error: Failed to fetch base branch '$BASE_BRANCH'"
+            echo "Available branches:"
+            git branch -r
+            exit 1
+          }
+          
+          # Generate unified diff with context
+          # --unified=3 provides 3 lines of context (more readable than 0)
+          # --no-color ensures clean output for AI processing
+          git diff "origin/$BASE_BRANCH...HEAD" \
+            --unified=3 \
+            --no-color \
+            --ignore-space-change \
+            > diff.patch
+          
+          # Check if there are any changes
+          if [ ! -s diff.patch ]; then
+            echo "No changes detected between current branch and $BASE_BRANCH"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          echo "Generated diff file ($(wc -l < diff.patch) lines)"
 
-      # 3) AI にレビューを依頼
-      - name: AI Review via OpenAI
+      # ======================================================================
+      # Step 3: AI Code Review via OpenAI API
+      # ======================================================================
+      - name: Request AI code review
         id: ai_review
+        # Skip this step if no changes were detected
+        if: steps.generate_diff.outputs.has_changes == 'true'
         shell: bash
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          # assemble the prompt
-          PROMPT=$(printf '以下の差分を読み取り、問題点・改善案を日本語で箇条書きにしてください。\n\n```diff\n%s\n```' \
-            "$(cat diff.patch)")
+          # Validate API key exists
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "Error: OPENAI_API_KEY secret is not configured"
+            exit 1
+          fi
+          
+          # Read the diff file and escape it properly for JSON
+          DIFF_CONTENT=$(cat diff.patch)
+          
+          # Create a comprehensive prompt for the AI reviewer
+          # The prompt is in Japanese as requested in the original code
+          PROMPT=$(cat << 'EOF'
+あなたは経験豊富なソフトウェアエンジニアです。以下のコード差分を詳細にレビューし、日本語で以下の観点から分析してください：
 
-          # build a well-quoted JSON payload
-          PAYLOAD=$(
-            jq -n \
-              --arg model "gpt-4o-mini" \
-              --arg prompt "$PROMPT" \
-              --argjson max_tokens 800 \
-              '{model: $model, messages: [{role: "user", content: $prompt}], max_tokens: $max_tokens}'
+## レビュー観点
+1. **コードの品質**: 可読性、保守性、パフォーマンス
+2. **セキュリティ**: 潜在的な脆弱性やセキュリティリスク
+3. **ベストプラクティス**: 言語やフレームワークの推奨事項
+4. **バグの可能性**: ロジックエラーや例外処理の問題
+5. **改善提案**: 具体的な改善案やリファクタリング提案
+
+## 出力形式
+- 問題点は具体的に指摘し、該当行番号も含める
+- 改善案は実装可能な具体例を提供する
+- 重要度（高・中・低）を明記する
+
+## コード差分:
+```diff
+EOF
           )
-
-          # call OpenAI
-          RESPONSE=$(
-            curl -s https://api.openai.com/v1/chat/completions \
-              -H "Authorization: Bearer $OPENAI_API_KEY" \
-              -H "Content-Type: application/json" \
-              -d "$PAYLOAD" \
-            | jq -r '.choices[0].message.content'
+          
+          # Append the actual diff content
+          PROMPT="${PROMPT}
+${DIFF_CONTENT}
+\`\`\`"
+          
+          # Construct JSON payload for OpenAI API
+          # Using jq for safe JSON construction to prevent injection
+          PAYLOAD=$(jq -n \
+            --arg model "gpt-4o-mini" \
+            --arg prompt "$PROMPT" \
+            --argjson max_tokens 1500 \
+            --argjson temperature 0.3 \
+            '{
+              model: $model,
+              messages: [
+                {
+                  role: "system",
+                  content: "あなたは親切で建設的なコードレビューアーです。詳細で実用的なフィードバックを提供してください。"
+                },
+                {
+                  role: "user", 
+                  content: $prompt
+                }
+              ],
+              max_tokens: $max_tokens,
+              temperature: $temperature
+            }'
           )
+          
+          echo "Sending request to OpenAI API..."
+          
+          # Make API call to OpenAI with error handling
+          HTTP_CODE=$(curl -w "%{http_code}" -s \
+            -X POST \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            -o api_response.json \
+            https://api.openai.com/v1/chat/completions
+          )
+          
+          # Check HTTP response code
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "Error: OpenAI API request failed with HTTP $HTTP_CODE"
+            echo "Response:"
+            cat api_response.json
+            exit 1
+          fi
+          
+          # Extract the review content from the API response
+          REVIEW_CONTENT=$(jq -r '.choices[0].message.content // "No review content received"' api_response.json)
+          
+          # Check if the API returned an error
+          if [ "$REVIEW_CONTENT" = "null" ] || [ "$REVIEW_CONTENT" = "No review content received" ]; then
+            echo "Error: No valid review content received from OpenAI"
+            echo "API Response:"
+            cat api_response.json
+            exit 1
+          fi
+          
+          # Write review to GitHub Actions output using multiline format
+          # This method is the recommended way to handle multiline output
+          {
+            echo "review<<REVIEW_EOF"
+            echo "$REVIEW_CONTENT"
+            echo "REVIEW_EOF"
+          } >> "$GITHUB_OUTPUT"
+          
+          echo "✅ AI code review completed successfully"
+          
+          # Optional: Save review to artifact for later reference
+          echo "$REVIEW_CONTENT" > ai_review_output.txt
 
-          # write to GITHUB_OUTPUT (set-output is deprecated)
-          echo "review<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$RESPONSE"     >> "$GITHUB_OUTPUT"
-          echo "EOF"          >> "$GITHUB_OUTPUT"
+      # ======================================================================
+      # Step 4: Display Results
+      # ======================================================================
+      - name: Display review results
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        run: |
+          echo "## 🤖 AI Code Review Results"
+          echo ""
+          echo "${{ steps.ai_review.outputs.review }}"
+          
+      - name: No changes detected
+        if: steps.generate_diff.outputs.has_changes == 'false'
+        run: |
+          echo "## ℹ️ No Changes Detected"
+          echo "No code changes found between the current branch and the base branch."
+          
+      # ======================================================================
+      # Step 5: Upload Review as Artifact (Optional)
+      # ======================================================================
+      - name: Upload AI review as artifact
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review-${{ github.run_number }}
+          path: |
+            ai_review_output.txt
+            diff.patch
+          retention-days: 30
