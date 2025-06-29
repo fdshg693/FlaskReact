@@ -237,13 +237,18 @@ jobs:
           echo "## 🤖 AI Code Review Results"
           echo ""
           echo "${{ steps.ai_review.outputs.review }}"
+      # ======================================================================
+      # Step 5: PR Commenting
+      # ======================================================================
       - name: PRにコメントを投稿
+        if: steps.generate_diff.outputs.has_changes == 'true' && github.event.pull_request
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const reviewContent = process.env.REVIEW_CONTENT || '';
-            if (reviewContent) {
+            const reviewContent = `${{ steps.ai_review.outputs.review }}`;
+            if (reviewContent && reviewContent.trim() !== '') {
+              console.log("Posting AI review comment to PR...");
               const prNumber = context.payload.pull_request.number;
               await github.rest.issues.createComment({
                 issue_number: prNumber,
@@ -251,7 +256,8 @@ jobs:
                 repo: context.repo.repo,
                 body: `## 🤖 AI Code Review Results\n\n${reviewContent}`
               });
+              console.log(`✅ Successfully posted review comment to PR #${prNumber}`);
             } else {
-              console.log("No review content to post.");
+              console.log("❌ No review content available to post.");
             }
           
