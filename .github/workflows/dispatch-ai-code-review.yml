@@ -31,7 +31,7 @@ jobs:
     
     # Configuration constants
     env:
-      AI_MODEL: "gpt-4.1-turbo-1106"  # Updated to latest model for better performance
+      AI_MODEL: "gpt-4.1"
       MAX_TOKENS: 1500
       TEMPERATURE: 0.3
       FETCH_DEPTH: 50  # Optimized for performance - gets recent commits only
