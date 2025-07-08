@@ -2,7 +2,7 @@
 # AI Code Review Workflow
 # ======================================================================
 # This workflow uses OpenAI's GPT-4o-mini to automatically review code changes
-# and provide feedback in Japanese. It can be triggered manually via workflow_dispatch.
+# and provide feedback in English. It can be triggered manually via workflow_dispatch.
 #
 # Prerequisites:
 # - OPENAI_API_KEY secret must be configured in the repository settings
@@ -12,7 +12,7 @@
 # - AI review comments are available in the job output as 'review' variable
 # ======================================================================
 
-name: AI Code Review
+name: AI Code Review Dispatch Workflow
 
 # Trigger: Manual execution only (can be extended to pull_request events)
 on: 
@@ -31,7 +31,7 @@ jobs:
     
     # Configuration constants
     env:
-      AI_MODEL: "gpt-4o-mini"
+      AI_MODEL: "gpt-4.1-turbo-1106"  # Updated to latest model for better performance
       MAX_TOKENS: 1500
       TEMPERATURE: 0.3
       FETCH_DEPTH: 50  # Optimized for performance - gets recent commits only
@@ -124,24 +124,24 @@ jobs:
           DIFF_CONTENT=$(cat diff.patch)
           
           # ====================================================================
-          # Prompt Engineering: Comprehensive Japanese review prompt
+          # Prompt Engineering: Comprehensive English review prompt
           # ====================================================================
           PROMPT=$(cat << 'EOF'
-          あなたは経験豊富なソフトウェアエンジニアです。以下のコード差分を詳細にレビューし、日本語で以下の観点から分析してください：
+          You are an experienced software engineer. Please review the following code diff in detail and analyze it from the following perspectives in English:
           
-          ## レビュー観点
-          1. **コードの品質**: 可読性、保守性、パフォーマンス
-          2. **セキュリティ**: 潜在的な脆弱性やセキュリティリスク
-          3. **ベストプラクティス**: 言語やフレームワークの推奨事項
-          4. **バグの可能性**: ロジックエラーや例外処理の問題
-          5. **改善提案**: 具体的な改善案やリファクタリング提案
+          ## Review Perspectives
+          1. **Code Quality**: Readability, maintainability, performance
+          2. **Security**: Potential vulnerabilities and security risks
+          3. **Best Practices**: Language and framework recommendations
+          4. **Bug Potential**: Logic errors and exception handling issues
+          5. **Improvement Suggestions**: Specific improvement proposals and refactoring suggestions
           
-          ## 出力形式
-          - 問題点は具体的に指摘し、該当行番号も含める
-          - 改善案は実装可能な具体例を提供する
-          - 重要度（高・中・低）を明記する
+          ## Output Format
+          - Point out issues specifically and include relevant line numbers
+          - Provide implementable concrete examples for improvement suggestions
+          - Clearly indicate importance level (High, Medium, Low)
           
-          ## コード差分:
+          ## Code Diff:
           ---BEGIN_DIFF---
           EOF
           )
@@ -164,7 +164,7 @@ jobs:
               messages: [
                 {
                   role: "system",
-                  content: "あなたは親切で建設的なコードレビューアーです。詳細で実用的なフィードバックを提供してください。"
+                  content: "You are a kind and constructive code reviewer. Please provide detailed and practical feedback."
                 },
                 {
                   role: "user", 

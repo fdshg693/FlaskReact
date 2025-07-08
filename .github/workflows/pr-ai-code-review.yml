@@ -12,7 +12,7 @@
 # - AI review comments are available in the job output as 'review' variable
 # ======================================================================
 
-name: AI Code Review
+name: AI Code Review Pull Request Workflow
 
 # Trigger: Manual execution only (can be extended to pull_request events)
 on: 
@@ -27,9 +27,15 @@ jobs:
     name: Generate AI Code Review
     runs-on: ubuntu-latest
     
+    # Add necessary permissions for PR commenting
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    
     # Configuration constants
     env:
-      AI_MODEL: "gpt-4o-mini"
+      AI_MODEL: "gpt-4.1-turbo-1106"  # Updated to latest model for better performance
       MAX_TOKENS: 1500
       TEMPERATURE: 0.3
       FETCH_DEPTH: 50  # Optimized for performance - gets recent commits only
@@ -125,21 +131,21 @@ jobs:
           # Prompt Engineering: Comprehensive Japanese review prompt
           # ====================================================================
           PROMPT=$(cat << 'EOF'
-          あなたは経験豊富なソフトウェアエンジニアです。以下のコード差分を詳細にレビューし、日本語で以下の観点から分析してください：
-          
-          ## レビュー観点
-          1. **コードの品質**: 可読性、保守性、パフォーマンス
-          2. **セキュリティ**: 潜在的な脆弱性やセキュリティリスク
-          3. **ベストプラクティス**: 言語やフレームワークの推奨事項
-          4. **バグの可能性**: ロジックエラーや例外処理の問題
-          5. **改善提案**: 具体的な改善案やリファクタリング提案
-          
-          ## 出力形式
-          - 問題点は具体的に指摘し、該当行番号も含める
-          - 改善案は実装可能な具体例を提供する
-          - 重要度（高・中・低）を明記する
-          
-          ## コード差分:
+            You are an experienced software engineer. Please review the following code diff in detail and analyze it in English from the following perspectives:
+
+            ## Review Points
+            1. **Code Quality**: Readability, maintainability, performance
+            2. **Security**: Potential vulnerabilities and security risks
+            3. **Best Practices**: Recommendations for the language or framework
+            4. **Potential Bugs**: Logic errors or exception handling issues
+            5. **Suggestions for Improvement**: Concrete improvement or refactoring proposals
+
+            ## Output Format
+            - Clearly point out issues with specific line numbers
+            - Provide actionable examples for improvements
+            - Indicate the importance (High / Medium / Low)
+
+            ## Code Diff:
           ---BEGIN_DIFF---
           EOF
           )
@@ -162,7 +168,7 @@ jobs:
               messages: [
                 {
                   role: "system",
-                  content: "あなたは親切で建設的なコードレビューアーです。詳細で実用的なフィードバックを提供してください。"
+                  content: "You are a helpful and constructive code reviewer. Please provide detailed and actionable feedback."
                 },
                 {
                   role: "user", 
@@ -228,21 +234,11 @@ jobs:
           echo "✅ AI code review completed successfully"          
 
       # ======================================================================
-      # Step 4: Display Results
-      # ======================================================================
-      - name: Display review results
-        if: steps.generate_diff.outputs.has_changes == 'true'
-        run: |
-          echo "DEBUG: Displaying results (has_changes=${{ steps.generate_diff.outputs.has_changes }})"
-          echo "## 🤖 AI Code Review Results"
-          echo ""
-          echo "${{ steps.ai_review.outputs.review }}"
-      # ======================================================================
-      # Step 5: PR Commenting
+      # Step 4: PR Commenting
       # ======================================================================
       - name: PRにコメントを投稿
         if: steps.generate_diff.outputs.has_changes == 'true' && github.event.pull_request
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         env:
           REVIEW_CONTENT: ${{ steps.ai_review.outputs.review }}
         with:
@@ -252,13 +248,25 @@ jobs:
             if (reviewContent && reviewContent.trim() !== '') {
               console.log("Posting AI review comment to PR...");
               const prNumber = context.payload.pull_request.number;
-              await github.rest.issues.createComment({
-                issue_number: prNumber,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `## 🤖 AI Code Review Results\n\n${reviewContent}`
-              });
-              console.log(`✅ Successfully posted review comment to PR #${prNumber}`);
+              
+              try {
+                await github.rest.issues.createComment({
+                  issue_number: prNumber,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `## 🤖 AI Code Review Results\n\n${reviewContent}`
+                });
+                console.log(`✅ Successfully posted review comment to PR #${prNumber}`);
+              } catch (error) {
+                console.error(`❌ Failed to post comment: ${error.message}`);
+                // Log additional details for debugging
+                console.error(`Error details: ${JSON.stringify({
+                  status: error.status,
+                  name: error.name,
+                  documentation_url: error.documentation_url
+                })}`);
+                throw error;
+              }
             } else {
               console.log("❌ No review content available to post.");
             }
