@@ -13,7 +13,7 @@ mode: agent
   - `pytest`
   - `loguru`
   - `pydantic`
-  - `pydoc`
+  - `pydantic`
 
 # Modern Python Development Guidelines
 
@@ -27,6 +27,11 @@ mode: agent
     - use mypy to check type hints
 - **f-strings**: Use f-string formatting instead of `.format()` or `%` formatting
 - **pathlib**: Use `pathlib.Path` for all file system operations instead of `os.path`
+- **pydoc**: Use `pydoc` for generating documentation
+- **loguru**: Use `loguru` for logging instead of the built-in `logging` module
+- **ruff**: Use `ruff` for linting and formatting code
+- **pytest**: Use `pytest` for testing if testing is important
+- **pydantic**: Use `pydantic` for data validation and settings management
 
 ### Code Quality Standards
 - Remove unnecessary imports
