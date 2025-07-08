@@ -1,6 +1,3 @@
-import json
-
-
 def convert_json_to_two_dimensional_array(json_data_list, feature_keys=None):
     """Convert a list of JSON objects to a 2D array with specified column order.
 

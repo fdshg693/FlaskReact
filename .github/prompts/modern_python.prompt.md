@@ -1,16 +1,19 @@
 ---
 mode: agent
 ---
-# CUrrent Environment
+# Current Environment
 - You are in a Python environment with the following libraries shown in requirements.txt
-- you are using python3.13.3
-- you are using pip 
-- you are under virtual environment
+- you are using python3.13.5
+- you are using uv 0.7
+- you are under virtual environment (`.venv` directory)
 - You are using a modern Python development environment with the following libraries:
   - `pathlib`
   - `mypy`
-  - `black`
+  - `ruff`
   - `pytest`
+  - `loguru`
+  - `pydantic`
+  - `pydoc`
 
 # Modern Python Development Guidelines
 

@@ -3,6 +3,33 @@
 - バックエンド　FLASK
 - フロントエンド　REACT(CDN)
 
+### Python環境
+- python 3.13を使用
+- uvを使用して仮想環境を管理
+    - uv syncでプロジェクトの依存関係をインストール
+    - uv runでスクリプトを実行
+- 開発にて使用しているツール
+    - mypy: 型チェック
+    - pydoc: ドキュメンテーション生成
+- 取り入れた新しめのライブラリ
+    - langchain: LLMを利用したアプリケーション開発のためのライブラリ
+    - pydantic: データ検証と設定管理のためのライブラリ
+    - uv: Pythonプロジェクトの依存関係管理ツール
+    - loguru: ロギングのためのライブラリ
+    - pathlib: パス操作のためのライブラリ
+    - pytest: テストのためのライブラリ
+- 開発にて取り入れたツール
+    - pre-commit: コードの品質を保つためのツール
+    - ruff: コード静的解析ツール
+        - VSCodeの拡張機能を使用して、保存時に自動でフォーマット
+
+### Github Actions
+- プルリクエストの際に、AIがコードをレビュー
+    - プルリクエストの時以外にも、手動で実行可能
+### pre-commit
+- https://pre-commit.com/https://pre-commit.com/
+- .pre-commit-config.yaml
+
 ### 現状
 
 - 実行方法

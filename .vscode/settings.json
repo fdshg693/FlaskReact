@@ -1,0 +1,15 @@
+{
+    "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  },
+    "editor.formatOnSave": true,
+    "ruff.path": [
+      "/Users/seiwan/CodeStudy/FlaskReact/.venv/bin/ruff"
+    ],
+    // pyproject.tomlの設定が、エディタの設定より優先して適用される
+    "ruff.configurationPreference": "filesystemFirst",
+    "ruff.interpreter": [
+      "/Users/seiwan/CodeStudy/FlaskReact/.venv/bin/python3"
+    ],
+}
