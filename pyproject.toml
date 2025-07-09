@@ -5,6 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "dotenv>=0.9.9",
+    "flask>=3.1.1",
+    "flask-cors>=6.0.1",
+    "langchain-community>=0.3.27",
+    "langchain-openai>=0.3.27",
+    "langchain-text-splitters>=0.3.8",
+    "langgraph>=0.5.1",
     "loguru>=0.7.3",
     "matplotlib>=3.10.3",
     "mypy>=1.16.1",
@@ -16,6 +23,14 @@ dependencies = [
     "tool>=0.8.0",
     "torch>=2.7.1",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["llm*", "machineLearning*", "util*", "scrape*", "server*"]
+exclude = ["data*", "log*", "param*", "scaler*", "static*", "csvLog*", "curveLog*", "experiment*", "maikuma*", "test*", "docs*"]
 
 [tool.uv]
 python-preference = "system"

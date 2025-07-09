@@ -186,7 +186,11 @@ cython_debug/
 *.gif
 *.csv
 *.gz
-/data/
+# フォルダだけ残して、配下のファイルは無視する
+/data/*
+# README.mdはGITに追加する
+!/data/README.md
+
 memo.md
 
 /param/*

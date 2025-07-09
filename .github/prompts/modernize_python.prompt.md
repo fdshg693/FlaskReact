@@ -8,7 +8,10 @@ mode: agent
 Analyze and modernize Python code in the current workspace to follow the latest best practices, improve code quality, and enhance maintainability while preserving functionality.
 
 ## Scope
-- Target Python files (.py) in the current workspace
+- Target Python files (.py) in the current context
+    - dont change other unrelated files
+    - if other files should be changed because of the change already made, try to do the smallest change possible
+    - Focus on the file in the current context
 - Focus on code structure, syntax, and patterns
 - Not necessarily appropriate for all projects, but useful for learning and code improvement purposes
 

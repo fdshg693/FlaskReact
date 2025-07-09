@@ -3,6 +3,23 @@
 - バックエンド　FLASK
 - フロントエンド　REACT(CDN)
 
+## セットアップと実行
+
+### 依存関係のインストール
+```bash
+uv sync
+```
+
+### アプリケーションの実行
+```bash
+python run_app.py
+```
+
+アプリケーションは `http://localhost:8000` で起動します。
+
+> **注意**: `server/app.py` を直接実行せず、必ず `run_app.py` を使用してください。
+> これにより、Pythonパスが自動的に設定され、モジュールのインポートが正しく動作します。
+
 ### Python環境
 - python 3.13を使用
 - uvを使用して仮想環境を管理
@@ -29,6 +46,23 @@
 - https://pre-commit.com/https://pre-commit.com/
 - .pre-commit-config.yaml
 
+
+# ファイル構成
+## モジュール構成
+### llm
+- LLMを利用した関数を定義
+    - `agent.py`
+        - LLMを利用したエージェントの定義
+    - `document_search_tools.py`
+        - ドキュメント検索のためのツール
+    - `function_calling.py`
+        - 関数呼び出しのためのツール
+    - `image.py`
+        - 画像を生成AIに描写させるためのツール
+    - `pdf.py`
+        - PDFファイルを文字起こしするためのツール
+    - `text_splitter.py`
+        - テキストを分割するためのツール
 ## Github Copilot
 - Instructions
     - `.github/instructions/modern.instructions.md`
@@ -66,4 +100,4 @@
     - 画像をアップロードすると、AIが描写してくれる
     - PDFファイルをアップロードすると、AIが文字起こししてくれる
     - 文字入力すると、分割して返す
-    - 
+    -
