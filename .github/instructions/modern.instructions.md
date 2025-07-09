@@ -1,5 +1,5 @@
 ---
-mode: agent
+applyTo: '*.py'
 ---
 # Current Environment
 - You are in a Python environment with the following libraries shown in requirements.txt

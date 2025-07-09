@@ -5,7 +5,12 @@ mode: agent
 # File Summary and Documentation Agent
 
 ## Objective
-Analyze the provided file content and generate comprehensive documentation by adding summary comments at the top of the file. Additionally, evaluate the current filename and suggest improvements if the name doesn't accurately reflect the file's purpose or content.
+Analyze the provided file content and generate comprehensive documentation under `summary` directory in the same directory as the original file.
+This includes adding summary comments, evaluating the filename, and enhancing code readability.
+
+## Output
+`summary/summary_{original_filename}.md` in the same directory as the original file.
+
 
 ## Core Tasks
 1. **Content Analysis**: Examine the file structure, functions, classes, and overall purpose

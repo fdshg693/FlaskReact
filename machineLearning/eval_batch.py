@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import joblib
 import numpy as np
@@ -32,14 +32,34 @@ def evaluate_iris_batch(input_data_list: List[List[float]]) -> List[str]:
     Returns:
         予測されたクラス名のリスト
     """
+    # --- 入力データの検証 ---
+    if not input_data_list:
+        print("エラー: 入力データが空です。")
+        return []
+
+    for i, sample in enumerate(input_data_list):
+        if len(sample) != 4:
+            print(
+                f"エラー: サンプル {i} の特徴量数が {len(sample)} ですが、4つ必要です。"
+            )
+            return []
+        if not all(isinstance(x, (int, float)) for x in sample):
+            print(f"エラー: サンプル {i} に数値以外の値が含まれています。")
+            return []
     # --- モデルを読み込む ---
     loaded_model = SimpleNet()
     param_dir = Path("param")
     model_path = param_dir / "models.pth"
 
     if model_path.exists():
-        loaded_model.load_state_dict(torch.load(model_path))
-        print(f"モデルのパラメータを {model_path} から読み込みました。")
+        try:
+            loaded_model.load_state_dict(
+                torch.load(model_path, map_location="cpu", weights_only=True)
+            )
+            print(f"モデルのパラメータを {model_path} から読み込みました。")
+        except Exception as e:
+            print(f"エラー: モデルの読み込みに失敗しました: {e}")
+            return []
     else:
         print(
             f"エラー: パス {model_path} にモデルファイルが見つかりません。処理を中断します。"
@@ -57,8 +77,13 @@ def evaluate_iris_batch(input_data_list: List[List[float]]) -> List[str]:
     try:
         scaler: StandardScaler = joblib.load(scaler_path)
         print("訓練時のスケーラーを使用します。")
-    except (NameError, FileNotFoundError):
-        print(f"警告: スケーラーファイル {scaler_path} が見つかりません。")
+    except FileNotFoundError:
+        print(
+            f"エラー: スケーラーファイル {scaler_path} が見つかりません。処理を中断します。"
+        )
+        return []
+    except Exception as e:
+        print(f"エラー: スケーラーの読み込みに失敗しました: {e}")
         return []
 
     # --- データの前処理 ---

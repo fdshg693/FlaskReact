@@ -11,6 +11,14 @@ ruff check <path>
 ruff check --fix <path>
 <path>には、相対パスを指定します。
 
+### pyproject.toml
+```toml
+[tool.ruff]
+line-length = 88
+exclude = ["tests/*"]
+```
+
+
 ### ruff linter
 https://docs.astral.sh/ruff/linter/
 

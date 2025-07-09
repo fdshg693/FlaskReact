@@ -201,3 +201,6 @@ scaler/
 # 色々実験用のディレクトリ
 # ディレクトリだけ残して、配下のファイルは無視する
 /experiment/*
+
+# Copilot review files
+review/
