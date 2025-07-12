@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import joblib
 import numpy as np
@@ -22,24 +22,51 @@ class SimpleNet(nn.Module):
         return self.fc2(x)  # type: ignore[no-any-return]
 
 
-def evaluate_iris_batch(input_data_list: List[List[float]]) -> List[str]:
+def evaluate_iris_batch(
+    input_data_list: List[List[float]], model_path: Path | str, scaler_path: Path | str
+) -> List[str]:
     """
     複数のアヤメのデータ（2次元配列）を受け取り、予測されたクラス名のリストを返す関数
 
     Args:
         input_data_list: 入力データのリスト（各要素は4つの特徴量を持つリスト）
+        model_path: モデルファイルのパス
+        scaler_path: スケーラーファイルのパス
 
     Returns:
         予測されたクラス名のリスト
     """
+    # --- 入力データの検証 ---
+    if not input_data_list:
+        print("エラー: 入力データが空です。")
+        return []
+
+    for i, sample in enumerate(input_data_list):
+        if len(sample) != 4:
+            print(
+                f"エラー: サンプル {i} の特徴量数が {len(sample)} ですが、4つ必要です。"
+            )
+            return []
+        if not all(isinstance(x, (int, float)) for x in sample):
+            print(f"エラー: サンプル {i} に数値以外の値が含まれています。")
+            return []
+
+    # --- パスをPathオブジェクトに変換 ---
+    model_path = Path(model_path)
+    scaler_path = Path(scaler_path)
+
     # --- モデルを読み込む ---
     loaded_model = SimpleNet()
-    param_dir = Path("param")
-    model_path = param_dir / "models.pth"
 
     if model_path.exists():
-        loaded_model.load_state_dict(torch.load(model_path))
-        print(f"モデルのパラメータを {model_path} から読み込みました。")
+        try:
+            loaded_model.load_state_dict(
+                torch.load(model_path, map_location="cpu", weights_only=True)
+            )
+            print(f"モデルのパラメータを {model_path} から読み込みました。")
+        except Exception as e:
+            print(f"エラー: モデルの読み込みに失敗しました: {e}")
+            return []
     else:
         print(
             f"エラー: パス {model_path} にモデルファイルが見つかりません。処理を中断します。"
@@ -51,14 +78,17 @@ def evaluate_iris_batch(input_data_list: List[List[float]]) -> List[str]:
     print("モデルを評価モードに設定しました。")
 
     # --- スケーラーを読み込む ---
-    scaler_dir = Path("scaler")
-    scaler_path = scaler_dir / "scaler.gz"
 
     try:
         scaler: StandardScaler = joblib.load(scaler_path)
         print("訓練時のスケーラーを使用します。")
-    except (NameError, FileNotFoundError):
-        print(f"警告: スケーラーファイル {scaler_path} が見つかりません。")
+    except FileNotFoundError:
+        print(
+            f"エラー: スケーラーファイル {scaler_path} が見つかりません。処理を中断します。"
+        )
+        return []
+    except Exception as e:
+        print(f"エラー: スケーラーの読み込みに失敗しました: {e}")
         return []
 
     # --- データの前処理 ---
@@ -97,24 +127,46 @@ def evaluate_iris_batch(input_data_list: List[List[float]]) -> List[str]:
 
 
 if __name__ == "__main__":
-    # 2次元配列（リストのリスト）で複数データを定義
-    input_data_list: List[List[float]] = [
-        [5.1, 3.5, 1.4, 0.2],  # setosa
-        # [6.7, 3.1, 4.7, 1.5],  # versicolor
-        # [7.7, 3.8, 6.7, 2.2],  # virginica
-        # [5.0, 3.0, 1.6, 0.2],  # setosa
-    ]
+    try:
+        # 2次元配列（リストのリスト）で複数データを定義
+        input_data_list: List[List[float]] = [
+            [5.1, 3.5, 1.4, 0.2],  # setosa
+            # [6.7, 3.1, 4.7, 1.5],  # versicolor
+            # [7.7, 3.8, 6.7, 2.2],  # virginica
+            # [5.0, 3.0, 1.6, 0.2],  # setosa
+        ]
 
-    print("--- デバッグ実行開始 ---")
+        print("--- デバッグ実行開始 ---")
 
-    # 予測を実行してクラス名のリストを`species`変数に格納
-    species: List[str] = evaluate_iris_batch(input_data_list)
+        # デフォルトのパスを設定
+        current_dir = Path(__file__).parent
+        model_path = current_dir / "param" / "models.pth"
+        scaler_path = current_dir / "scaler_dir" / "scaler.joblib"
 
-    # 返ってきたリストをそのまま表示
-    if species:
-        print("\n--- 予測結果 ---")
-        print(f"species = {species}")
-    else:
-        print("\n予測処理中にエラーが発生しました。")
+        # 予測を実行してクラス名のリストを`species`変数に格納
+        species: List[str] = evaluate_iris_batch(
+            input_data_list, model_path, scaler_path
+        )
 
-    print("\n--- デバッグ実行終了 ---")
+        # 返ってきたリストをそのまま表示
+        if species:
+            print("\n--- 予測結果 ---")
+            print(f"species = {species}")
+        else:
+            print("\n予測処理中にエラーが発生しました。")
+
+        print("\n--- デバッグ実行終了 ---")
+
+    except ValueError as e:
+        print(f"\n値エラー: {e}")
+        print("入力データの形式を確認してください。")
+    except FileNotFoundError as e:
+        print(f"\nファイルが見つかりません: {e}")
+        print(
+            "必要なモデルファイルやスケーラーファイルが存在することを確認してください。"
+        )
+    except Exception as e:
+        print(f"\n予期しないエラーが発生しました: {e}")
+        print("エラーの詳細を確認し、必要に応じて修正してください。")
+    finally:
+        print("\n--- プログラム終了 ---")

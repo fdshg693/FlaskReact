@@ -1,11 +1,15 @@
+from __future__ import annotations
+
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
+from loguru import logger
 
 
-def extract_text_from_pdf(pdf_path: Path | str) -> List[Dict[str, Any]]:
+def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
     """
     Extract text content from a PDF file using LangChain PyPDFLoader.
 
@@ -14,6 +18,10 @@ def extract_text_from_pdf(pdf_path: Path | str) -> List[Dict[str, Any]]:
 
     Returns:
         List of dictionaries containing page content and metadata
+
+    Raises:
+        FileNotFoundError: If the PDF file does not exist
+        ValueError: If the PDF file cannot be processed
     """
     load_dotenv("../.env")
 
@@ -21,36 +29,56 @@ def extract_text_from_pdf(pdf_path: Path | str) -> List[Dict[str, Any]]:
     if isinstance(pdf_path, str):
         pdf_path = Path(pdf_path)
 
-    loader = PyPDFLoader(
-        file_path=str(pdf_path),
-        mode="single",
-    )
+    if not pdf_path.exists():
+        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
 
-    documents = loader.lazy_load()
-    docs_serializable: List[Dict[str, Any]] = []
+    logger.info(f"Extracting text from PDF: {pdf_path}")
 
-    for doc in documents:
-        docs_serializable.append(
-            {
-                "page_content": doc.page_content,
-                "metadata": doc.metadata,
-            }
+    try:
+        loader = PyPDFLoader(
+            file_path=str(pdf_path),
+            mode="single",
         )
 
-    return docs_serializable
+        documents = loader.lazy_load()
+        docs_serializable: list[dict[str, Any]] = []
+
+        for doc in documents:
+            docs_serializable.append(
+                {
+                    "page_content": doc.page_content,
+                    "metadata": doc.metadata,
+                }
+            )
+
+        logger.info(f"Successfully extracted {len(docs_serializable)} pages from PDF")
+        return docs_serializable
+
+    except Exception as e:
+        logger.error(f"Failed to extract text from PDF {pdf_path}: {e}")
+        raise ValueError(f"Could not process PDF file: {e}") from e
 
 
 if __name__ == "__main__":
-    # Fetch PDF data from local file
-    current_dir = Path(__file__).parent
-    pdf_path = current_dir / "../data/headwaters20250521.pdf"
-    docs = extract_text_from_pdf(pdf_path)
+    pdf_path = Path(__file__).parent.parent / "data" / "headwaters20250521.pdf"
 
-    # Save the documents to a file
-    output_file = current_dir / "../data/extracted_docs.txt"
-    with open(output_file, "w", encoding="utf-8") as f:
-        for doc in docs:
-            f.write(f"{doc['page_content']}\n")
+    logger.info("Starting PDF text extraction demonstration")
 
-    print(f"Extracted {len(docs)} documents from {pdf_path}.")
-    print(f"Saved extracted documents to {output_file}.")
+    try:
+        docs = extract_text_from_pdf(pdf_path)
+
+        # Create output filename with format: extracted_{original_filename}_{timestamp}.txt
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        original_filename = pdf_path.stem  # Gets filename without extension
+        output_filename = f"extracted_{original_filename}_{timestamp}.txt"
+        output_file = Path(__file__).parent.parent / "data" / output_filename
+
+        with output_file.open("w", encoding="utf-8") as f:
+            for doc in docs:
+                f.write(f"{doc['page_content']}\n")
+
+        logger.info(f"Extracted {len(docs)} documents from {pdf_path}")
+        logger.info(f"Saved extracted documents to {output_file}")
+
+    except (FileNotFoundError, ValueError) as e:
+        logger.error(f"PDF extraction failed: {e}")

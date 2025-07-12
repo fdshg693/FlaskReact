@@ -59,6 +59,7 @@ Analyze the code systematically across multiple dimensions, prioritizing both im
 
 ### Review Document Format
 Create a comprehensive review document named `review/review_{original_filename}.md` in the same directory as the original file.
+If there is already a review file, just overwrite it with the new review.
 
 ### Required Sections
 1. **Executive Summary**: High-level assessment and key findings

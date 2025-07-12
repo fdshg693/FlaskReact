@@ -1,8 +1,7 @@
 ---
-mode: agent
+applyTo: '*.jsx'
 ---
-## CUrrent Environment
-- You are in a React environment with the following libraries shown in package.json
+## Current Environment
 - React is used via CDN (Content Delivery Network) in the HTML file
 
 ## React import

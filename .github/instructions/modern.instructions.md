@@ -1,16 +1,19 @@
 ---
-mode: agent
+applyTo: '*.py'
 ---
-# CUrrent Environment
+# Current Environment
 - You are in a Python environment with the following libraries shown in requirements.txt
-- you are using python3.13.3
-- you are using pip 
-- you are under virtual environment
+- you are using python3.13.5
+- you are using uv 0.7
+- you are under virtual environment (`.venv` directory)
 - You are using a modern Python development environment with the following libraries:
   - `pathlib`
   - `mypy`
-  - `black`
+  - `ruff`
   - `pytest`
+  - `loguru`
+  - `pydantic`
+  - `pydantic`
 
 # Modern Python Development Guidelines
 
@@ -24,6 +27,11 @@ mode: agent
     - use mypy to check type hints
 - **f-strings**: Use f-string formatting instead of `.format()` or `%` formatting
 - **pathlib**: Use `pathlib.Path` for all file system operations instead of `os.path`
+- **pydoc**: Use `pydoc` for generating documentation
+- **loguru**: Use `loguru` for logging instead of the built-in `logging` module
+- **ruff**: Use `ruff` for linting and formatting code
+- **pytest**: Use `pytest` for testing if testing is important
+- **pydantic**: Use `pydantic` for data validation and settings management
 
 ### Code Quality Standards
 - Remove unnecessary imports

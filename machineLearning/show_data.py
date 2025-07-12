@@ -1,11 +1,13 @@
 from pathlib import Path
-from typing import Tuple, Any
+from typing import Tuple
 
 import pandas as pd
+from loguru import logger
 from sklearn.datasets import load_iris, load_diabetes
+from sklearn.utils._bunch import Bunch
 
 
-def load_sklearn_datasets() -> Tuple[Any, Any]:
+def load_sklearn_datasets() -> Tuple[Bunch, Bunch]:
     """Load iris and diabetes datasets from sklearn.
 
     Returns:
@@ -16,7 +18,9 @@ def load_sklearn_datasets() -> Tuple[Any, Any]:
     return iris_dataset, diabetes_dataset
 
 
-def save_diabetes_dataset_to_csv(diabetes_dataset: Any, csv_output_path: Path) -> None:
+def save_diabetes_dataset_to_csv(
+    diabetes_dataset: Bunch, csv_output_path: Path
+) -> None:
     """Save diabetes dataset to CSV file.
 
     Args:
@@ -32,7 +36,7 @@ def save_diabetes_dataset_to_csv(diabetes_dataset: Any, csv_output_path: Path) -
     csv_output_path.parent.mkdir(parents=True, exist_ok=True)
 
     diabetes_dataframe.to_csv(csv_output_path, index=False)
-    print(f"Diabetes data saved to: {csv_output_path}")
+    logger.info(f"Diabetes data saved to: {csv_output_path}")
 
 
 def main() -> None:

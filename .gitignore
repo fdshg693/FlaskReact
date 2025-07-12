@@ -186,12 +186,25 @@ cython_debug/
 *.gif
 *.csv
 *.gz
-/data/
-/.vscode/
+# フォルダだけ残して、配下のファイルは無視する
+/data/*
+# README.mdはGITに追加する
+!/data/README.md
+
 memo.md
 
 /param/*
 /log/*
 param/
-log
+log/
 scaler/
+
+# VSCODEの設定は統一するために、GITに追加する
+# /.vscode/
+
+# 色々実験用のディレクトリ
+# ディレクトリだけ残して、配下のファイルは無視する
+/experiment/*
+
+# Copilot review files
+review/

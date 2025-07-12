@@ -29,6 +29,8 @@ jobs:
     name: Generate AI Code Review
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: read  # Read access to repository contents
     # Configuration constants
     env:
       AI_MODEL: "gpt-4.1"
