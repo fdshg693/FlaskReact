@@ -1,3 +1,5 @@
+const { useState, useEffect } = React;
+
 function Iris() {
   const speciesList = ['setosa', 'versicolor', 'virginica'];
   // State for each measurement input
@@ -34,7 +36,7 @@ function Iris() {
       }
     })();
     setClicked(false);
-  }, [clicked]);
+  }, [clicked, sepalLength, sepalWidth, petalLength, petalWidth]);
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-md space-y-4">

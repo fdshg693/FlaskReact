@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from loguru import logger
 import numpy as np
+import joblib
 
 from .save_util import (
     save_training_data_to_curve_plot,
@@ -97,6 +98,11 @@ class MachineLearningClassifier:
         # データセットの読み込み
         self.feature_data = dataset.data
         self.target_labels = dataset.target
+
+        # scalerディレクトリのパスを設定
+        self.scaler_dir = Path(__file__).resolve().parent.parent / "scaler"
+        self.scaler_dir.mkdir(exist_ok=True)
+
         logger.info(f"Dataset loaded with {len(self.feature_data)} samples")
 
     def split_train_test_data(
@@ -228,6 +234,14 @@ class MachineLearningClassifier:
         logger.info(f"Test accuracy: {test_accuracy:.4f}")
         return test_accuracy
 
+    def save_scaler(self) -> None:
+        """
+        学習済みのスケーラーをjoblibを使って保存する
+        """
+        scaler_file_path = self.scaler_dir / "scaler.joblib"
+        joblib.dump(self.feature_scaler, scaler_file_path)
+        logger.info(f"スケーラーを {scaler_file_path} に保存しました")
+
 
 def execute_machine_learning_pipeline(
     dataset: object, epochs: int = 20
@@ -250,6 +264,7 @@ def execute_machine_learning_pipeline(
     machine_learning_classifier = MachineLearningClassifier(dataset)
     machine_learning_classifier.split_train_test_data()
     machine_learning_classifier.apply_feature_scaling()
+    machine_learning_classifier.save_scaler()  # スケーラーの保存を追加
     machine_learning_classifier.convert_to_tensor_datasets()
     machine_learning_classifier.create_data_loaders()
     accuracy_history, loss_history = machine_learning_classifier.train_model(epochs)

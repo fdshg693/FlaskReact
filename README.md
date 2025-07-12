@@ -12,7 +12,7 @@ uv sync
 
 ### アプリケーションの実行
 ```bash
-python run_app.py
+python3 run_app.py
 ```
 
 アプリケーションは `http://localhost:8000` で起動します。
@@ -47,45 +47,46 @@ python run_app.py
 - .pre-commit-config.yaml
 
 
-# ファイル構成
-## モジュール構成
-### llm
-- LLMを利用した関数を定義
-    - `agent.py`
-        - LLMを利用したエージェントの定義
-    - `document_search_tools.py`
-        - ドキュメント検索のためのツール
-    - `function_calling.py`
-        - 関数呼び出しのためのツール
-    - `image.py`
-        - 画像を生成AIに描写させるためのツール
-    - `pdf.py`
-        - PDFファイルを文字起こしするためのツール
-    - `text_splitter.py`
-        - テキストを分割するためのツール
 ## Github Copilot
 - Instructions
     - `.github/instructions/modern.instructions.md`
         - pythonファイルに対して適用されて、現在のpython環境をAIに教える 
             - コンテキストにPythonファイルがある必要がある
+    - `.github/instructions/react.instructions.md`
+        - Reactのコードに対して適用されて、現在のReact環境をAIに教える
+            - コンテキストにJSXファイルがある必要がある
 - Prompts
     - ### 自動では反映されないので、「/」をチャットに入力してショートカットから選択する必要がある
+    #### Python
     - `.github/prompts/fix.prompt.md`
         - レビューの内容に基づいて。最も重大な問題を修正するためのプロンプト
             - レビューのファイルが既に作成されている必要がある
             - コンテキストに、修正対象となるpythonファイルおよび、そのコードに対するレビューのファイルが必要 
         - 修正後に、レビューファイルの内容を更新するので、このプロンプトを繰り返し使用することが可能
-    - .github/prompts/refine.prompt.md
+    - `.github/prompts/refine.prompt.md`
         - プロンプトを更に洗練させるためのプロンプト
             - コンテキストにプロンプトを含める必要がある
-    - .github/prompts/modernize_python.prompt.md
+    - `.github/prompts/modernize_python.prompt.md`
         - Pythonのコードに最新のスタイル・トレンドを取り入れる。pythonの勉強として、新しいライブラリを取り入れたり、最新のPythonの機能を使用するためのプロンプト
             - コンテキストにpythonファイルが必要
+    - `.github/prompts/review_python.prompt.md`
+        - Pythonのコードをレビューするためのプロンプト
+            - コンテキストにpythonファイルが必要
+            - `review`フォルダをコードと同じ階層に作成し、そこにレビューの内容を保存する
+            - ここの作生物は、上の`fix.prompt.md`にて読み取り・書き込みが行われる
+    #### React
+    - `.github/prompts/react_fix.prompt.md`
+        - Reactのコードに対して、最も重大な問題を修正するためのプロンプト
+            - レビューのファイルが既に作成されている必要がある
+            - コンテキストに、修正対象となるJSXファイルおよび、そのコードに対するレビューのファイルが必要
+        - 修正後に、レビューファイルの内容を更新するので、このプロンプトを繰り返し使用することが可能
+    - `.github/prompts/react_review.prompt.md`
+        - Reactのコードをレビューするためのプロンプト
+            - コンテキストにJSXファイルが必要
+            - `review`フォルダをコードと同じ階層に作成し、そこにレビューの内容を保存する
+            - ここの作生物は、上の`react_fix.prompt.md`にて読み取り・書き込みが行われる
 
 ### 現状
-
-- 実行方法
-    - python server/app.py
 
 - バックエンド
     - FLASKで単純なルーティング
@@ -101,3 +102,29 @@ python run_app.py
     - PDFファイルをアップロードすると、AIが文字起こししてくれる
     - 文字入力すると、分割して返す
     -
+## 全体フォルダ構成
+```
+FlaskReact/
+├── .github/
+│   ├── instructions/ # AIにコードのコンテキストを教えるためのファイル
+│   ├──  prompts/ # AIにコードを修正・レビュー等を依頼するためのプロンプト
+│   └── workflows/ # Github Actionsの設定ファイル
+├── .vscode/ # VSCodeの設定ファイル
+├── csvLog # 機械学習の学習ログを記録したCSVファイル
+├── curveLog/ # 機械学習の精度記録を画像化したファイル
+├── data/ # 様々な箇所に利用するデータを格納するフォルダ　詳しくは`data/README.md`を参照
+├── docs/ # ライブラリ等の使い方をメモしたドキュメント
+├── experiment/ # 様々な実験を行うフォルダ
+├── llm/ # LLMを利用した関数を定義　詳しくは`llm/README.md`を参照
+├── logs/ # ログを保存するフォルダ
+├── machineLearning/ # 機械学習関連のコード
+├── param/ # 機械学習モデルのパラメータを保存するフォルダ
+├── scaler/ # 機械学習モデルのスケーラーを保存するフォルダ
+├── scrape/ # スクレイピング関連のコード
+├── server/ # Flaskのサーバーコード
+├── static/ # 静的ファイル（CSS, JS, 画像等）
+│   ├── csvTest/ # CSVファイルのテスト用
+│   ├── home/ # IRISの１データおよび、複数データの判定を可能とするページ
+│   ├── image/ # 画像の描画AI・PDF文字起こし・テキスト分割を可能とするページ
+├── test/ # テスト用のページ
+├── util/ # ユーティリティ関数を定義

@@ -2,9 +2,9 @@ const { useState, useEffect } = React;
 
 function App() {
   return (
-    <div style={{ fontFamily: 'sans-serif', padding: '20px' }}>
-      <Iris></Iris>
-      <MultipleIris></MultipleIris>
+    <div className="font-sans p-5">
+      <Iris />
+      <MultipleIris />
     </div>
   );
 }
