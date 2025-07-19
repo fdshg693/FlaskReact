@@ -36,7 +36,7 @@ function Iris() {
       }
     })();
     setClicked(false);
-  }, [clicked, sepalLength, sepalWidth, petalLength, petalWidth]);
+  }, [clicked]);
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-2xl shadow-md space-y-4">

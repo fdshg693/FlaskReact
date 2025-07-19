@@ -133,7 +133,7 @@ if __name__ == "__main__":
             [5.1, 3.5, 1.4, 0.2],  # setosa
             # [6.7, 3.1, 4.7, 1.5],  # versicolor
             # [7.7, 3.8, 6.7, 2.2],  # virginica
-            # [5.0, 3.0, 1.6, 0.2],  # setosa
+            # [5.0, 3.0, 1.6, 0.2],  # setosas
         ]
 
         print("--- デバッグ実行開始 ---")
@@ -141,7 +141,7 @@ if __name__ == "__main__":
         # デフォルトのパスを設定
         current_dir = Path(__file__).parent
         model_path = current_dir / "param" / "models.pth"
-        scaler_path = current_dir / "scaler_dir" / "scaler.joblib"
+        scaler_path = current_dir / "scaler" / "scaler.joblib"
 
         # 予測を実行してクラス名のリストを`species`変数に格納
         species: List[str] = evaluate_iris_batch(

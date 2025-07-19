@@ -215,13 +215,16 @@ def handle_iris_prediction_request() -> Response | tuple[Response, int]:
     try:
         # Assuming iris_input_data is a dict with numeric values that need to be converted to a list
         if isinstance(iris_input_data, dict):
-            # Extract numeric values from the dictionary
-            iris_feature_values = [
-                float(value)
-                for value in iris_input_data.values()
-                if isinstance(value, (int, float, str))
-                and str(value).replace(".", "").replace("-", "").isdigit()
-            ]
+            # Extract numeric values from the dictionary using robust float conversion
+            iris_feature_values = []
+            for value in iris_input_data.values():
+                try:
+                    # Use try-except for robust numeric validation
+                    numeric_value = float(value)
+                    iris_feature_values.append(numeric_value)
+                except (ValueError, TypeError):
+                    # Skip non-numeric values
+                    continue
 
             if len(iris_feature_values) != 4:
                 return jsonify(

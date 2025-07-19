@@ -13,8 +13,8 @@
 - uv python list --no-managed-python;
 
 ### スクリプトの実行
-uv run *.py
-実行する際に仮想環境が自動でアクティブになります。
+- uv run *.py
+    - 実行する際に仮想環境が自動でアクティブになります。
 
 ### パッケージの追加
 - uv add <package_name>
@@ -52,6 +52,9 @@ uv tool uninstall <tool_name>
 - uvx <command>
     - 例えば、`uvx ruff check .`のように実行します。
     - ツールをインストールせずに実行できます。
+
+## 依存関係の確認
+- uv sync
 
 
 ## パス
