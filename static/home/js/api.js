@@ -5,8 +5,14 @@ async function fetchIrisSpecies(inputs) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include', // Include session cookies for authentication
     body: JSON.stringify(inputs),
   });
+  
+  if (res.status === 401) {
+    throw new Error('認証が必要です。ログインしてください。');
+  }
+  
   if (!res.ok) throw new Error('APIエラー');
   const data = await res.json();
   return data.species;
@@ -19,8 +25,14 @@ async function fetchMultipleIrisSpecies(inputs) {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include', // Include session cookies for authentication
     body: JSON.stringify(inputs),
   });
+  
+  if (res.status === 401) {
+    throw new Error('認証が必要です。ログインしてください。');
+  }
+  
   if (!res.ok) throw new Error('APIエラー');
   const data = await res.json();
   return data.userData

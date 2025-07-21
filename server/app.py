@@ -4,27 +4,56 @@ import base64
 import tempfile
 from pathlib import Path
 
-from flask import Flask, jsonify, send_from_directory, request, Response, abort
+from flask import Flask, jsonify, send_from_directory, request, Response, abort, session
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
 from loguru import logger
 
-# Modern absolute imports - no sys.path manipulation needed
-from llm.image import analyze_image
-from llm.pdf import extract_text_from_pdf
-from llm.text_splitter import split_text
-from machineLearning.eval_batch import evaluate_iris_batch
-from util.convert_json import convert_json_to_two_dimensional_array
+# Modern absolute imports - using mock modules for demo
+from llm_mock.image import analyze_image
+from llm_mock.pdf import extract_text_from_pdf
+from llm_mock.text_splitter import split_text
+from machineLearning_mock.eval_batch import evaluate_iris_batch
+from util_mock.convert_json import convert_json_to_two_dimensional_array
 
 app = Flask(__name__, static_folder="../static", static_url_path="")
+# Set secret key for session management
+app.secret_key = "dev-secret-key-change-in-production"
+
 # Secure CORS configuration - only allow specific origins
 CORS(
     app,
-    origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000", "http://127.0.0.1:8000"],
     allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST"],
+    supports_credentials=True,
 )
+
+
+# Simple in-memory user store for demo purposes
+# In production, this should be a proper database
+USERS: dict[str, dict[str, str]] = {
+    "admin": {
+        "password_hash": generate_password_hash("password123"),
+        "username": "admin"
+    },
+    "user": {
+        "password_hash": generate_password_hash("user123"),
+        "username": "user"
+    }
+}
+
+
+def login_required(f):
+    """Decorator to require login for certain routes."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return jsonify({"error": "Authentication required"}), 401
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 def validate_file_upload(
@@ -107,6 +136,57 @@ def serve_image_page() -> Response:
     raise RuntimeError("Static folder not configured")
 
 
+# Authentication endpoints
+
+@app.route("/api/login", methods=["POST"])
+@handle_api_errors
+def handle_login_request() -> Response | tuple[Response, int]:
+    """Handle user login requests."""
+    request_data = request.json
+    if not request_data:
+        return jsonify({"error": "No JSON data provided"}), 400
+    
+    username: str = request_data.get("username", "")
+    password: str = request_data.get("password", "")
+    
+    if not username or not password:
+        return jsonify({"error": "Username and password are required"}), 400
+    
+    user = USERS.get(username)
+    if user and check_password_hash(user["password_hash"], password):
+        session["user_id"] = username
+        logger.info(f"User {username} logged in successfully")
+        return jsonify({
+            "message": "Login successful",
+            "user": {"username": username}
+        })
+    else:
+        logger.warning(f"Failed login attempt for username: {username}")
+        return jsonify({"error": "Invalid username or password"}), 401
+
+
+@app.route("/api/logout", methods=["POST"])
+def handle_logout_request() -> Response:
+    """Handle user logout requests."""
+    user_id = session.get("user_id")
+    session.pop("user_id", None)
+    if user_id:
+        logger.info(f"User {user_id} logged out")
+    return jsonify({"message": "Logout successful"})
+
+
+@app.route("/api/auth/status", methods=["GET"])
+def check_auth_status() -> Response:
+    """Check if user is currently authenticated."""
+    if "user_id" in session:
+        return jsonify({
+            "authenticated": True,
+            "user": {"username": session["user_id"]}
+        })
+    else:
+        return jsonify({"authenticated": False})
+
+
 # APIエンドポイントの設定
 
 
@@ -137,6 +217,7 @@ def handle_text_split_request() -> Response | tuple[Response, int]:
 
 # 画像解析API
 @app.route("/api/image", methods=["POST"])
+@login_required
 @handle_api_errors
 def handle_image_analysis_request() -> Response | tuple[Response, int]:
     """
@@ -170,6 +251,7 @@ def handle_image_analysis_request() -> Response | tuple[Response, int]:
 
 # PDF文字起こしAPI
 @app.route("/api/pdf", methods=["POST"])
+@login_required
 @handle_api_errors
 def handle_pdf_text_extraction_request() -> Response | tuple[Response, int]:
     """

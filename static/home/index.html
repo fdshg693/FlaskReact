@@ -18,40 +18,15 @@
 </head>
 
 <body class="bg-gray-50 text-gray-800 antialiased">
-  <div class="max-w-3xl mx-auto p-6">
-    <nav>
-      <ul class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <li>
-          <a href="/" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <span class="font-semibold">トップ</span>
-            <p class="text-sm text-gray-500">ホームページのトップへ戻る</p>
-          </a>
-        </li>
-        <li>
-          <a href="/home" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <span class="font-semibold">アイリス</span>
-            <p class="text-sm text-gray-500">アイリス種別判定</p>
-          </a>
-        </li>
-        <li>
-          <a href="/csvTest" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <span class="font-semibold">CSV</span>
-            <p class="text-sm text-gray-500">CSVを読み込んで表示</p>
-          </a>
-        </li>
-        <li>
-          <a href="/image" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
-            <span class="font-semibold">画像判定</span>
-            <p class="text-sm text-gray-500">画像をアップロードして判定</p>
-          </a>
-      </ul>
-    </nav>
-
+  <div class="max-w-3xl mx-auto">
     <!-- React コンポーネント描画用 -->
-    <div id="root" class="mt-12"></div>
+    <div id="root"></div>
   </div>
 
   <!-- 各コンポーネントの読み込み -->
+  <script type="text/babel" src="home/js/AuthContext.jsx"></script>
+  <script type="text/babel" src="home/js/Login.jsx"></script>
+  <script type="text/babel" src="home/js/Header.jsx"></script>
   <script type="text/babel" src="home/js/Iris.jsx"></script>
   <script type="text/babel" src="home/js/multipleIris.jsx"></script>
   <script type="text/babel" src="home/js/api.js"></script>
