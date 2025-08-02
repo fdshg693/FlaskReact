@@ -212,3 +212,5 @@ review/
 # _から始まるプロンプトファイルは無視する
 .github/prompts/_*
 .github/prompts/＿*
+
+.vscode/

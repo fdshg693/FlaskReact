@@ -14,12 +14,12 @@ class SimpleNet(nn.Module):
         self, input_dim: int = 4, hidden_dim: int = 16, output_dim: int = 3
     ) -> None:
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
+        self.fully_connected_layer_1 = nn.Linear(input_dim, hidden_dim)
+        self.fully_connected_layer_2 = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = F.relu(self.fc1(x))
-        return self.fc2(x)  # type: ignore[no-any-return]
+        x = F.relu(self.fully_connected_layer_1(x))
+        return self.fully_connected_layer_2(x)  # type: ignore[no-any-return]
 
 
 def evaluate_iris_batch(

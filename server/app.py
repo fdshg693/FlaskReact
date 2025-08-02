@@ -15,7 +15,7 @@ from llm.image import analyze_image
 from llm.pdf import extract_text_from_pdf
 from llm.text_splitter import split_text
 from machineLearning.eval_batch import evaluate_iris_batch
-from util.convert_json import convert_json_to_two_dimensional_array
+from util.convert_json import convert_json_to_model_input
 
 app = Flask(__name__, static_folder="../static", static_url_path="")
 # Secure CORS configuration - only allow specific origins
@@ -231,7 +231,14 @@ def handle_iris_prediction_request() -> Response | tuple[Response, int]:
                     {"error": "Expected 4 numeric features for iris prediction"}
                 ), 400
 
-            prediction_result = evaluate_iris_batch([iris_feature_values])
+            # Define paths for model and scaler
+            current_dir = Path(__file__).parent.parent
+            model_path = current_dir / "param" / "models_20250712_021710.pth"
+            scaler_path = current_dir / "scaler" / "scaler.joblib"
+
+            prediction_result = evaluate_iris_batch(
+                [iris_feature_values], model_path, scaler_path
+            )
         else:
             return jsonify(
                 {"error": "Invalid data format - expected object with numeric values"}
@@ -253,14 +260,21 @@ def handle_user_data_batch_request() -> Response | tuple[Response, int]:
         return jsonify({"error": "No data provided or missing 'data' field"}), 400
 
     try:
-        converted_iris_data_array = convert_json_to_two_dimensional_array(
+        converted_iris_data_array = convert_json_to_model_input(
             user_submitted_data["data"]
         )
 
         if not converted_iris_data_array:
             return jsonify({"error": "No valid data rows found"}), 400
 
-        batch_prediction_results = evaluate_iris_batch(converted_iris_data_array)
+        # Define paths for model and scaler
+        current_dir = Path(__file__).parent.parent
+        model_path = current_dir / "param" / "models_20250712_021710.pth"
+        scaler_path = current_dir / "scaler" / "scaler.joblib"
+
+        batch_prediction_results = evaluate_iris_batch(
+            converted_iris_data_array, model_path, scaler_path
+        )
         logger.info(
             f"Processed batch prediction for {len(converted_iris_data_array)} rows"
         )

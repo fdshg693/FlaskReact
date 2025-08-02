@@ -3,10 +3,10 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 
 
-def convert_json_to_two_dimensional_array(
+def convert_json_to_model_input(
     json_data_list: List[Dict[str, Any]], feature_keys: Optional[List[str]] = None
-) -> List[List[Any]]:
-    """Convert a list of JSON objects to a 2D array with specified column order.
+) -> List[List[float]]:
+    """Convert a list of JSON objects to a 2D array of floats with specified column order.
 
     Args:
         json_data_list: List of dictionaries containing data
@@ -14,11 +14,11 @@ def convert_json_to_two_dimensional_array(
                      If None, defaults to iris feature keys.
 
     Returns:
-        List of lists representing the data in 2D array format
+        List of lists representing the data in 2D array format (all values as floats)
 
     Raises:
         KeyError: If a feature key is not found in the data
-        ValueError: If json_data_list is empty
+        ValueError: If json_data_list is empty or if values cannot be converted to float
     """
     if not json_data_list:
         raise ValueError("json_data_list cannot be empty")
@@ -30,15 +30,22 @@ def convert_json_to_two_dimensional_array(
     logger.info(f"Converting {len(json_data_list)} JSON objects to 2D array")
     logger.debug(f"Using feature keys: {feature_keys}")
 
-    # Convert each dictionary to a list of values following the specified key order
-    two_dimensional_array: List[List[Any]] = []
+    # Convert each dictionary to a list of float values following the specified key order
+    two_dimensional_array: List[List[float]] = []
     for json_item in json_data_list:
         try:
-            row: List[Any] = [json_item[feature_key] for feature_key in feature_keys]
+            row: List[float] = [
+                float(json_item[feature_key]) for feature_key in feature_keys
+            ]
             two_dimensional_array.append(row)
         except KeyError as e:
             logger.error(f"Feature key {e} not found in data item: {json_item}")
             raise
+        except (ValueError, TypeError) as e:
+            logger.error(
+                f"Cannot convert value to float in data item: {json_item}. Error: {e}"
+            )
+            raise ValueError(f"Cannot convert value to float: {e}") from e
 
     logger.info(
         f"Successfully converted to 2D array with {len(two_dimensional_array)} rows"
@@ -47,7 +54,7 @@ def convert_json_to_two_dimensional_array(
 
 
 def main() -> None:
-    """Main function to demonstrate the convert_json_to_two_dimensional_array function."""
+    """Main function to demonstrate the convert_json_to_model_input function."""
     # Sample iris flower data for testing
     sample_iris_data: List[Dict[str, str]] = [
         {
@@ -78,10 +85,10 @@ def main() -> None:
     ]
 
     try:
-        converted_array = convert_json_to_two_dimensional_array(
+        converted_array = convert_json_to_model_input(
             sample_iris_data, feature_keys=feature_keys
         )
-        logger.info(f"Converted array: {converted_array}")
+        logger.info(f"Converted array (floats only): {converted_array}")
     except (ValueError, KeyError) as e:
         logger.error(f"Error converting data: {e}")
         raise

@@ -12,7 +12,7 @@ uv sync
 
 ### アプリケーションの実行
 ```bash
-python3 run_app.py
+uv run run_app.py
 ```
 
 アプリケーションは `http://localhost:8000` で起動します。
