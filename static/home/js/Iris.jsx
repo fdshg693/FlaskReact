@@ -96,6 +96,11 @@ function Iris() {
         Predict Species
       </button>
 
+      {!species && (
+        <p className="text-center text-xl font-semibold text-gray-500">
+          ボタンを押してください
+        </p>
+      )}
       {species && (
         <p className="text-center text-xl font-semibold">
           Predicted species: <span className="text-green-600">{species}</span>
