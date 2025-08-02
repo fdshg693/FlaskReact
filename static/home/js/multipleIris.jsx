@@ -58,6 +58,21 @@ function MultipleIris() {
     return (
         <div className="p-6">
             <p>アイリスcsvのデータをcsvから読み込む（ヘッダ必須・順不同です）</p>
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="font-semibold text-blue-800 mb-2">期待する入力形式：</p>
+                <p className="text-blue-700 mb-2">CSV ファイルは以下のヘッダを含む必要があります：</p>
+                <code className="block bg-blue-100 p-2 rounded text-sm text-blue-900 mb-2">
+                    sepal.length,sepal.width,petal.length,petal.width
+                </code>
+                <pre className="bg-blue-100 p-2 rounded text-sm text-blue-900">
+                    <code className="whitespace-pre text-blue-700">
+{`参考例：
+sepal.length,sepal.width,petal.length,petal.width
+5.1,3.5,1.4,0.2
+4.9,3.0,1.4,0.2`}
+                    </code>
+                </pre>
+            </div>
             <div className="mb-4">
                 <label className="block text-base font-medium mb-2">
                     アイリス予測用CSVデータ: &nbsp;
@@ -85,31 +100,11 @@ function MultipleIris() {
             {data.length > 0 && (
                 <div className="overflow-x-auto">
                     <table className="min-w-full border border-gray-500 rounded-lg overflow-hidden" style={{ borderCollapse: 'collapse' }}>
-                        <thead className="bg-gray-100">
-                            <tr>
-                                {Object.keys(data[0]).map((h, i) => (
-                                    <th
-                                        key={i}
-                                        className="px-4 py-2 border border-gray-500 text-left"
-                                        style={{ border: '1px solid #6b7280' }}
-                                    >
-                                        {h}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
+                        <tbody>                            
                             {data.map((row, idx) => (
                                 <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                                    {Object.keys(row).map((h, j) => (
-                                        <td
-                                            key={j}
-                                            className="px-4 py-2 border border-gray-500"
-                                            style={{ border: '1px solid #6b7280' }}
-                                        >
-                                            {row[h]}
-                                        </td>
-                                    ))}
+                                    <th scope="row">{idx + 1}</th>
+                                    <td>{JSON.stringify(row)}</td>
                                 </tr>
                             ))}
                         </tbody>
