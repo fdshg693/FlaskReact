@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>SQL クエリ実行・学習</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React/CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <!-- Babel (開発用) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 antialiased">
+  <div class="max-w-7xl mx-auto p-6">
+    <nav>
+      <ul class="grid grid-cols-1 sm:grid-cols-5 gap-4">
+        <li>
+          <a href="/" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
+            <span class="font-semibold">トップ</span>
+            <p class="text-sm text-gray-500">ホームページのトップへ戻る</p>
+          </a>
+        </li>
+        <li>
+          <a href="/home" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
+            <span class="font-semibold">アイリス</span>
+            <p class="text-sm text-gray-500">アイリス種別判定</p>
+          </a>
+        </li>
+        <li>
+          <a href="/csvTest" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
+            <span class="font-semibold">CSV</span>
+            <p class="text-sm text-gray-500">CSVを読み込んで表示</p>
+          </a>
+        </li>
+        <li>
+          <a href="/image" class="block p-4 bg-white rounded-lg shadow hover:shadow-md transition">
+            <span class="font-semibold">画像判定</span>
+            <p class="text-sm text-gray-500">画像をアップロードして判定</p>
+          </a>
+        </li>
+        <li>
+          <a href="/sql" class="block p-4 bg-blue-100 rounded-lg shadow hover:shadow-md transition border-2 border-blue-300">
+            <span class="font-semibold text-blue-800">SQL実行</span>
+            <p class="text-sm text-blue-600">SQLクエリの実行と学習</p>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- React コンポーネント描画用 -->
+    <div id="root" class="mt-12"></div>
+  </div>
+
+  <!-- API 関数の読み込み -->
+  <script type="text/babel" src="sql/js/api.js"></script>
+  
+  <!-- Custom hooks の読み込み -->
+  <script type="text/babel" src="sql/js/hooks/useSqlQuestionState.js"></script>
+  <script type="text/babel" src="sql/js/hooks/useSqlExecution.js"></script>
+  
+  <!-- コンポーネントの読み込み -->
+  <script type="text/babel" src="sql/js/components/SqlQuestionHeader.jsx"></script>
+  <script type="text/babel" src="sql/js/components/SqlQuestionContent.jsx"></script>
+  <script type="text/babel" src="sql/js/components/SqlExecutionPanel.jsx"></script>
+  <script type="text/babel" src="sql/js/components/SqlAiAssistant.jsx"></script>
+  
+  <!-- メインアプリケーションの読み込み -->
+  <script type="text/babel" src="sql/js/App.jsx"></script>
+</body>
+
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>SQL クエリ実行・学習</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f9fafb;
+      color: #1f2937;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .nav-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      text-decoration: none;
+      color: inherit;
+      transition: box-shadow 0.2s;
+    }
+
+    .nav-card:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-card.active {
+      background: #dbeafe;
+      border: 2px solid #3b82f6;
+    }
+
+    .nav-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-subtitle {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .section-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #1f2937;
+    }
+
+    .flex-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #2563eb;
+    }
+
+    .btn-secondary {
+      background-color: #6b7280;
+      color: white;
+    }
+
+    .btn-warning {
+      background-color: #f59e0b;
+      color: white;
+    }
+
+    .btn-danger {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .question-panel {
+      background: #f0f9ff;
+      border: 1px solid #0ea5e9;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .schema-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    .schema-table th,
+    .schema-table td {
+      border: 1px solid #d1d5db;
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    .schema-table th {
+      background-color: #f3f4f6;
+      font-weight: 600;
+    }
+
+    .sql-textarea {
+      width: 100%;
+      height: 200px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      resize: vertical;
+    }
+
+    .sql-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .results-table th,
+    .results-table td {
+      border: 1px solid #d1d5db;
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    .results-table th {
+      background-color: #f9fafb;
+      font-weight: 600;
+    }
+
+    .results-table tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .ai-panel {
+      background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+      border: 1px solid #a855f7;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .ai-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .select-input {
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .validation-success {
+      background: #f0fdf4;
+      border: 1px solid #22c55e;
+      color: #166534;
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    .validation-error {
+      background: #fef2f2;
+      border: 1px solid #ef4444;
+      color: #dc2626;
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+      
+      .flex-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="nav-grid">
+      <a href="/" class="nav-card">
+        <div class="nav-title">トップ</div>
+        <div class="nav-subtitle">ホームページのトップへ戻る</div>
+      </a>
+      <a href="/home" class="nav-card">
+        <div class="nav-title">アイリス</div>
+        <div class="nav-subtitle">アイリス種別判定</div>
+      </a>
+      <a href="/csvTest" class="nav-card">
+        <div class="nav-title">CSV</div>
+        <div class="nav-subtitle">CSVを読み込んで表示</div>
+      </a>
+      <a href="/image" class="nav-card">
+        <div class="nav-title">画像判定</div>
+        <div class="nav-subtitle">画像をアップロードして判定</div>
+      </a>
+      <a href="/sql" class="nav-card active">
+        <div class="nav-title">SQL実行</div>
+        <div class="nav-subtitle">SQLクエリの実行と学習</div>
+      </a>
+    </nav>
+
+    <!-- Header Component -->
+    <div class="section-card">
+      <div class="flex-row">
+        <div>
+          <h1 class="section-title">SQL クエリ実行・学習</h1>
+          <p style="color: #6b7280;">データベースクエリの練習と実行環境</p>
+        </div>
+        <div class="button-group">
+          <label>難易度: 
+            <select class="select-input">
+              <option value="beginner">初級</option>
+              <option value="intermediate">中級</option>
+              <option value="advanced">上級</option>
+            </select>
+          </label>
+          <button class="btn btn-secondary">← 前の問題</button>
+          <button class="btn btn-primary">次の問題 →</button>
+          <button class="btn btn-danger">リセット</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Content Component -->
+    <div class="grid-2">
+      <div class="section-card">
+        <h2 class="section-title">問題 1</h2>
+        <div class="question-panel">
+          <h3 style="margin-bottom: 0.5rem;">基本的なSELECT文</h3>
+          <p>usersテーブルから全てのユーザーの名前とメールアドレスを取得してください。</p>
+          <div style="margin-top: 1rem;">
+            <strong>ヒント:</strong>
+            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+              <li>SELECT文の基本構文を使用</li>
+              <li>列名をカンマで区切る</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schema Component -->
+      <div class="section-card">
+        <h2 class="section-title">データベーススキーマ</h2>
+        <div style="border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden;">
+          <div style="background: #f3f4f6; padding: 0.75rem; border-bottom: 1px solid #d1d5db;">
+            <strong>users</strong> - ユーザー情報テーブル
+          </div>
+          <table class="schema-table" style="margin: 0;">
+            <thead>
+              <tr>
+                <th>列名</th>
+                <th>型</th>
+                <th>制約</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family: monospace; color: #3b82f6;">id</td>
+                <td>INTEGER</td>
+                <td>PRIMARY KEY</td>
+              </tr>
+              <tr>
+                <td style="font-family: monospace; color: #3b82f6;">name</td>
+                <td>VARCHAR(100)</td>
+                <td>NOT NULL</td>
+              </tr>
+              <tr>
+                <td style="font-family: monospace; color: #3b82f6;">email</td>
+                <td>VARCHAR(255)</td>
+                <td>UNIQUE, NOT NULL</td>
+              </tr>
+              <tr>
+                <td style="font-family: monospace; color: #3b82f6;">created_at</td>
+                <td>DATETIME</td>
+                <td>DEFAULT CURRENT_TIMESTAMP</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SQL Execution Panel Component -->
+    <div class="grid-3">
+      <div class="section-card">
+        <div class="flex-row">
+          <h2 class="section-title">SQL クエリ</h2>
+          <div class="button-group">
+            <button class="btn btn-warning">検証</button>
+            <button class="btn btn-primary">実行 (Ctrl+Enter)</button>
+          </div>
+        </div>
+
+        <div class="validation-success">
+          ✓ 構文正常
+        </div>
+
+        <textarea class="sql-textarea" placeholder="SELECT * FROM table_name;">SELECT name, email FROM users;</textarea>
+
+        <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; color: #6b7280;">
+          <span>Ctrl+Enter で実行 | 文字数: 31</span>
+          <button style="color: #ef4444; background: none; border: none; cursor: pointer;">クリア</button>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <div class="flex-row">
+            <h3 style="font-size: 1.125rem; font-weight: 600;">実行結果</h3>
+            <span style="font-size: 0.875rem; color: #6b7280;">3 行 (45ms)</span>
+          </div>
+
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>name</th>
+                <th>email</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>田中太郎</td>
+                <td>tanaka@example.com</td>
+              </tr>
+              <tr>
+                <td>佐藤花子</td>
+                <td>sato@example.com</td>
+              </tr>
+              <tr>
+                <td>鈴木一郎</td>
+                <td>suzuki@example.com</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- History Panel -->
+      <div class="section-card">
+        <div class="flex-row">
+          <h3 style="font-size: 1.125rem; font-weight: 600;">実行履歴</h3>
+          <div>
+            <button style="color: #3b82f6; background: none; border: none; cursor: pointer; margin-right: 1rem;">表示</button>
+            <button style="color: #ef4444; background: none; border: none; cursor: pointer;">クリア</button>
+          </div>
+        </div>
+        
+        <div style="margin-top: 1rem; space-y: 0.75rem;">
+          <div style="border: 1px solid #d1d5db; border-radius: 4px; padding: 0.75rem; margin-bottom: 0.75rem; cursor: pointer; background: #f9fafb;">
+            <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem;">2024-08-04 14:05:30</div>
+            <div style="font-family: monospace; font-size: 0.875rem; color: #1f2937;">SELECT name, email FROM users;</div>
+            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">3 行</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Assistant Component -->
+    <div class="section-card">
+      <div class="ai-panel">
+        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+          <div class="ai-icon">AI</div>
+          <h2 style="font-size: 1.25rem; font-weight: 600; color: #1f2937;">AI アシスタント</h2>
+        </div>
+
+        <div class="button-group" style="margin-bottom: 1rem;">
+          <button class="btn btn-primary">問題のヒント</button>
+          <button class="btn" style="background: #22c55e; color: white;">クエリ説明</button>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.875rem; font-weight: 500; color: #1f2937; margin-bottom: 0.5rem;">
+            AI に質問する
+          </label>
+          <div style="display: flex; gap: 0.5rem;">
+            <textarea style="flex: 1; border: 1px solid #a855f7; border-radius: 4px; padding: 0.75rem; font-size: 0.875rem; resize: none;" rows="3" placeholder="SQLやデータベースについて何でも質問してください...">SELECT文でJOINを使う方法を教えてください</textarea>
+            <button class="btn" style="background: #8b5cf6; color: white;">質問</button>
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.8); border: 1px solid #a855f7; border-radius: 4px; padding: 1rem;">
+          <h4 style="color: #7c3aed; font-weight: 500; margin-bottom: 0.75rem;">AI からの回答</h4>
+          <div style="color: #1f2937; margin-bottom: 1rem; line-height: 1.6;">
+            JOINを使用してテーブルを結合する方法について説明します。<br><br>
+            基本的なINNER JOINの構文：<br>
+            SELECT table1.column, table2.column<br>
+            FROM table1<br>
+            INNER JOIN table2 ON table1.id = table2.foreign_id;
+          </div>
+          
+          <div style="border-top: 1px solid #a855f7; padding-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+              <h5 style="color: #7c3aed; font-weight: 500;">提案されたクエリ</h5>
+              <button class="btn" style="background: #8b5cf6; color: white; font-size: 0.75rem;">クエリを使用</button>
+            </div>
+            <div style="background: white; border: 1px solid #a855f7; border-radius: 4px; padding: 0.75rem;">
+              <pre style="font-size: 0.875rem; color: #1f2937; font-family: monospace; margin: 0;">SELECT u.name, o.order_date 
+FROM users u 
+INNER JOIN orders o ON u.id = o.user_id;</pre>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1rem; font-size: 0.75rem; color: #6b7280;">
+          💡 ヒント: 「SELECT文の書き方」「JOINの使い方」「集計関数について」など、具体的な質問をすると詳しい回答が得られます。
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
