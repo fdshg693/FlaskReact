@@ -1,5 +1,5 @@
 //画像判定APIを呼び出す
-async function analyzeImage(selectedFile) {
+export async function analyzeImage(selectedFile) {
     const formData = new FormData();
     formData.append('image', selectedFile, selectedFile.name);
 
@@ -16,7 +16,7 @@ async function analyzeImage(selectedFile) {
 }
 
 // PDF認識APIを呼び出す
-async function analyzePDF(selectedFile) {
+export async function analyzePDF(selectedFile) {
     const formData = new FormData();
     formData.append('pdf', selectedFile, selectedFile.name);
 
@@ -33,7 +33,7 @@ async function analyzePDF(selectedFile) {
 }
 
 //　テキスト分割APIを呼び出す
-async function splitTextAPI(text, chunk_size = 1000, chunk_overlap = 200) {
+export async function splitTextAPI(text, chunk_size = 1000, chunk_overlap = 200) {
     const res = await fetch('/api/textSplit', {
         method: 'POST',
         headers: {

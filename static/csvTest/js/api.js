@@ -1,4 +1,4 @@
-async function trainUserData(inputs) {
+export async function trainUserData(inputs) {
     const res = await fetch('/api/userData', {
         method: 'POST',
         headers: {

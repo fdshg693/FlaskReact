@@ -1,5 +1,5 @@
 //アイリスのデータを判定するAPIを呼び出す
-async function fetchIrisSpecies(inputs) {
+export async function fetchIrisSpecies(inputs) {
   const res = await fetch('/api/iris', {
     method: 'POST',
     headers: {
@@ -13,7 +13,7 @@ async function fetchIrisSpecies(inputs) {
 }
 
 //CSVから学習するAPIを呼び出す
-async function fetchMultipleIrisSpecies(inputs) {
+export async function fetchMultipleIrisSpecies(inputs) {
   const res = await fetch('/api/batch_iris', {
     method: 'POST',
     headers: {
