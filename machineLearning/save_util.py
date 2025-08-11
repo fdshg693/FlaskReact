@@ -1,9 +1,11 @@
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Union
+from typing import Any, Dict, List, Literal, Union, Optional
+import time
 
 import matplotlib.pyplot as plt
-import pandas as pd
+import csv
 import torch
+import torch.nn as nn
 from loguru import logger
 
 
@@ -72,8 +74,14 @@ def save_data_to_csv_file(
         # Ensure output directory exists
         output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
-        data_frame = pd.DataFrame(tabular_data)
-        data_frame.to_csv(output_file_path, index=False, mode=write_mode)
+        # Use csv module to write data directly
+        with open(
+            output_file_path, mode=write_mode, newline="", encoding="utf-8"
+        ) as csvfile:
+            writer = csv.writer(csvfile)
+            for row in tabular_data:
+                writer.writerow(row)
+
         logger.info(f"{output_file_path} に保存しました。")
 
     except Exception as e:
@@ -105,3 +113,137 @@ def save_training_parameters(
     except Exception as e:
         logger.error(f"Failed to save parameters to {output_file_path}: {e}")
         raise
+
+
+def save_model_and_learning_curves_with_custom_name(
+    trained_model: nn.Module,
+    accuracy_history: List[float],
+    loss_history: List[float],
+    dataset_name: str,
+    epochs: int,
+    custom_name: Optional[str] = None,
+    project_root: Optional[Path] = None,
+) -> str:
+    """
+    モデルのパラメータと学習曲線をカスタム名で保存する統合関数
+
+    Args:
+        trained_model: 学習済みモデル
+        accuracy_history: 精度のリスト
+        loss_history: 損失のリスト
+        dataset_name: データセット名
+        epochs: エポック数
+        custom_name: カスタムファイル名（省略時はタイムスタンプ）
+        project_root: プロジェクトルートパス（省略時は自動推定）
+
+    Returns:
+        str: 使用されたタイムスタンプまたはカスタム名
+
+    Raises:
+        RuntimeError: 全ての保存操作が失敗した場合
+    """
+    logger.info("Saving model and learning curves")
+
+    # タイムスタンプまたはカスタム名の決定
+    file_suffix = custom_name if custom_name else time.strftime("%Y%m%d_%H%M%S")
+
+    # プロジェクトルートの決定
+    if project_root is None:
+        current_file_path = Path(__file__).resolve()
+        project_root = current_file_path.parent.parent
+
+    # 保存先ディレクトリの設定
+    param_dir = project_root / "param"
+    curve_log_dir = project_root / "curveLog"
+    csv_log_dir = project_root / "csvLog"
+
+    saved_files: List[str] = []
+    failed_operations: List[str] = []
+
+    # ディレクトリの作成
+    for directory in [param_dir, curve_log_dir, csv_log_dir]:
+        directory.mkdir(exist_ok=True)
+
+    # モデルパラメータの保存
+    try:
+        model_file = param_dir / f"models_{file_suffix}.pth"
+        save_training_parameters(trained_model.state_dict(), str(model_file))
+        saved_files.append(str(model_file))
+        logger.info(f"Model parameters saved to {model_file}")
+    except Exception as e:
+        error_msg = f"Failed to save model parameters: {e}"
+        failed_operations.append(error_msg)
+        logger.error(error_msg)
+
+    # 学習曲線の保存
+    try:
+        loss_curve_file = curve_log_dir / f"loss_curve_{file_suffix}.png"
+        accuracy_curve_file = curve_log_dir / f"acc_curve_{file_suffix}.png"
+        save_training_data_to_curve_plot(loss_history, "loss", str(loss_curve_file))
+        save_training_data_to_curve_plot(
+            accuracy_history, "acc", str(accuracy_curve_file)
+        )
+        saved_files.extend([str(loss_curve_file), str(accuracy_curve_file)])
+        logger.info(f"Learning curves saved to {curve_log_dir}")
+    except Exception as e:
+        error_msg = f"Failed to save learning curves: {e}"
+        failed_operations.append(error_msg)
+        logger.error(error_msg)
+
+    # CSVファイルの保存
+    try:
+        # データの変換（エポック番号と値のペア）
+        loss_data_for_csv = [
+            [epoch + 1, loss_value] for epoch, loss_value in enumerate(loss_history)
+        ]
+        accuracy_data_for_csv = [
+            [epoch + 1, accuracy_value]
+            for epoch, accuracy_value in enumerate(accuracy_history)
+        ]
+
+        loss_csv_file = csv_log_dir / f"loss_{file_suffix}.csv"
+        accuracy_csv_file = csv_log_dir / f"acc_{file_suffix}.csv"
+        save_data_to_csv_file(loss_data_for_csv, str(loss_csv_file))
+        save_data_to_csv_file(accuracy_data_for_csv, str(accuracy_csv_file))
+        saved_files.extend([str(loss_csv_file), str(accuracy_csv_file)])
+        logger.info(f"CSV files saved to {csv_log_dir}")
+    except Exception as e:
+        error_msg = f"Failed to save CSV files: {e}"
+        failed_operations.append(error_msg)
+        logger.error(error_msg)
+
+    # 結果の報告
+    if saved_files:
+        logger.info(f"Successfully saved {len(saved_files)} files: {saved_files}")
+
+    if failed_operations:
+        error_summary = f"Some save operations failed: {failed_operations}"
+        logger.error(error_summary)
+        if not saved_files:  # 全て失敗した場合のみ例外を発生
+            raise RuntimeError(error_summary)
+
+    # trained_model.csvに情報を追記
+    try:
+        trained_model_csv = project_root / "train_log" / "trained_model.csv"
+
+        # CSVヘッダーとデータ行を準備
+        csv_header = ["dataset_name", "epochs", "file_suffix", "timestamp"]
+        current_timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        csv_data_row = [dataset_name, epochs, file_suffix, current_timestamp]
+
+        # ファイルが存在しない場合はヘッダーを追加
+        if not trained_model_csv.exists():
+            save_data_to_csv_file(
+                [csv_header, csv_data_row], str(trained_model_csv), "w"
+            )
+            logger.info("Created new trained_model.csv with header and first entry")
+        else:
+            save_data_to_csv_file([csv_data_row], str(trained_model_csv), "a")
+            logger.info("Appended entry to trained_model.csv")
+
+    except Exception as e:
+        error_msg = f"Failed to update trained_model.csv: {e}"
+        logger.error(error_msg)
+        # CSVファイルの更新失敗は全体の処理を止めない
+
+    return file_suffix

@@ -1,5 +1,4 @@
 from pathlib import Path
-import time
 from typing import Tuple, List
 
 import torch
@@ -12,11 +11,7 @@ from loguru import logger
 import numpy as np
 import joblib
 
-from .save_util import (
-    save_training_data_to_curve_plot,
-    save_training_parameters,
-    save_data_to_csv_file,
-)
+from .save_util import save_model_and_learning_curves_with_custom_name
 
 
 class SimpleNeuralNetwork(nn.Module):
@@ -244,7 +239,7 @@ class MachineLearningClassifier:
 
 
 def execute_machine_learning_pipeline(
-    dataset: object, epochs: int = 20
+    dataset: object, epochs: int = 5
 ) -> Tuple[MachineLearningClassifier, nn.Module, List[float], List[float]]:
     """
     機械学習の実行をまとめた関数
@@ -277,92 +272,6 @@ def execute_machine_learning_pipeline(
     )
 
 
-def save_model_and_learning_curves(
-    trained_model: nn.Module, accuracy_history: List[float], loss_history: List[float]
-) -> None:
-    """
-    モデルのパラメータと学習曲線を保存する関数
-
-    Args:
-        trained_model: 学習済みモデル
-        accuracy_history: 精度のリスト
-        loss_history: 損失のリスト
-    """
-    logger.info("Saving model and learning curves")
-    timestamp = time.strftime("%Y%m%d_%H%M%S")
-    current_file_path = Path(__file__).resolve()
-
-    saved_files: List[str] = []
-    failed_operations: List[str] = []
-
-    # パラメータの保存
-    try:
-        parameter_save_path = current_file_path.parent.parent / "param"
-        parameter_save_path.mkdir(exist_ok=True)
-        parameter_file = parameter_save_path / f"models_{timestamp}.pth"
-        save_training_parameters(trained_model.state_dict(), str(parameter_file))
-        saved_files.append(str(parameter_file))
-        logger.info(f"Model parameters saved to {parameter_file}")
-    except Exception as e:
-        error_msg = f"Failed to save model parameters: {e}"
-        failed_operations.append(error_msg)
-        logger.error(error_msg)
-
-    # 学習曲線の保存
-    try:
-        curve_save_path = current_file_path.parent.parent / "curveLog"
-        curve_save_path.mkdir(exist_ok=True)
-        loss_curve_file = curve_save_path / f"loss_curve_{timestamp}.png"
-        accuracy_curve_file = curve_save_path / f"acc_curve_{timestamp}.png"
-        save_training_data_to_curve_plot(loss_history, "loss", str(loss_curve_file))
-        save_training_data_to_curve_plot(
-            accuracy_history, "acc", str(accuracy_curve_file)
-        )
-        saved_files.extend([str(loss_curve_file), str(accuracy_curve_file)])
-        logger.info(f"Learning curves saved to {curve_save_path}")
-    except Exception as e:
-        error_msg = f"Failed to save learning curves: {e}"
-        failed_operations.append(error_msg)
-        logger.error(error_msg)
-
-    # CSVファイルの保存
-    try:
-        csv_save_path = current_file_path.parent.parent / "csvLog"
-        csv_save_path.mkdir(exist_ok=True)
-        # Convert single lists to list of lists format expected by saveData2CSV
-        loss_data_for_csv = [
-            [epoch + 1, loss_value] for epoch, loss_value in enumerate(loss_history)
-        ]
-        accuracy_data_for_csv = [
-            [epoch + 1, accuracy_value]
-            for epoch, accuracy_value in enumerate(accuracy_history)
-        ]
-        loss_csv_file = csv_save_path / f"loss_{timestamp}.csv"
-        accuracy_csv_file = csv_save_path / f"acc_{timestamp}.csv"
-        save_data_to_csv_file(loss_data_for_csv, str(loss_csv_file))
-        save_data_to_csv_file(accuracy_data_for_csv, str(accuracy_csv_file))
-        saved_files.extend([str(loss_csv_file), str(accuracy_csv_file)])
-        logger.info(f"CSV files saved to {csv_save_path}")
-    except Exception as e:
-        error_msg = f"Failed to save CSV files: {e}"
-        failed_operations.append(error_msg)
-        logger.error(error_msg)
-
-    # 結果の報告
-    if saved_files:
-        logger.info(f"Successfully saved {len(saved_files)} files: {saved_files}")
-
-    if failed_operations:
-        error_summary = f"Some save operations failed: {failed_operations}"
-        logger.error(error_summary)
-        if not saved_files:  # 全て失敗した場合のみ例外を発生
-            raise RuntimeError(error_summary)
-        else:
-            logger.warning(
-                f"Partial save completed. {len(saved_files)} files saved, {len(failed_operations)} operations failed."
-            )
-
-
 if __name__ == "__main__":
     from sklearn.datasets import load_iris
 
@@ -371,11 +280,12 @@ if __name__ == "__main__":
     # Irisデータセットでの実行
     logger.info("Loading Iris dataset")
     iris_dataset = load_iris()
+    epochs = 5  # Default epochs from execute_machine_learning_pipeline
     iris_classifier, iris_neural_network, iris_accuracy_history, iris_loss_history = (
-        execute_machine_learning_pipeline(iris_dataset)
+        execute_machine_learning_pipeline(iris_dataset, epochs)
     )
-    save_model_and_learning_curves(
-        iris_neural_network, iris_accuracy_history, iris_loss_history
+    save_model_and_learning_curves_with_custom_name(
+        iris_neural_network, iris_accuracy_history, iris_loss_history, "iris", epochs
     )
     iris_test_accuracy = iris_classifier.evaluate_model()
     logger.info(f"Iris Test Accuracy: {iris_test_accuracy:.3f}")
@@ -383,6 +293,7 @@ if __name__ == "__main__":
 
     # # Diabetesデータセットでの実行
     # diabetes_dataset = load_diabetes()
-    # diabetes_classifier, diabetes_neural_network, diabetes_accuracy_history, diabetes_loss_history = execute_machine_learning_pipeline(diabetes_dataset)
-    # save_model_and_learning_curves(diabetes_neural_network, diabetes_accuracy_history, diabetes_loss_history)
+    # diabetes_epochs = 5
+    # diabetes_classifier, diabetes_neural_network, diabetes_accuracy_history, diabetes_loss_history = execute_machine_learning_pipeline(diabetes_dataset, diabetes_epochs)
+    # save_model_and_learning_curves_with_custom_name(diabetes_neural_network, diabetes_accuracy_history, diabetes_loss_history, "diabetes", diabetes_epochs)
     # print(f"Diabetes Test Accuracy: {diabetes_classifier.evaluate_model():.3f}")
