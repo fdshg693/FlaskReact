@@ -229,17 +229,17 @@ class MachineLearningClassifier:
         logger.info(f"Test accuracy: {test_accuracy:.4f}")
         return test_accuracy
 
-    def save_scaler(self) -> None:
+    def save_scaler(self, file_suffix: str) -> None:
         """
         学習済みのスケーラーをjoblibを使って保存する
         """
-        scaler_file_path = self.scaler_dir / "scaler.joblib"
+        scaler_file_path = self.scaler_dir / f"scaler{file_suffix}.joblib"
         joblib.dump(self.feature_scaler, scaler_file_path)
         logger.info(f"スケーラーを {scaler_file_path} に保存しました")
 
 
 def execute_machine_learning_pipeline(
-    dataset: object, epochs: int = 5
+    dataset: object, epochs: int = 5, file_suffix: str = ""
 ) -> Tuple[MachineLearningClassifier, nn.Module, List[float], List[float]]:
     """
     機械学習の実行をまとめた関数
@@ -259,7 +259,7 @@ def execute_machine_learning_pipeline(
     machine_learning_classifier = MachineLearningClassifier(dataset)
     machine_learning_classifier.split_train_test_data()
     machine_learning_classifier.apply_feature_scaling()
-    machine_learning_classifier.save_scaler()  # スケーラーの保存を追加
+    machine_learning_classifier.save_scaler(file_suffix)  # スケーラーの保存を追加
     machine_learning_classifier.convert_to_tensor_datasets()
     machine_learning_classifier.create_data_loaders()
     accuracy_history, loss_history = machine_learning_classifier.train_model(epochs)

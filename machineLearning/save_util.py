@@ -121,7 +121,7 @@ def save_model_and_learning_curves_with_custom_name(
     loss_history: List[float],
     dataset_name: str,
     epochs: int,
-    custom_name: Optional[str] = None,
+    file_suffix: Optional[str] = None,
     project_root: Optional[Path] = None,
 ) -> str:
     """
@@ -145,7 +145,7 @@ def save_model_and_learning_curves_with_custom_name(
     logger.info("Saving model and learning curves")
 
     # タイムスタンプまたはカスタム名の決定
-    file_suffix = custom_name if custom_name else time.strftime("%Y%m%d_%H%M%S")
+    file_suffix = file_suffix if file_suffix else time.strftime("%Y%m%d_%H%M%S")
 
     # プロジェクトルートの決定
     if project_root is None:

@@ -73,27 +73,23 @@ class StreamlitMLApp:
 
     def get_existing_models(self) -> List[Dict[str, str]]:
         """
-        既存の学習済みモデルの一覧を取得
+        train_log/trained_model.csvの内容を取得してモデル情報リストとして返す
 
         Returns:
             List[Dict[str, str]]: モデル情報のリスト
         """
-        models = []
-
-        if self.param_dir.exists():
-            for model_file in self.param_dir.glob("*.pth"):
-                model_info = {
-                    "name": model_file.stem,
-                    "file": model_file.name,
-                    "path": str(model_file),
-                    "size": f"{model_file.stat().st_size / 1024:.2f} KB",
-                    "modified": datetime.fromtimestamp(
-                        model_file.stat().st_mtime
-                    ).strftime("%Y-%m-%d %H:%M:%S"),
-                }
-                models.append(model_info)
-
-        return sorted(models, key=lambda x: x["modified"], reverse=True)
+        trained_model_csv = self.project_root / "train_log" / "trained_model.csv"
+        models: List[Dict[str, str]] = []
+        if trained_model_csv.exists():
+            try:
+                df = pd.read_csv(trained_model_csv)
+                # 必要なカラムのみ抽出（name, accuracy, date, etc.）
+                for _, row in df.iterrows():
+                    model_info = {key: str(row[key]) for key in df.columns}
+                    models.append(model_info)
+            except Exception as e:
+                logger.error(f"Error reading trained_model.csv: {e}")
+        return models
 
     def get_existing_scalers(self) -> List[Dict[str, str]]:
         """
@@ -120,14 +116,14 @@ class StreamlitMLApp:
         return sorted(scalers, key=lambda x: x["modified"], reverse=True)
 
     def execute_training_with_custom_name(
-        self, dataset: object, custom_name: Optional[str] = None
+        self, dataset: object, file_suffix: Optional[str] = None
     ) -> Dict[str, any]:
         """
         カスタムファイル名で機械学習を実行
 
         Args:
             dataset: 学習に使用するデータセット
-            custom_name: カスタムファイル名（省略時はタイムスタンプ）
+            file_suffix: カスタムファイル名（省略時はタイムスタンプ）
 
         Returns:
             Dict[str, any]: 実行結果
@@ -152,7 +148,7 @@ class StreamlitMLApp:
 
             # 機械学習パイプラインの実行
             classifier, model, accuracy_history, loss_history = (
-                execute_machine_learning_pipeline(dataset, epochs)
+                execute_machine_learning_pipeline(dataset, epochs, file_suffix)
             )
 
             # カスタム名の処理と学習結果の保存
@@ -160,14 +156,14 @@ class StreamlitMLApp:
                 save_model_and_learning_curves_with_custom_name,
             )
 
-            if custom_name and self.validate_filename(custom_name):
+            if file_suffix and self.validate_filename(file_suffix):
                 file_suffix = save_model_and_learning_curves_with_custom_name(
                     model,
                     accuracy_history,
                     loss_history,
                     dataset_name,
                     epochs,
-                    custom_name,
+                    file_suffix,
                     self.project_root,
                 )
             else:
@@ -221,15 +217,15 @@ class StreamlitMLApp:
             st.header("🚀 新しい学習の実行")
 
             # カスタムファイル名入力
-            custom_name = st.text_input(
+            file_suffix = st.text_input(
                 "ファイル名（任意）:",
                 placeholder="例: my_model_v1",
                 help="指定しない場合は自動的にタイムスタンプが使用されます",
             )
 
             # ファイル名の妥当性チェック
-            if custom_name:
-                if self.validate_filename(custom_name):
+            if file_suffix:
+                if self.validate_filename(file_suffix):
                     st.success("✅ 有効なファイル名です")
                 else:
                     st.error(
@@ -256,7 +252,7 @@ class StreamlitMLApp:
                     progress_bar.progress(50)
 
                     result = self.execute_training_with_custom_name(
-                        dataset, custom_name
+                        dataset, file_suffix
                     )
                     progress_bar.progress(100)
 
@@ -286,21 +282,22 @@ class StreamlitMLApp:
             existing_scalers = self.get_existing_scalers()
 
             if existing_models:
-                st.subheader("🏷️ 保存済みモデル")
+                st.subheader("🏷️ 保存済みモデル (train_log/trained_model.csv)")
                 model_df = pd.DataFrame(existing_models)
+                # すべてのカラムを表示（CSVの内容に依存）
                 st.dataframe(
-                    model_df[["name", "size", "modified"]],
+                    model_df,
                     use_container_width=True,
                     hide_index=True,
                 )
 
-                # 最新モデルの詳細表示
+                # 最新モデルの詳細表示（CSVの1行目）
                 latest_model = existing_models[0]
-                with st.expander(f"📄 最新モデルの詳細: {latest_model['name']}"):
-                    st.write(f"**ファイル名:** {latest_model['file']}")
-                    st.write(f"**サイズ:** {latest_model['size']}")
-                    st.write(f"**更新日時:** {latest_model['modified']}")
-                    st.write(f"**パス:** {latest_model['path']}")
+                with st.expander(
+                    f"📄 最新モデルの詳細: {latest_model.get('name', '不明')}"
+                ):
+                    for key, value in latest_model.items():
+                        st.write(f"**{key}:** {value}")
             else:
                 st.info(
                     "まだ学習済みモデルがありません。左側で新しい学習を実行してください。"
