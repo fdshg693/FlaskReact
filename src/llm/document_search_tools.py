@@ -18,7 +18,7 @@
 # - Document search and analysis workflows
 # - Multi-source information gathering for language model applications
 
-from typing import Optional
+from typing import Optional, List
 from langchain_core.tools import tool
 from pathlib import Path
 from langchain_community.tools.tavily_search import TavilySearchResults
@@ -43,20 +43,18 @@ def search_headwaters_company_info(search_query: str) -> str:
 
 @tool
 def search_local_text_documents(directory_path: Optional[str] = None) -> str:
-    """Lists all names and summary content of text files in the specified path.
-    Args:
-        directory_path (str): The path to search for text files. If empty, defaults to ../data/ directory.
-                             Can be a folder path or a specific file path.
-    Returns:
-        str: A string containing the names and first line of each text file.
+    """List text files (first line preview) in a directory or a specific file.
+
+    Graceful fallback behaviour: if the provided directory_path is a simple
+    invented name that does not exist we fall back to the default dataset path
+    instead of failing.
     """
 
+    # Determine target path
     if not directory_path:
-        # Default to data directory relative to this file
         target_search_path = Path(__file__).parent.parent.parent / "data" / "ai_agent"
     else:
         target_search_path = Path(directory_path)
-        # Enhanced path validation to prevent directory traversal
         try:
             resolved_path = target_search_path.resolve()
             base_path = Path(__file__).parent.parent.parent.resolve()
@@ -67,67 +65,127 @@ def search_local_text_documents(directory_path: Optional[str] = None) -> str:
             logger.error(f"Path resolution error: {e}")
             return "Error: Invalid path format"
 
-    # If path doesn't exist, return error message
+    # Fallback if path does not exist
     if not target_search_path.exists():
-        logger.warning(f"Path does not exist: {target_search_path}")
-        return f"Path does not exist: {target_search_path}"
-
-    # If path is a specific file
-    if target_search_path.is_file():
-        if target_search_path.suffix == ".txt":
-            # Check file size before reading
-            try:
-                if target_search_path.stat().st_size > MAX_FILE_SIZE:
-                    logger.error(f"File too large: {target_search_path}")
-                    return f"File {target_search_path.name} is too large to process"
-
-                with open(target_search_path, "r", encoding="utf-8") as file_handle:
-                    first_line_content = file_handle.readline().strip()
-                    return f"{target_search_path.name}: {first_line_content}"
-            except (IOError, OSError, UnicodeDecodeError) as error:
-                logger.error(f"Error reading file {target_search_path.name}: {error}")
-                return f"Error reading file {target_search_path.name}: {str(error)}"
+        if (
+            directory_path
+            and "/" not in directory_path
+            and not Path(directory_path).suffix
+        ):
+            logger.info(
+                "Non-existent simple directory name provided; falling back to default dataset"
+            )
+            target_search_path = (
+                Path(__file__).parent.parent.parent / "data" / "ai_agent"
+            )
         else:
-            return f"File {target_search_path.name} is not a text file."
+            logger.warning(f"Path does not exist: {target_search_path}")
+            return f"Path does not exist: {target_search_path}"
 
-    # If path is a directory, search for txt files
+    # Single file case
+    if target_search_path.is_file():
+        if target_search_path.suffix != ".txt":
+            return f"File {target_search_path.name} is not a text file."
+        try:
+            if target_search_path.stat().st_size > MAX_FILE_SIZE:
+                return f"File {target_search_path.name} is too large to process"
+            with target_search_path.open("r", encoding="utf-8") as fh:
+                first_line = fh.readline().strip()
+            return f"{target_search_path.name}: {first_line}"
+        except (OSError, UnicodeDecodeError, IOError) as error:
+            return f"Error reading file {target_search_path.name}: {error}"
+
+    # Directory listing
     try:
         text_files_list = [
-            file
-            for file in target_search_path.iterdir()
-            if file.suffix == ".txt" and file.is_file()
+            p
+            for p in target_search_path.iterdir()
+            if p.is_file() and p.suffix == ".txt"
         ]
     except (OSError, PermissionError) as error:
-        logger.error(f"Error accessing directory {target_search_path}: {error}")
-        return f"Error accessing directory {target_search_path}: {str(error)}"
+        return f"Error accessing directory {target_search_path}: {error}"
 
     if not text_files_list:
         return f"No text files found in the directory: {target_search_path}"
 
-    # Return list of file names and first line content
-    file_summary_info = []
-    for text_file in text_files_list:
+    summaries: List[str] = []
+    for txt in text_files_list:
         try:
-            # Check file size before reading
-            if text_file.stat().st_size > MAX_FILE_SIZE:
-                logger.warning(f"File too large, skipping: {text_file.name}")
-                file_summary_info.append(f"{text_file.name}: File too large to process")
+            if txt.stat().st_size > MAX_FILE_SIZE:
+                summaries.append(f"{txt.name}: File too large to process")
                 continue
+            with txt.open("r", encoding="utf-8") as fh:
+                first_line = fh.readline().strip()
+            summaries.append(f"{txt.name}: {first_line}")
+        except (OSError, UnicodeDecodeError, IOError) as error:
+            summaries.append(f"{txt.name}: Error reading file - {error}")
 
-            with open(text_file, "r", encoding="utf-8") as file_handle:
-                first_line_content = file_handle.readline().strip()
-                file_summary_info.append(f"{text_file.name}: {first_line_content}")
-        except (IOError, OSError, UnicodeDecodeError) as error:
-            logger.error(f"Error reading file {text_file.name}: {error}")
-            file_summary_info.append(
-                f"{text_file.name}: Error reading file - {str(error)}"
-            )
+    return "\n".join(summaries) if summaries else "No readable text files found."
 
-    return (
-        "\n".join(file_summary_info)
-        if file_summary_info
-        else "No readable text files found."
-    )
+
+@tool
+def search_headwaters_local_docs(keywords: Optional[str] = None) -> str:
+    """Search default local Headwaters-related documents for keyword context.
+
+    This specialized helper aggregates the content of all .txt files inside the
+    default data/ai_agent directory that contain the word "ヘッドウォーターズ" or
+    "Headwaters" (case-insensitive). Optionally additional space-separated
+    keywords can be supplied.
+
+    Usage guidance for the LLM / Agent:
+      - When a user asks specifically about Headwaters apps / products and wants
+        information "from local documents", prefer calling THIS tool first.
+      - Do NOT pass a path; this tool always uses the default dataset.
+      - Provide extra keywords only if the user supplies them (e.g., product
+        names). Otherwise call with no argument.
+
+    Args:
+        keywords: Optional additional keywords (space separated) to filter lines.
+    Returns:
+        Up to ~30 relevant lines grouped by filename, or a message if nothing found.
+    """
+
+    base_dir = Path(__file__).parent.parent.parent / "data" / "ai_agent"
+    if not base_dir.exists():  # pragma: no cover - defensive
+        logger.error(f"Base document directory missing: {base_dir}")
+        return f"Document directory missing: {base_dir}"
+
+    # Prepare keyword list
+    core_terms = ["ヘッドウォーターズ", "headwaters"]
+    extra_terms: List[str] = []
+    if keywords:
+        extra_terms = [kw.strip() for kw in keywords.split() if kw.strip()]
+
+    all_terms_lower = {t.lower() for t in core_terms + extra_terms}
+
+    results: List[str] = []
+    line_budget = 30  # Hard cap to keep responses concise
+
+    for txt_file in sorted(base_dir.glob("*.txt")):
+        try:
+            if txt_file.stat().st_size > MAX_FILE_SIZE:
+                logger.warning(f"Skipping large file: {txt_file.name}")
+                continue
+            with txt_file.open("r", encoding="utf-8") as fh:
+                for line_no, raw_line in enumerate(fh, start=1):
+                    line = raw_line.strip()
+                    if not line:
+                        continue
+                    lower_line = line.lower()
+                    if any(term in lower_line for term in all_terms_lower):
+                        results.append(f"{txt_file.name}:{line_no}: {line}")
+                        if len(results) >= line_budget:
+                            break
+            if len(results) >= line_budget:
+                break
+        except (OSError, UnicodeDecodeError) as err:
+            logger.error(f"Error reading {txt_file.name}: {err}")
+            continue
+
+    if not results:
+        return "No matching Headwaters lines found in local documents."
+
+    return "\n".join(results)
 
 
 @tool
