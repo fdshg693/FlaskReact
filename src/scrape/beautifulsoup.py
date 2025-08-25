@@ -122,7 +122,7 @@ def get_link_urls(html_file_path: Path, target_class_name: str) -> List[str]:
 
 if __name__ == "__main__":
     # ローカルHTMLファイルからリンクを取得するテスト
-    html_file_path: Path = Path(__file__).parent / "../data/headwaters.html"
+    html_file_path: Path = Path(__file__).parent.parent / "../data/headwaters.html"
 
     try:
         logger.info("Testing local HTML file link extraction...")

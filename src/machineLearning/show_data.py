@@ -44,7 +44,7 @@ def main() -> None:
     iris_dataset, diabetes_dataset = load_sklearn_datasets()
 
     # Define output path using pathlib
-    script_directory = Path(__file__).parent
+    script_directory = Path(__file__).parent.parent
     diabetes_csv_path = script_directory / "../data/diabetes_data.csv"
     diabetes_csv_path = diabetes_csv_path.resolve()  # Convert to absolute path
 

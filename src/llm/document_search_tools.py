@@ -36,7 +36,7 @@ def search_headwaters_company_info(search_query: str) -> str:
     Returns:
         str: The search results containing relevant information.
     """
-    tavily_search_tool = TavilySearchResults(max_results=5)
+    tavily_search_tool = TavilySearchResults(max_results=2)
     search_results = tavily_search_tool.run(search_query)
     return str(search_results)
 
@@ -53,13 +53,13 @@ def search_local_text_documents(directory_path: Optional[str] = None) -> str:
 
     if not directory_path:
         # Default to data directory relative to this file
-        target_search_path = Path(__file__).parent.parent / "data"
+        target_search_path = Path(__file__).parent.parent.parent / "data" / "ai_agent"
     else:
         target_search_path = Path(directory_path)
         # Enhanced path validation to prevent directory traversal
         try:
             resolved_path = target_search_path.resolve()
-            base_path = Path(__file__).parent.parent.resolve()
+            base_path = Path(__file__).parent.parent.parent.resolve()
             if not str(resolved_path).startswith(str(base_path)):
                 logger.warning(f"Path traversal attempt detected: {directory_path}")
                 return "Error: Invalid path detected for security reasons"
@@ -146,14 +146,14 @@ def get_local_document_content(
     if not directory_path:
         # Default to data directory relative to this file
         target_file_path = (
-            Path(__file__).parent.parent / "data/ai_agent" / text_file_name
+            Path(__file__).parent.parent.parent / "data" / "ai_agent" / text_file_name
         )
     else:
         directory = Path(directory_path)
         # Enhanced path validation to prevent directory traversal
         try:
             resolved_dir = directory.resolve()
-            base_path = Path(__file__).parent.parent.resolve()
+            base_path = Path(__file__).parent.parent.parent.resolve()
             if not str(resolved_dir).startswith(str(base_path)):
                 logger.warning(f"Path traversal attempt detected: {directory_path}")
                 return "Error: Invalid path detected for security reasons"
@@ -192,5 +192,5 @@ if __name__ == "__main__":
 
     # Test with specific path
     print("\nTesting with specific data directory:")
-    data_directory = str(Path(__file__).parent / "../data/ai_agent/")
+    data_directory = str(Path(__file__).parent.parent / "../data/ai_agent/")
     print(search_local_text_documents.run({"directory_path": data_directory}))
