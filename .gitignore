@@ -213,4 +213,7 @@ review/
 .github/prompts/_*
 .github/prompts/＿*
 
-.vscode/
+.vscode/**.**
+
+!.vscode/sample_launch.json
+

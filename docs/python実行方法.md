@@ -15,3 +15,4 @@ SRC配下にpythonスクリプトを集める
     "justMyCode": true
 }
 ```
+`.vscode/sample_launch.json`を参考にすること

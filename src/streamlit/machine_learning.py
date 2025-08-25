@@ -3,17 +3,11 @@ from typing import Dict, List, Optional
 from datetime import datetime
 import re
 import time
-import sys
 
 import streamlit as st
 import pandas as pd
 from sklearn.datasets import load_iris, load_diabetes
 from loguru import logger
-
-# プロジェクトルートを設定（絶対インポートのため）
-project_root = Path(__file__).resolve().parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
 
 
 class StreamlitMLApp:

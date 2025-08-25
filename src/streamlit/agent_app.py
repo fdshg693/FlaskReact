@@ -12,7 +12,6 @@ Run:
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Dict, List
 from uuid import uuid4
 
@@ -22,14 +21,6 @@ from langgraph.prebuilt import create_react_agent
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_core.tools import BaseTool
-
-# Ensure project src/ is on sys.path for absolute imports (llm.*)
-import sys
-
-SRC_DIR: Path = Path(__file__).resolve().parents[1]
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-    logger.debug(f"Added {SRC_DIR} to sys.path")
 
 from llm.document_search_tools import (  # noqa: E402  (import after path tweak)
     search_headwaters_company_info,
