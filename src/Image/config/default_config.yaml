@@ -1,0 +1,35 @@
+# Default Configuration for Wood Classification
+# This file contains the base settings that can be overridden by experiment-specific configs
+
+# Dataset settings
+dataset_name: "test_dataset"
+dataset_path: "./dataset/test_dataset/"
+num_class: 0
+img_size: 128
+img_scale: 1.5
+aug_scale: 0.5
+aug_brightness: 50.0
+
+# Model settings
+layer: 3
+num_hidden: 4096
+l2softmax: true
+dropout_rate: 0.2
+
+# Training settings
+epoch: 10
+batch_size_train: 10
+batch_size_test: 10
+learning_rate: 0.001
+
+# Device settings
+device: "cuda"
+
+# Output settings
+log_dir: "./logs/"
+checkpoint_dir: "./checkpoints/"
+
+# Experiment management settings
+auto_timestamp: true
+auto_cuda_detection: true
+experiment_name_template: "{timestamp}_img{img_size}_layer{layer}_hidden{num_hidden}_{num_class}class_dropout{dropout_rate}_scale{img_scale}_{dataset_name}"
