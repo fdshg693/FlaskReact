@@ -2,6 +2,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python Debugger: Current File with Arguments (src layout)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "${command:pickArgs}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            }
+        },
+        {
             "name": "Debug Streamlit",
             "type": "debugpy",
             "request": "launch",
@@ -15,7 +26,7 @@
             ],
             "cwd": "${workspaceFolder}",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONPATH": "${workspaceFolder}/src",
                 "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "0"
             },
             "console": "integratedTerminal",
@@ -26,7 +37,20 @@
             "name": "Python: Current File (src layout)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}", 
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Pytest (root with src PYTHONPATH)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [],
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"

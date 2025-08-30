@@ -1,0 +1,20 @@
+# Different Wood Classification Experiment
+# Example of how easy it is to create new experiments with YAML
+
+# Dataset settings - different dataset
+dataset_name: "advanced_wood_dataset"
+dataset_path: "./dataset/advanced_wood_dataset/"
+
+# Model settings - deeper network
+layer: 5
+num_hidden: 8192
+dropout_rate: 0.3
+
+# Training settings - longer training
+epoch: 20000
+batch_size_train: 16
+learning_rate: 0.0005
+
+# Experiment management
+auto_timestamp: true
+experiment_name_template: "advanced_{timestamp}_deep{layer}_hidden{num_hidden}_{dataset_name}"
