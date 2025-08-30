@@ -35,9 +35,9 @@ jobs:
     
     # Configuration constants
     env:
-      AI_MODEL: "gpt-4.1"
-      MAX_TOKENS: 1500
-      TEMPERATURE: 0.3
+      AI_MODEL: "gpt-5"
+      MAX_COMPLETION_TOKENS: 15000
+      TEMPERATURE: 0.0001
       FETCH_DEPTH: 50  # Optimized for performance - gets recent commits only
       TIMEOUT_MINUTES: 10
     
@@ -168,7 +168,7 @@ jobs:
           jq -n \
             --arg model "$AI_MODEL" \
             --rawfile prompt temp_prompt.txt \
-            --argjson max_tokens "$MAX_TOKENS" \
+            --argjson max_completion_tokens "$MAX_COMPLETION_TOKENS\
             --argjson temperature "$TEMPERATURE" \
             '{
               model: $model,
@@ -182,8 +182,8 @@ jobs:
                   content: $prompt
                 }
               ],
-              max_tokens: $max_tokens,
-              temperature: $temperature
+              max_completion_tokens: $MAX_COMPLETION_TOKENS,
+              temperature: $TEMPERATURE
             }' > "$TEMP_PAYLOAD"
           
           echo "🔄 Sending request to OpenAI API..."

@@ -15,7 +15,7 @@
             ],
             "cwd": "${workspaceFolder}",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}",
+                "PYTHONPATH": "${workspaceFolder}/src",
                 "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "0"
             },
             "console": "integratedTerminal",
@@ -26,7 +26,20 @@
             "name": "Python: Current File (src layout)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}", 
+            "program": "${file}",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Pytest (root with src PYTHONPATH)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [],
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"

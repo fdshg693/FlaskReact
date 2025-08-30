@@ -31,11 +31,13 @@ jobs:
     
     permissions:
       contents: read  # Read access to repository contents
+      pull-requests: write
+      issues: write
     # Configuration constants
     env:
-      AI_MODEL: "gpt-4.1"
-      MAX_TOKENS: 1500
-      TEMPERATURE: 0.3
+      AI_MODEL: "gpt-5"
+      MAX_COMPLETION_TOKENS: 15000
+      TEMPERATURE: 0.0001
       FETCH_DEPTH: 50  # Optimized for performance - gets recent commits only
       TIMEOUT_MINUTES: 10
     
@@ -154,12 +156,16 @@ jobs:
           ---END_OF_DIFF---"
           
           # ====================================================================
-          # API Configuration: Use environment variables for maintainability
+          # API Configuration: Handle large diffs by writing to temp file
           # ====================================================================
-          PAYLOAD=$(jq -n \
+          # Create a temporary file for the payload to avoid "Argument list too long" errors
+          TEMP_PAYLOAD=$(mktemp)
+          echo "$PROMPT" > temp_prompt.txt
+
+          jq -n \
             --arg model "$AI_MODEL" \
-            --arg prompt "$PROMPT" \
-            --argjson max_tokens "$MAX_TOKENS" \
+            --rawfile prompt temp_prompt.txt \
+            --argjson max_tokens "$MAX_COMPLETION_TOKENS" \
             --argjson temperature "$TEMPERATURE" \
             '{
               model: $model,
@@ -169,28 +175,30 @@ jobs:
                   content: "You are a kind and constructive code reviewer. Please provide detailed and practical feedback."
                 },
                 {
-                  role: "user", 
+                  role: "user",
                   content: $prompt
                 }
               ],
               max_tokens: $max_tokens,
               temperature: $temperature
-            }'
-          )
-          
+            }' > "$TEMP_PAYLOAD"
+
           echo "🔄 Sending request to OpenAI API..."
-          
+
           # ====================================================================
-          # Secure API Call: Improved error handling to prevent info leakage
+          # Secure API Call: Improved error handling with file-based payload
           # ====================================================================
           HTTP_CODE=$(curl -w "%{http_code}" -s \
             -X POST \
             -H "Authorization: Bearer $OPENAI_API_KEY" \
             -H "Content-Type: application/json" \
-            -d "$PAYLOAD" \
+            -d @"$TEMP_PAYLOAD" \
             -o api_response.json \
             https://api.openai.com/v1/chat/completions
           )
+
+          # Clean up temporary files
+          rm -f "$TEMP_PAYLOAD" temp_prompt.txt
           
           # Check HTTP response code with improved error messaging
           if [ "$HTTP_CODE" -ne 200 ]; then
