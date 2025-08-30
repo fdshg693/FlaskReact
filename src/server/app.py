@@ -18,7 +18,7 @@ from machineLearning.eval_batch import evaluate_iris_batch
 from util.convert_json import convert_json_to_model_input
 
 # Constants for file paths and configuration
-APP_ROOT = Path(__file__).parent.parent
+APP_ROOT = Path(__file__).parent.parent.parent
 MODEL_PATH = APP_ROOT / "param" / "models_20250712_021710.pth"
 SCALER_PATH = APP_ROOT / "scaler" / "scaler.joblib"
 

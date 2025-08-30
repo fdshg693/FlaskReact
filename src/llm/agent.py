@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List
 from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import BaseTool
 from langchain_core.language_models import BaseChatModel
@@ -22,17 +22,14 @@ agent_executor: Runnable = create_react_agent(model, tools)
 
 def main() -> None:
     """Main function to execute the agent."""
-    response: Dict[str, Any] = agent_executor.invoke(
-        {
-            "messages": [
-                HumanMessage(
-                    content="株式会社ヘッドウォーターズの作ったアプリについて教えてください。"
-                )
-            ]
-        }
+    config: dict = {"configurable": {"thread_id": "abc123"}}
+    input_message: HumanMessage = HumanMessage(
+        content="株式会社ヘッドウォーターズの作ったアプリについて教えてください。"
     )
-
-    print(response["messages"][-1].content)
+    for step in agent_executor.stream(
+        {"messages": [input_message]}, config, stream_mode="values"
+    ):
+        step["messages"][-1].pretty_print()
 
 
 if __name__ == "__main__":

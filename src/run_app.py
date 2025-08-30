@@ -14,7 +14,7 @@ from pathlib import Path
 def setup_environment() -> None:
     """Setup the Python environment for the FlaskReact application."""
     # Get the project root directory
-    project_root = Path(__file__).parent.absolute()
+    project_root = Path(__file__).parent.parent.absolute()
 
     # Add project root to Python path if not already present
     project_root_str = str(project_root)
@@ -38,7 +38,7 @@ def main() -> None:
     from server.app import app
 
     print("🚀 Starting FlaskReact application...")
-    print(f"📁 Project root: {Path(__file__).parent.absolute()}")
+    print(f"📁 Project root: {Path(__file__).parent.parent.absolute()}")
     print("🐍 Python path configured automatically")
 
     app.run(host="0.0.0.0", port=8000, debug=True)

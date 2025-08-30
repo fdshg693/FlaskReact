@@ -1,7 +1,8 @@
-# 画像解析・機械学習などをWEBアプリ上で簡単に操作することが出来ることを目指す実験的なプロジェクト
+# 画像解析 / 機械学習 / LLM をブラウザから簡単操作する実験プロジェクト
 
-- バックエンド　FLASK
-- フロントエンド　REACT(CDN)
+- Backend: Flask (起動ランチャ `run_app.py`)
+- Frontend: React (CDN, 直接JS/JSX) + 最小構成
+- 補助UI: Streamlit アプリ (`src/streamlit/`)
 
 ## セットアップと実行
 
@@ -10,121 +11,62 @@
 uv sync
 ```
 
-### アプリケーションの実行
+### アプリケーションの実行 (Flask)
 ```bash
-uv run run_app.py
+uv run run_app.py  # http://localhost:8000
+```
+> 重要: `server/app.py` を直接実行せず必ず `run_app.py` を使う。Python Path や絶対インポートが自動設定されるため。
+
+### Streamlit アプリ（任意）
+```bash
+uv run streamlit run src/streamlit/agent_app.py --server.port=8501
+```
+他: `machine_learning.py`, `simple_app.py` も同ディレクトリにあり。
+
+### Python環境 / 主なツール
+- Python 3.13 + uv (依存管理 / 実行)
+- 型/品質: mypy, ruff, pytest, pre-commit
+- ログ/検証: loguru, pydantic, pathlib パターン徹底
+- LLM/周辺: langchain など
+- サンプル環境変数: `sample.env` を `.env` にコピーして編集
+
+### テスト
+```bash
+uv run pytest -q
 ```
 
-アプリケーションは `http://localhost:8000` で起動します。
-
-> **注意**: `server/app.py` を直接実行せず、必ず `run_app.py` を使用してください。
-> これにより、Pythonパスが自動的に設定され、モジュールのインポートが正しく動作します。
-
-### Python環境
-- python 3.13を使用
-- uvを使用して仮想環境を管理
-    - uv syncでプロジェクトの依存関係をインストール
-    - uv runでスクリプトを実行
-- 開発にて使用しているツール
-    - mypy: 型チェック
-    - pydoc: ドキュメンテーション生成
-- 取り入れた新しめのライブラリ
-    - langchain: LLMを利用したアプリケーション開発のためのライブラリ
-    - pydantic: データ検証と設定管理のためのライブラリ
-    - uv: Pythonプロジェクトの依存関係管理ツール
-    - loguru: ロギングのためのライブラリ
-    - pathlib: パス操作のためのライブラリ
-    - pytest: テストのためのライブラリ
-    - ruff: コード静的解析ツール
-- 開発にて取り入れたツール
-    - pre-commit: コードの品質を保つためのツール
-
-### Github Actions
-- プルリクエストの際に、AIがコードをレビュー
-    - プルリクエストの時以外にも、手動で実行可能
-### pre-commit
-- https://pre-commit.com/https://pre-commit.com/
-- .pre-commit-config.yaml
+### Github Actions / 自動化
+- PR 時に AI レビュー ワークフロー実行（手動トリガも可）
+- `pre-commit` は `.pre-commit-config.yaml` を参照（フック導入 `uv run pre-commit install`）
 
 
-## Github Copilot
-- Instructions
-    - `.github/instructions/modern.instructions.md`
-        - pythonファイルに対して適用されて、現在のpython環境をAIに教える 
-            - コンテキストにPythonファイルがある必要がある
-    - `.github/instructions/react.instructions.md`
-        - Reactのコードに対して適用されて、現在のReact環境をAIに教える
-            - コンテキストにJSXファイルがある必要がある
-- Prompts
-    - ### 自動では反映されないので、「/」をチャットに入力してショートカットから選択する必要がある
-    #### Python
-    - `.github/prompts/fix.prompt.md`
-        - レビューの内容に基づいて。最も重大な問題を修正するためのプロンプト
-            - レビューのファイルが既に作成されている必要がある
-            - コンテキストに、修正対象となるpythonファイルおよび、そのコードに対するレビューのファイルが必要 
-        - 修正後に、レビューファイルの内容を更新するので、このプロンプトを繰り返し使用することが可能
-    - `.github/prompts/refine.prompt.md`
-        - プロンプトを更に洗練させるためのプロンプト
-            - コンテキストにプロンプトを含める必要がある
-    - `.github/prompts/modernize_python.prompt.md`
-        - Pythonのコードに最新のスタイル・トレンドを取り入れる。pythonの勉強として、新しいライブラリを取り入れたり、最新のPythonの機能を使用するためのプロンプト
-            - コンテキストにpythonファイルが必要
-    - `.github/prompts/review_python.prompt.md`
-        - Pythonのコードをレビューするためのプロンプト
-            - コンテキストにpythonファイルが必要
-            - `review`フォルダをコードと同じ階層に作成し、そこにレビューの内容を保存する
-            - ここの作生物は、上の`fix.prompt.md`にて読み取り・書き込みが行われる
-    #### React
-    - `.github/prompts/react_fix.prompt.md`
-        - Reactのコードに対して、最も重大な問題を修正するためのプロンプト
-            - レビューのファイルが既に作成されている必要がある
-            - コンテキストに、修正対象となるJSXファイルおよび、そのコードに対するレビューのファイルが必要
-        - 修正後に、レビューファイルの内容を更新するので、このプロンプトを繰り返し使用することが可能
-    - `.github/prompts/react_review.prompt.md`
-        - Reactのコードをレビューするためのプロンプト
-            - コンテキストにJSXファイルが必要
-            - `review`フォルダをコードと同じ階層に作成し、そこにレビューの内容を保存する
-            - ここの作生物は、上の`react_fix.prompt.md`にて読み取り・書き込みが行われる
+## Github Copilot / Prompts
+詳細な使い方は `.github/explanation.md` を参照。VSCode Chat で `/` から各プロンプトを呼び出し、`instructions` 系はコードと一緒にコンテキストへ含める。
 
-### 現状
-
-- バックエンド
-    - FLASKで単純なルーティング
-    - IRISデータを機械学習させたモデルを保存して呼び出せるようにしたい（途中）    
-    - LLMフォルダに生成AIなど（LANGCHAINが主）を利用した関数を定義
-        - 画像評価
-        - PDF文字起こし
-        - テキスト分割　
-- フロントエンド
-    - アイリスのデータを入力すると、ランダムなアイリス種の回答を返却
-        - 複数データをCSV形式で入力・アップロードも可
-    - 画像をアップロードすると、AIが描写してくれる
-    - PDFファイルをアップロードすると、AIが文字起こししてくれる
-    - 文字入力すると、分割して返す
-    -
-## 全体フォルダ構成
+### 現状概要
+- ML: Iris などの学習 (`uv run python -m src.machineLearning.ml_class`) → モデル/スケーラは将来的に保存ディレクトリ統合予定
+- LLM: 画像解析 / PDF テキスト抽出 / テキスト分割 関数 (`src/llm/`)
+- API: 画像解析 `/api/analyze-image`, PDF 抽出 `/api/extract-pdf-text`, テキスト分割 `/api/split-text`, Iris 予測 `/api/iris-prediction`
+- Frontend: Iris 単発 & CSV バッチ予測、画像・PDF・テキスト操作 UI
+- Streamlit: LLM エージェント実験 UI (`agent_app.py` 等)
+## 全体フォルダ構成（抜粋）
 ```
 FlaskReact/
-├── .github/
-│   ├── instructions/ # AIにコードのコンテキストを教えるためのファイル
-│   ├──  prompts/ # AIにコードを修正・レビュー等を依頼するためのプロンプト
-│   └── workflows/ # Github Actionsの設定ファイル
-├── .vscode/ # VSCodeの設定ファイル
-├── csvLog # 機械学習の学習ログを記録したCSVファイル
-├── curveLog/ # 機械学習の精度記録を画像化したファイル
-├── data/ # 様々な箇所に利用するデータを格納するフォルダ　詳しくは`data/README.md`を参照
-├── docs/ # ライブラリ等の使い方をメモしたドキュメント
-├── experiment/ # 様々な実験を行うフォルダ
-├── llm/ # LLMを利用した関数を定義　詳しくは`llm/README.md`を参照
-├── logs/ # ログを保存するフォルダ
-├── machineLearning/ # 機械学習関連のコード
-├── param/ # 機械学習モデルのパラメータを保存するフォルダ
-├── scaler/ # 機械学習モデルのスケーラーを保存するフォルダ
-├── scrape/ # スクレイピング関連のコード
-├── server/ # Flaskのサーバーコード
-├── static/ # 静的ファイル（CSS, JS, 画像等）
-│   ├── csvTest/ # CSVファイルのテスト用
-│   ├── home/ # IRISの１データおよび、複数データの判定を可能とするページ
-│   ├── image/ # 画像の描画AI・PDF文字起こし・テキスト分割を可能とするページ
-├── test/ # テスト用のページ
-├── util/ # ユーティリティ関数を定義
+├── src/
+│   ├── run_app.py        # 起動ランチャ
+│   ├── server/           # Flask エントリ & ルーティング
+│   ├── llm/              # 画像解析 / PDF / テキスト分割
+│   ├── machineLearning/  # 学習 & 推論コード
+│   ├── streamlit/        # 実験用 UI
+│   ├── util/             # 共通ユーティリティ
+│   └── scrape/           # スクレイピング
+├── static/               # React (CDN) フロント
+├── data/                 # 入力データ / サンプル
+├── csvLog / curveLog     # 学習ログ & 曲線画像
+├── tests/                # pytest テスト
+├── docs/                 # 補助ドキュメント
+└── sample.env            # 環境変数サンプル
+
+
+---
+今後: モデル保存場所の統一 / LLM 機能追加 / API テスト自動化 などを拡張予定。

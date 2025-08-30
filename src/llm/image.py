@@ -28,7 +28,7 @@ def analyze_image(image_data: str) -> str:
     logger.info("Starting image analysis with OpenAI GPT-4o")
 
     # Load environment variables from .env file
-    env_path: Path = Path(__file__).parent.parent / ".env"
+    env_path: Path = Path(__file__).parent.parent.parent / ".env"
     load_dotenv(env_path)
 
     try:
@@ -62,7 +62,7 @@ def analyze_image(image_data: str) -> str:
 
 if __name__ == "__main__":
     # Fetch image data from local file
-    img_path: Path = Path(__file__).parent.parent / "data" / "fish1.png"
+    img_path: Path = Path(__file__).parent.parent.parent / "data" / "fish1.png"
 
     if not img_path.exists():
         logger.error(f"Image file not found: {img_path}")
