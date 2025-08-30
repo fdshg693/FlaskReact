@@ -3,7 +3,7 @@
 
 # Dataset settings
 dataset_name: "test_dataset"
-dataset_path: "./dataset/test_dataset/"
+dataset_path: "data/machineLearning/image/test_dataset"
 num_class: 0
 img_size: 128
 img_scale: 1.5

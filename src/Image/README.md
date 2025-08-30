@@ -114,6 +114,14 @@ learning_rate: 0.001
 python experiments/train_wood_classification.py
 ```
 
+### 4. 学習済みモデルの実行
+
+```bash
+python evaluate.py 
+--model "./checkpoints/2025_08_24_20_09_13_img128_layer3_hidden4096_0class_dropout0.2_scale1.5_test_dataset/best_accuracy.pth" 
+--image "./dataset/test_dataset/birch/image_01.jpg"
+```
+
 ## 📊 出力
 
 学習実行時に以下が生成されます：
@@ -208,16 +216,5 @@ pytest --cov=src
 3. **評価メトリクス**: `src/evaluation/`に追加
 4. **前処理**: `src/utils/`に追加
 
-## 📝 ライセンス
 
-このプロジェクトは MIT ライセンスの下で公開されています。
 
-## 🔗 関連リソース
-
-- [PyTorch Documentation](https://pytorch.org/docs/)
-- [torchvision Documentation](https://pytorch.org/vision/)
-- [OpenCV Documentation](https://docs.opencv.org/)
-
-```
-
-```
