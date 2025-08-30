@@ -4,12 +4,20 @@
 木材分類のテスト用にダミー画像を生成します
 """
 
-import os
+from pathlib import Path
+from typing import Optional, Tuple, List
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 import random
+from loguru import logger
 
-def create_test_image(width=128, height=128, class_name="", image_name="", color_scheme=None):
+def create_test_image(
+    width: int = 128, 
+    height: int = 128, 
+    class_name: str = "", 
+    image_name: str = "", 
+    color_scheme: Optional[List[Tuple[int, int, int]]] = None
+) -> Image.Image:
     """テスト用のダミー画像を作成"""
     
     # クラスごとの色スキーム
@@ -64,25 +72,28 @@ def create_test_image(width=128, height=128, class_name="", image_name="", color
     
     return image
 
-def create_test_dataset():
+def create_test_dataset() -> None:
     """テストデータセット全体を作成"""
     
     # ベースディレクトリ
-    base_dir = "./dataset/test_dataset"
+    base_dir = Path("./dataset/test_dataset")
     
     # クラス定義
     classes = ['oak', 'pine', 'birch']
     
     # 各クラスに画像を作成
     for class_name in classes:
-        class_dir = os.path.join(base_dir, class_name)
+        class_dir = base_dir / class_name
         
-        print(f"Creating images for class: {class_name}")
+        # ディレクトリを作成（存在しない場合）
+        class_dir.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Creating images for class: {class_name}")
         
         # 各クラスに10枚の画像を作成
         for i in range(1, 11):
             image_name = f"image_{i:02d}.jpg"
-            image_path = os.path.join(class_dir, image_name)
+            image_path = class_dir / image_name
             
             # 画像作成
             image = create_test_image(
@@ -95,19 +106,19 @@ def create_test_dataset():
             
             # 保存
             image.save(image_path, 'JPEG', quality=85)
-            print(f"  Created: {image_path}")
+            logger.info(f"  Created: {image_path}")
     
-    print(f"\nテストデータセット作成完了！")
-    print(f"場所: {os.path.abspath(base_dir)}")
-    print(f"構造:")
-    print(f"dataset/")
-    print(f"└── test_dataset/")
+    logger.success(f"\nテストデータセット作成完了！")
+    logger.info(f"場所: {base_dir.absolute()}")
+    logger.info(f"構造:")
+    logger.info(f"dataset/")
+    logger.info(f"└── test_dataset/")
     for class_name in classes:
-        print(f"    ├── {class_name}/")
-        print(f"    │   ├── image_01.jpg")
-        print(f"    │   ├── image_02.jpg")
-        print(f"    │   ├── ...")
-        print(f"    │   └── image_10.jpg")
+        logger.info(f"    ├── {class_name}/")
+        logger.info(f"    │   ├── image_01.jpg")
+        logger.info(f"    │   ├── image_02.jpg")
+        logger.info(f"    │   ├── ...")
+        logger.info(f"    │   └── image_10.jpg")
 
 if __name__ == "__main__":
     create_test_dataset()

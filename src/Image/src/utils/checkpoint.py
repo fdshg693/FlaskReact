@@ -34,7 +34,8 @@ class CheckpointManager:
                        accuracy: float,
                        metrics: Optional[Dict[str, Any]] = None,
                        is_best_loss: bool = False,
-                       is_best_acc: bool = False) -> str:
+                       is_best_acc: bool = False,
+                       model_config: Optional[Dict[str, Any]] = None) -> str:
         """Save model checkpoint.
         
         Args:
@@ -46,6 +47,7 @@ class CheckpointManager:
             metrics: Additional metrics
             is_best_loss: Whether this is the best loss checkpoint
             is_best_acc: Whether this is the best accuracy checkpoint
+            model_config: Model configuration dictionary
             
         Returns:
             Path to saved checkpoint
@@ -59,7 +61,8 @@ class CheckpointManager:
             'loss': loss,
             'accuracy': accuracy,
             'timestamp': timestamp,
-            'metrics': metrics or {}
+            'metrics': metrics or {},
+            'model_config': model_config or {}
         }
         
         # Regular checkpoint

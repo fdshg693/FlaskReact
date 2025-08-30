@@ -35,7 +35,7 @@ def main():
     os.makedirs(config.log_dir, exist_ok=True)
     os.makedirs(config.checkpoint_dir, exist_ok=True)
     
-    # Initialize utilities
+    # Initialize utilities (will be updated after class count correction)
     logger = Logger(config.log_dir, config.experiment_name)
     visualizer = Visualizer(config.log_dir)
     checkpoint_manager = CheckpointManager(config.checkpoint_dir)
@@ -60,6 +60,43 @@ def main():
     config.num_class = dataset.get_num_class()
     logger.log_info(f"Number of classes: {config.num_class}")
     logger.log_info(f"Dataset size: {len(dataset)}")
+    
+    # Regenerate experiment name with correct class count
+    if hasattr(config, 'auto_timestamp') and config.auto_timestamp:
+        import datetime
+        timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        
+        template = getattr(config, 'experiment_name_template', 
+                         '{timestamp}_img{img_size}_layer{layer}_hidden{num_hidden}_{num_class}class_dropout{dropout_rate}_scale{img_scale}_{dataset_name}')
+        
+        config.experiment_name = template.format(
+            timestamp=timestamp,
+            img_size=config.img_size,
+            layer=config.layer,
+            num_hidden=config.num_hidden,
+            num_class=config.num_class,  # Now contains correct class count
+            dropout_rate=config.dropout_rate,
+            img_scale=config.img_scale,
+            dataset_name=config.dataset_name
+        )
+        
+        # Update log and checkpoint directories
+        config.log_dir = os.path.join('./logs/', config.experiment_name)
+        config.checkpoint_dir = os.path.join('./checkpoints/', config.experiment_name)
+        
+        # Recreate directories with new names
+        os.makedirs(config.log_dir, exist_ok=True)
+        os.makedirs(config.checkpoint_dir, exist_ok=True)
+        
+        # Reinitialize utilities with correct experiment name
+        logger = Logger(config.log_dir, config.experiment_name)
+        visualizer = Visualizer(config.log_dir)
+        checkpoint_manager = CheckpointManager(config.checkpoint_dir)
+        
+        print(f"Updated experiment name: {config.experiment_name}")
+    else:
+        # If not auto_timestamp, still need to ensure checkpoint_manager exists
+        checkpoint_manager = CheckpointManager(config.checkpoint_dir)
     
     # Create train/validation split
     train_indices, val_indices = train_test_split(

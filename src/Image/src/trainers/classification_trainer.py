@@ -236,6 +236,12 @@ class ClassificationTrainer(BaseTrainer):
             
             # Save checkpoint
             if self.checkpoint_manager:
+                # Get model configuration from the model
+                model_config = {}
+                if hasattr(self.model, 'get_model_info'):
+                    model_info = self.model.get_model_info()
+                    model_config.update(model_info)
+                
                 self.checkpoint_manager.save_checkpoint(
                     model=self.model,
                     optimizer=self.optimizer,
@@ -244,7 +250,8 @@ class ClassificationTrainer(BaseTrainer):
                     accuracy=val_acc,
                     metrics=detailed_metrics,
                     is_best_loss=is_best_loss,
-                    is_best_acc=is_best_acc
+                    is_best_acc=is_best_acc,
+                    model_config=model_config
                 )
             
             # Create visualizations

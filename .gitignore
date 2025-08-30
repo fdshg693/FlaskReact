@@ -197,7 +197,9 @@ memo.md
 /log/*
 param/
 log/
+logs/
 scaler/
+checkpoints/
 
 # VSCODEの設定は統一するために、GITに追加する
 # /.vscode/
