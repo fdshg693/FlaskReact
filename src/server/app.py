@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import base64
 import tempfile
+import torch
 from pathlib import Path
 
 from flask import Flask, jsonify, send_from_directory, request, Response
@@ -11,11 +11,12 @@ from functools import wraps, lru_cache
 from loguru import logger
 
 # Modern absolute imports - no sys.path manipulation needed
-from llm.image import analyze_image
 from llm.pdf import extract_text_from_pdf
 from llm.text_splitter import split_text
 from machineLearning.eval_batch import evaluate_iris_batch
+from image.core.evaluation.evaluator import predict_image_data
 from util.convert_json import convert_json_to_model_input
+from util.filestorage_to_tensor import filestorage_to_tensor_no_tv
 
 # Constants for file paths and configuration
 APP_ROOT = Path(__file__).parent.parent.parent
@@ -203,10 +204,12 @@ def handle_image_analysis_request() -> Response:
 
     logger.info(f"Processing image upload: {filename}")
 
-    image_b64 = base64.b64encode(image_file.read()).decode("utf-8")
-    analysis_result = analyze_image(image_b64)
-
-    return jsonify({"description": analysis_result})
+    img_tensor: torch.Tensor = filestorage_to_tensor_no_tv(image_file)
+    predict_result = predict_image_data(
+        checkpoint_path="/Users/seiwan/CodeStudy/FlaskReact/checkpoints/2025_09_06_20_21_44_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset/best_accuracy.pth",
+        img_tensor=img_tensor,
+    )
+    return jsonify({"description": predict_result})
 
 
 # PDF text extraction API
@@ -362,7 +365,8 @@ def serve_data_files(path: str) -> Response:
 
 
 if __name__ == "__main__":
-    # This file should be run through the main launcher script
-    # Use: python run_app.py instead
-    print("⚠️  Please use 'python run_app.py' to start the application")
-    print("This ensures proper Python path configuration.")
+    print("🚀 Starting FlaskReact application...")
+    print(f"📁 Project root: {Path(__file__).parent.parent.absolute()}")
+    print("🐍 Python path configured automatically")
+
+    app.run(host="0.0.0.0", port=8000, debug=True)
