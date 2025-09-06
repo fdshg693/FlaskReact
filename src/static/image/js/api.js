@@ -13,7 +13,7 @@ export async function analyzeImage(selectedFile) {
     if (!res.ok) throw new Error('APIエラー');
     const data = await res.json();
     console.log('API response:', data);
-    return data.description;
+    return data.description.predicted_class;
 }
 
 // PDF認識APIを呼び出す

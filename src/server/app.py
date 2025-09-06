@@ -205,8 +205,17 @@ def handle_image_analysis_request() -> Response:
     logger.info(f"Processing image upload: {filename}")
 
     img_tensor: torch.Tensor = filestorage_to_tensor_no_tv(image_file)
+    
+    # Use pathlib for cross-platform checkpoint path handling
+    checkpoint_path = (
+        APP_ROOT 
+        / "checkpoints" 
+        / "2025_09_06_20_49_09_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset" 
+        / "best_accuracy.pth"
+    )
+    
     predict_result = predict_image_data(
-        checkpoint_path="/Users/seiwan/CodeStudy/FlaskReact/checkpoints/2025_09_06_20_21_44_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset/best_accuracy.pth",
+        checkpoint_path=str(checkpoint_path),
         img_tensor=img_tensor,
     )
     return jsonify({"description": predict_result})
