@@ -184,27 +184,24 @@ cython_debug/
 *.jpegß
 *.png
 *.gif
-*.csv
 
-# Allow versioning CSV files inside the `data/` directory but keep ignoring CSVs elsewhere.
-# The global `*.csv` above ignores CSVs by default; these negation rules re-include files
-# under `data/` and its subdirectories.
+# CSVデータは基本的に無視するが、dataフォルダ配下のcsvファイルはGITに追加する
+*.csv
 !data/
 !data/**/*.csv
-*.gz
 
+# memo
 memo.md
 
+# 一時的な成果物
 /param/*
 /log/*
-param/ƒ
+param/*
 log/
 logs/
 scaler/
 checkpoints/
-
-# VSCODEの設定は統一するために、GITに追加する
-# /.vscode/
+*.gz
 
 # 色々実験用のディレクトリ
 # ディレクトリだけ残して、配下のファイルは無視する
@@ -217,11 +214,9 @@ review/
 .github/prompts/_*
 .github/prompts/＿*
 
-.vscode/**.**
-
 # サンプルVSCODE設定ファイルはGITに追加する
-!.vscode/sample_launch.json
-!.vscode/sample_settings.json
+.vscode/**.**
+!.vscode/sample*
 
 
 # tmpフォルダ本体だけ残して、配下のファイルは無視する

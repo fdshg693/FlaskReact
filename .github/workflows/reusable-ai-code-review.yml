@@ -1,0 +1,257 @@
+# Reusable AI Code Review Workflow
+# Extracted common steps for generating diffs and requesting an AI review
+on:
+  workflow_call:
+    inputs:
+      target_branch:
+        description: 'Base branch to compare against (default: main)'
+        required: false
+        type: string
+        default: 'main'
+      ai_model:
+        description: 'Model to use for AI review'
+        required: false
+        type: string
+        default: 'gpt-4.1'
+      max_tokens:
+        description: 'Max tokens for the model'
+        required: false
+        type: number
+        default: 15000
+      temperature:
+        description: 'Temperature for the model'
+        required: false
+        type: number
+        default: 0.3
+      fetch_depth:
+        description: 'git fetch depth for checkout'
+        required: false
+        type: number
+        default: 50
+      post_pr_comment:
+        description: 'Whether to post the review to the PR (if exists)'
+        required: false
+        type: boolean
+        default: false
+      review_prompt:
+        description: 'Optional override prompt for the AI reviewer'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      review:
+        description: 'AI review text'
+      has_changes:
+        description: 'Whether diff had changes'
+
+name: Reusable AI Code Review
+
+jobs:
+  ai_review:
+    name: Generate AI Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    env:
+      AI_MODEL: ${{ inputs.ai_model }}
+      MAX_TOKENS: ${{ inputs.max_tokens }}
+      TEMPERATURE: ${{ inputs.temperature }}
+      FETCH_DEPTH: ${{ inputs.fetch_depth }}
+      POST_PR_COMMENT: ${{ inputs.post_pr_comment }}
+      REVIEW_PROMPT: ${{ inputs.review_prompt }}
+
+    timeout-minutes: 10
+
+    outputs:
+      review: ${{ steps.ai_review.outputs.review }}
+      has_changes: ${{ steps.generate_diff.outputs.has_changes }}
+
+    steps:
+      - name: Checkout repository with optimized history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ env.FETCH_DEPTH }}
+
+      - name: Generate diff against base branch
+        id: generate_diff
+        run: |
+          # Determine the base branch for comparison
+          PR_BASE_REF='${{ github.event.pull_request.base.ref }}'
+          INPUT_TARGET='${{ inputs.target_branch }}'
+
+          if [ -n "$PR_BASE_REF" ] && [ "$PR_BASE_REF" != 'null' ]; then
+            BASE_BRANCH="$PR_BASE_REF"
+          elif [ -n "$INPUT_TARGET" ] && [ "$INPUT_TARGET" != 'null' ]; then
+            BASE_BRANCH="$INPUT_TARGET"
+          else
+            BASE_BRANCH='main'
+          fi
+
+          echo "Comparing against base branch: $BASE_BRANCH"
+
+          git fetch origin "$BASE_BRANCH" || {
+            echo "Error: Failed to fetch base branch '$BASE_BRANCH'"
+            echo "Available branches:"
+            git branch -r
+            exit 1
+          }
+
+          git diff "origin/$BASE_BRANCH...HEAD" \
+            --unified=3 \
+            --no-color \
+            --ignore-space-change \
+            > diff.patch
+
+          if [ ! -s diff.patch ]; then
+            echo "ℹ️ No changes detected between current branch and $BASE_BRANCH"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          echo "✅ Generated diff file ($(wc -l < diff.patch) lines)"
+
+      - name: Request AI code review
+        id: ai_review
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "❌ Error: OPENAI_API_KEY secret is not configured in repository settings"
+            exit 1
+          fi
+
+          DIFF_CONTENT=$(cat diff.patch)
+
+          # Use provided prompt or default
+          if [ -n "${{ inputs.review_prompt }}" ] && [ "${{ inputs.review_prompt }}" != '' ]; then
+            echo "${{ inputs.review_prompt }}" > temp_prompt.txt
+          else
+            cat << 'EOF' > temp_prompt.txt
+You are an experienced software engineer. Please review the following code diff in detail and analyze it from the following perspectives in English:
+
+1. Code Quality: Readability, maintainability, performance
+2. Security: Potential vulnerabilities and security risks
+3. Best Practices: Language and framework recommendations
+4. Bug Potential: Logic errors and exception handling issues
+5. Improvement Suggestions: Specific improvement proposals and refactoring suggestions
+
+Output Format:
+- Point out issues specifically and include relevant line numbers
+- Provide implementable concrete examples for improvement suggestions
+- Clearly indicate importance level (High, Medium, Low)
+
+Code Diff:
+---BEGIN_DIFF---
+EOF
+          fi
+
+          # Append the actual diff content and closing markers
+          echo "${DIFF_CONTENT}" >> temp_prompt.txt
+          echo "---END_OF_DIFF---" >> temp_prompt.txt
+
+          TEMP_PAYLOAD=$(mktemp)
+
+          jq -n \
+            --arg model "$AI_MODEL" \
+            --rawfile prompt temp_prompt.txt \
+            --argjson max_tokens "$MAX_TOKENS" \
+            --argjson temperature "$TEMPERATURE" \
+            '{
+              model: $model,
+              messages: [
+                {
+                  role: "system",
+                  content: "You are a helpful and constructive code reviewer. Please provide detailed and practical feedback."
+                },
+                {
+                  role: "user",
+                  content: $prompt
+                }
+              ],
+              max_tokens: $max_tokens,
+              temperature: $temperature
+            }' > "$TEMP_PAYLOAD"
+
+          echo "🔄 Sending request to OpenAI API..."
+
+          HTTP_CODE=$(curl -w "%{http_code}" -s \
+            -X POST \
+            -H "Authorization: Bearer $OPENAI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @"$TEMP_PAYLOAD" \
+            -o api_response.json \
+            https://api.openai.com/v1/chat/completions
+          )
+
+          rm -f "$TEMP_PAYLOAD" temp_prompt.txt
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "❌ Error: OpenAI API request failed with HTTP $HTTP_CODE"
+            ERROR_TYPE=$(jq -r '.error.type // "unknown"' api_response.json 2>/dev/null || echo "unknown")
+            ERROR_MESSAGE=$(jq -r '.error.message // "API call failed"' api_response.json 2>/dev/null || echo "API call failed")
+            echo "Error type: $ERROR_TYPE"
+            echo "Error message: $ERROR_MESSAGE"
+            exit 1
+          fi
+
+          REVIEW_CONTENT=$(jq -r '.choices[0].message.content // "No review content received"' api_response.json 2>/dev/null)
+
+          if [ "$REVIEW_CONTENT" = "null" ] || [ "$REVIEW_CONTENT" = "No review content received" ] || [ -z "$REVIEW_CONTENT" ]; then
+            echo "❌ Error: No valid review content received from OpenAI"
+            API_ERROR=$(jq -r '.error.message // "Unknown API error"' api_response.json 2>/dev/null || echo "Response parsing failed")
+            echo "API indicated: $API_ERROR"
+            exit 1
+          fi
+
+          {
+            echo "review<<REVIEW_EOF"
+            echo "$REVIEW_CONTENT"
+            echo "REVIEW_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "$REVIEW_CONTENT" > ai_review_output.txt
+
+      - name: Display review results
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        run: |
+          echo "## 🤖 AI Code Review Results"
+          echo ""
+          echo "${{ steps.ai_review.outputs.review }}"
+
+      - name: Upload AI review as artifact
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review-${{ github.run_number }}
+          path: |
+            ai_review_output.txt
+            diff.patch
+          retention-days: 30
+
+      - name: Post review to PR (optional)
+        if: steps.generate_diff.outputs.has_changes == 'true' && github.event.pull_request && inputs.post_pr_comment == true
+        uses: actions/github-script@v7
+        env:
+          REVIEW_CONTENT: ${{ steps.ai_review.outputs.review }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const reviewContent = process.env.REVIEW_CONTENT;
+            if (reviewContent && reviewContent.trim() !== '') {
+              console.log("Posting AI review comment to PR...");
+              const prNumber = context.payload.pull_request.number;
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🤖 AI Code Review Results\n\n${reviewContent}`
+              });
+              console.log(`✅ Successfully posted review comment to PR #${prNumber}`);
+            } else {
+              console.log("❌ No review content available to post.");
+            }

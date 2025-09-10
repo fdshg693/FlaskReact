@@ -10,7 +10,7 @@
 """
 
 from pathlib import Path
-from typing import Tuple, List, Protocol
+from typing import Tuple, List
 
 import numpy as np
 import joblib
@@ -21,19 +21,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from loguru import logger
 
-from .save_util import save_model_and_learning_curves_with_custom_name
-from .simple_nn import SimpleNeuralNetwork
-
-
-class Trainable(Protocol):  # 形式的インターフェース (将来拡張用)
-    def train_model(self, epochs: int = 20) -> Tuple[List[float], List[float]]: ...
-    def evaluate_model(self) -> float: ...
+from machineLearning.save_util import save_model_and_learning_curves_with_custom_name
+from machineLearning.simple_nn import SimpleNeuralNetwork
+from machineLearning.dataset import MLCompatibleDataset
 
 
 class BaseMLModel:
     """共通前処理 / データ分割 / スケーリング処理をまとめた基底クラス"""
 
-    def __init__(self, dataset: object) -> None:
+    def __init__(self, dataset: MLCompatibleDataset) -> None:
         self._validate_dataset(dataset)
         self.feature_data = np.asarray(dataset.data, dtype=np.float32)
         self.target = np.asarray(dataset.target)
@@ -53,7 +49,7 @@ class BaseMLModel:
         )
 
     # --------------------------- 共通ユーティリティ ---------------------------
-    def _validate_dataset(self, dataset: object) -> None:
+    def _validate_dataset(self, dataset: MLCompatibleDataset) -> None:
         if dataset is None:
             raise ValueError("Dataset cannot be None")
         if not hasattr(dataset, "data") or not hasattr(dataset, "target"):
@@ -128,7 +124,7 @@ class BaseMLModel:
 class ClassificationMLModel(BaseMLModel):
     """分類タスク用モデル"""
 
-    def __init__(self, dataset: object) -> None:  # noqa: D401
+    def __init__(self, dataset: MLCompatibleDataset) -> None:  # noqa: D401
         super().__init__(dataset)
         # クラス数を推定
         unique_classes = np.unique(self.target)
@@ -204,7 +200,7 @@ class RegressionMLModel(BaseMLModel):
     accuracy_history には R2 スコアを格納し、evaluate_model も R2 を返す。
     """
 
-    def __init__(self, dataset: object) -> None:
+    def __init__(self, dataset: MLCompatibleDataset) -> None:
         super().__init__(dataset)
         self.neural_network_model = SimpleNeuralNetwork(
             input_dim=self.n_features, hidden_dim=32, output_dim=1
@@ -305,7 +301,7 @@ def _decide_task_type(target: np.ndarray) -> str:
     return "regression"
 
 
-def _build_model(dataset: object) -> BaseMLModel:
+def _build_model(dataset: MLCompatibleDataset) -> BaseMLModel:
     task = _decide_task_type(np.asarray(dataset.target))
     if task == "classification":
         return ClassificationMLModel(dataset)
@@ -313,7 +309,7 @@ def _build_model(dataset: object) -> BaseMLModel:
 
 
 def execute_machine_learning_pipeline(
-    dataset: object,
+    dataset: MLCompatibleDataset,
     epochs: int = 5,
     file_suffix: str = "",
     learning_rate: float | None = None,
