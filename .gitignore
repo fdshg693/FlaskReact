@@ -217,5 +217,6 @@ review/
 
 .vscode/**.**
 
+# サンプルVSCODE設定ファイルはGITに追加する
 !.vscode/sample_launch.json
-
+!.vscode/sample_settings.json
