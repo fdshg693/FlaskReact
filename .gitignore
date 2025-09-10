@@ -176,26 +176,28 @@ cython_debug/
 */log/*
 */param/*
 */save/*
-*/*.pth
+*/*.pthƒ
 .DS_Store
 */*.png
 *.pth
 *.jpg
-*.jpeg
+*.jpegß
 *.png
 *.gif
 *.csv
+
+# Allow versioning CSV files inside the `data/` directory but keep ignoring CSVs elsewhere.
+# The global `*.csv` above ignores CSVs by default; these negation rules re-include files
+# under `data/` and its subdirectories.
+!data/
+!data/**/*.csv
 *.gz
-# フォルダだけ残して、配下のファイルは無視する
-/data/*
-# README.mdはGITに追加する
-!/data/README.md
 
 memo.md
 
 /param/*
 /log/*
-param/
+param/ƒ
 log/
 logs/
 scaler/
