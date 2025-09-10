@@ -9,6 +9,9 @@ LOGS_DIR = PROJECT_ROOT / "logs"
 OUTPUTS_PATH = PROJECT_ROOT / "outputs"
 TMP_DIR = PROJECT_ROOT / "tmp"
 
+IRIS_DATA_PATH = DATA_DIR / "machineLearning" / "iris" / "iris.csv"
+DIABETES_DATA_PATH = DATA_DIR / "machineLearning" / "diabetes" / "diabetes.csv"
+
 
 def get_path(
     *parts: Union[str, Path], root: Path = PROJECT_ROOT, create: bool = False

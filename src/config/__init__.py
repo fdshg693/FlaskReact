@@ -8,6 +8,8 @@ from .paths import (
     LOGS_DIR,
     OUTPUTS_PATH,
     TMP_DIR,
+    IRIS_DATA_PATH,
+    DIABETES_DATA_PATH,
 )
 
 __all__ = [
@@ -20,4 +22,6 @@ __all__ = [
     "LOGS_DIR",
     "OUTPUTS_PATH",
     "TMP_DIR",
+    "IRIS_DATA_PATH",
+    "DIABETES_DATA_PATH",
 ]

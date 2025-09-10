@@ -49,6 +49,7 @@ def save_csv_to_path(
     *,
     index: bool = False,
     overwrite: bool = True,
+    header: bool | list[str] | None = True,
     encoding: Optional[str] = None,
 ) -> Path:
     """Save a pandas DataFrame to CSV at the given path, creating parents.
@@ -80,10 +81,11 @@ def save_csv_to_path(
         p.parent.mkdir(parents=True, exist_ok=True)
 
     try:
+        # Respect header and optional encoding when saving
+        to_csv_kwargs = {"index": index, "header": header}
         if encoding:
-            df.to_csv(p, index=index, encoding=encoding)
-        else:
-            df.to_csv(p, index=index)
+            to_csv_kwargs["encoding"] = encoding
+        df.to_csv(p, **to_csv_kwargs)
         logger.info("Saved CSV with shape {} to {}", getattr(df, "shape", "?"), p)
         return p.resolve()
     except Exception:

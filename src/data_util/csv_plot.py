@@ -6,7 +6,8 @@ from typing import Dict, Iterable, Optional, Tuple
 import pandas as pd
 import matplotlib.pyplot as plt
 from loguru import logger
-from config import TMP_DIR, get_path
+from config import TMP_DIR, DIABETES_DATA_PATH, get_path
+from data_util.csv_util import read_csv_from_path
 
 
 def plot_histograms_from_dataframe(
@@ -89,35 +90,14 @@ def plot_histograms_from_dataframe(
 
 
 if __name__ == "__main__":
-    # example usage
-    df_example = pd.DataFrame(
-        {
-            "age": [23, 45, 31, 35, 40, None, 29, 50, 41, 38],
-            "salary": [
-                50000,
-                80000,
-                60000,
-                None,
-                75000,
-                72000,
-                58000,
-                90000,
-                82000,
-                76000,
-            ],
-            "department": [
-                "HR",
-                "Finance",
-                "IT",
-                "IT",
-                "Finance",
-                "HR",
-                "IT",
-                "Finance",
-                "HR",
-                "IT",
-            ],
-        }
+    # df_example = read_csv_from_path(
+    #     IRIS_DATA_PATH,
+    #     encoding="utf-8",
+    # )
+
+    df_example = read_csv_from_path(
+        DIABETES_DATA_PATH,
+        encoding="utf-8",
     )
 
     dir_path = get_path("outputs", root=TMP_DIR, create=True)
