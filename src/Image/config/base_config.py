@@ -1,4 +1,18 @@
-"""YAML-based configuration management for experiments."""
+"""YAML-based configuration management for experiments.
+
+This module provides a flexible configuration management system for machine learning
+experiments. It supports YAML-based configuration files with inheritance, automatic
+path management, and experiment tracking.
+
+Classes:
+    BaseConfig: Core configuration class with YAML support and automatic path generation.
+    ConfigManager: High-level manager for configuration lifecycle management.
+
+Example:
+    >>> config = BaseConfig.from_yaml('experiment.yaml')
+    >>> config.dataset_name = 'new_dataset'
+    >>> config.save_yaml('updated_config.yaml')
+"""
 import os
 import yaml
 import datetime
@@ -7,10 +21,60 @@ from pathlib import Path
 
 
 class BaseConfig:
-    """YAML-based configuration class with validation and path management."""
+    """YAML-based configuration class with validation and path management.
     
-    def __init__(self, config_data: Optional[Dict[str, Any]] = None):
-        """Initialize configuration from dictionary data."""
+    This class provides a comprehensive configuration management system for machine
+    learning experiments. It supports default values, automatic path generation,
+    CUDA detection, and experiment naming with timestamps.
+    
+    Features:
+        - Automatic default value setting for common ML parameters
+        - Dynamic experiment name generation with timestamps
+        - CUDA availability detection
+        - Path management for logs and checkpoints
+        - YAML serialization/deserialization
+        - Configuration inheritance support
+    
+    Attributes:
+        dataset_name (str): Name of the dataset being used
+        dataset_path (str): Path to the dataset directory
+        num_class (int): Number of classes in the dataset
+        img_size (int): Input image size for the model
+        img_scale (float): Scaling factor for image preprocessing
+        layer (int): Number of layers in the model
+        num_hidden (int): Number of hidden units
+        dropout_rate (float): Dropout rate for regularization
+        epoch (int): Number of training epochs
+        batch_size_train (int): Training batch size
+        batch_size_test (int): Testing batch size
+        learning_rate (float): Learning rate for optimization
+        device (str): Computing device ('cuda' or 'cpu')
+        log_dir (str): Directory for logging outputs
+        checkpoint_dir (str): Directory for model checkpoints
+        experiment_name (str): Auto-generated experiment identifier
+    
+    Example:
+        >>> # Create with defaults
+        >>> config = BaseConfig.from_default()
+        >>> print(config.device)  # 'cuda' or 'cpu' (auto-detected)
+        
+        >>> # Load from YAML
+        >>> config = BaseConfig.from_yaml('config.yaml')
+        >>> config.learning_rate = 0.01
+        >>> config.save_yaml('updated_config.yaml')
+    """
+    
+    def __init__(self, config_data: Optional[Dict[str, Any]] = None) -> None:
+        """Initialize configuration from dictionary data.
+        
+        Args:
+            config_data: Dictionary containing configuration parameters.
+                        If None, an empty dictionary is used and defaults are applied.
+        
+        Note:
+            After setting initial values, this method calls _set_defaults() to ensure
+            all required attributes exist, then _post_init() for derived calculations.
+        """
         if config_data is None:
             config_data = {}
         
@@ -28,8 +92,25 @@ class BaseConfig:
         self._post_init()
     
     
-    def _set_defaults(self):
-        """Set default values for required attributes."""
+    def _set_defaults(self) -> None:
+        """Set default values for required attributes.
+        
+        This method ensures all necessary configuration attributes exist with
+        sensible default values. It covers dataset settings, model architecture,
+        training parameters, device configuration, and experiment management.
+        
+        Default Categories:
+            - Dataset: name, path, classes, image preprocessing
+            - Model: architecture layers, hidden units, regularization
+            - Training: epochs, batch sizes, learning rate
+            - Device: CUDA/CPU selection
+            - Output: logging and checkpoint directories
+            - Experiment: naming templates and auto-generation flags
+        
+        Note:
+            Only sets attributes that don't already exist, preserving any
+            values that were explicitly provided during initialization.
+        """
         defaults = {
             # Dataset settings
             'dataset_name': 'Oketo_KIT3',
@@ -69,8 +150,26 @@ class BaseConfig:
             if not hasattr(self, key):
                 setattr(self, key, default_value)
     
-    def _post_init(self):
-        """Post-initialization to set up derived paths and settings."""
+    def _post_init(self) -> None:
+        """Post-initialization to set up derived paths and settings.
+        
+        This method handles dynamic configuration setup that depends on other
+        configuration values. It performs:
+        
+        1. CUDA detection and device assignment
+        2. Dynamic dataset path resolution using f-string templates
+        3. Experiment name generation with timestamps
+        4. Log and checkpoint directory path construction
+        
+        The method is called automatically after _set_defaults() and can be
+        called manually after configuration updates to refresh derived values.
+        
+        Side Effects:
+            - Updates self.device based on CUDA availability
+            - Modifies self.dataset_path if it contains template variables
+            - Generates new self.experiment_name with current timestamp
+            - Updates self.log_dir and self.checkpoint_dir paths
+        """
         # Auto CUDA detection
         if getattr(self, 'auto_cuda_detection', True):
             self.device = 'cuda' if self.device == 'cuda' and self._is_cuda_available() else 'cpu'
@@ -104,7 +203,16 @@ class BaseConfig:
     
     @staticmethod
     def _is_cuda_available() -> bool:
-        """Check if CUDA is available."""
+        """Check if CUDA is available for PyTorch operations.
+        
+        Returns:
+            bool: True if CUDA is available and PyTorch can use it, False otherwise.
+                 Also returns False if PyTorch is not installed.
+        
+        Note:
+            This method gracefully handles the case where PyTorch is not installed
+            by catching ImportError and returning False.
+        """
         try:
             import torch
             return torch.cuda.is_available()
@@ -112,7 +220,16 @@ class BaseConfig:
             return False
     
     def to_dict(self) -> Dict[str, Any]:
-        """Convert config to dictionary."""
+        """Convert configuration to dictionary format.
+        
+        Returns:
+            Dict[str, Any]: Dictionary containing all public configuration attributes.
+                           Private attributes (those starting with '_') are excluded.
+        
+        Note:
+            This method is useful for serialization to YAML or JSON formats,
+            and for creating configuration snapshots.
+        """
         # Create dictionary from all attributes that don't start with _
         config_dict = {}
         for key, value in self.__dict__.items():
@@ -122,7 +239,31 @@ class BaseConfig:
     
     @classmethod
     def from_yaml(cls, yaml_path: str, base_config_path: Optional[str] = None) -> 'BaseConfig':
-        """Load configuration from YAML file with optional base config inheritance."""
+        """Load configuration from YAML file with optional base config inheritance.
+        
+        This method supports configuration inheritance where an experiment-specific
+        configuration can inherit from a base configuration file. Settings in the
+        experiment file override those in the base file.
+        
+        Args:
+            yaml_path: Path to the experiment-specific YAML configuration file.
+            base_config_path: Optional path to base configuration file. If provided
+                            and the file exists, its settings are loaded first.
+        
+        Returns:
+            BaseConfig: New configuration instance with merged settings.
+        
+        Example:
+            >>> # Load with inheritance
+            >>> config = BaseConfig.from_yaml('experiment.yaml', 'base.yaml')
+            
+            >>> # Load single file
+            >>> config = BaseConfig.from_yaml('config.yaml')
+        
+        Note:
+            If either YAML file doesn't exist, it's treated as an empty configuration.
+            The method uses yaml.safe_load for security.
+        """
         
         # Load base configuration if specified
         base_config = {}
@@ -143,25 +284,81 @@ class BaseConfig:
     
     @classmethod
     def from_default(cls) -> 'BaseConfig':
-        """Load configuration with default values only."""
+        """Load configuration with default values only.
+        
+        Returns:
+            BaseConfig: New configuration instance using only default values
+                       defined in _set_defaults().
+        
+        Example:
+            >>> config = BaseConfig.from_default()
+            >>> print(config.learning_rate)  # 0.001 (default value)
+        """
         return cls({})
     
     def save_yaml(self, yaml_path: str) -> None:
-        """Save configuration to YAML file."""
+        """Save configuration to YAML file.
+        
+        Args:
+            yaml_path: Path where the YAML configuration file will be saved.
+                      Parent directories are created if they don't exist.
+        
+        Raises:
+            OSError: If the file cannot be created or written to.
+        
+        Example:
+            >>> config = BaseConfig.from_default()
+            >>> config.learning_rate = 0.01
+            >>> config.save_yaml('experiments/my_config.yaml')
+        
+        Note:
+            The output YAML is formatted with default_flow_style=False for
+            better readability.
+        """
         os.makedirs(os.path.dirname(yaml_path), exist_ok=True)
         with open(yaml_path, 'w', encoding='utf-8') as f:
             yaml.dump(self.to_dict(), f, default_flow_style=False)
 
 
 class ConfigManager:
-    """YAML-based configuration manager for experiments."""
+    """YAML-based configuration manager for experiments.
     
-    def __init__(self, config_path: Optional[str] = None, base_config_path: Optional[str] = None):
+    This class provides high-level management of configuration lifecycle including
+    loading, updating, saving, and experiment-specific configuration handling.
+    It acts as a wrapper around BaseConfig with additional convenience methods.
+    
+    Features:
+        - Automatic base configuration loading
+        - Configuration updates with derived path recalculation
+        - Experiment configuration loading by name
+        - Automatic save path generation
+    
+    Attributes:
+        config (BaseConfig): The managed configuration instance.
+    
+    Example:
+        >>> manager = ConfigManager('experiment.yaml')
+        >>> manager.update_config(learning_rate=0.01, batch_size_train=32)
+        >>> manager.save_config()  # Saves to auto-generated path
+        
+        >>> # Load predefined experiment
+        >>> manager.load_experiment_config('resnet_baseline')
+    """
+    
+    def __init__(self, config_path: Optional[str] = None, base_config_path: Optional[str] = None) -> None:
         """Initialize configuration manager.
         
         Args:
             config_path: Path to experiment-specific configuration file.
-            base_config_path: Path to base configuration file. If None, uses default_config.yaml.
+                        If None or file doesn't exist, falls back to base config.
+            base_config_path: Path to base configuration file. If None, 
+                            uses 'default_config.yaml' in the same directory as this module.
+        
+        Note:
+            The initialization follows this priority:
+            1. If config_path exists: load it with base_config inheritance
+            2. If only base_config exists: load base_config alone
+            3. Otherwise: create configuration with defaults only
         """
         # Set default base config path
         if base_config_path is None:
@@ -175,11 +372,40 @@ class ConfigManager:
             self.config = BaseConfig.from_default()
     
     def get_config(self) -> BaseConfig:
-        """Get current configuration."""
+        """Get current configuration instance.
+        
+        Returns:
+            BaseConfig: The currently managed configuration object.
+        
+        Example:
+            >>> manager = ConfigManager()
+            >>> config = manager.get_config()
+            >>> print(config.dataset_name)
+        """
         return self.config
     
     def update_config(self, **kwargs) -> None:
-        """Update configuration with new values."""
+        """Update configuration with new values.
+        
+        This method updates the configuration attributes and automatically
+        recalculates derived paths and settings by calling _post_init().
+        
+        Args:
+            **kwargs: Arbitrary keyword arguments representing configuration
+                     parameters to update.
+        
+        Example:
+            >>> manager = ConfigManager()
+            >>> manager.update_config(
+            ...     learning_rate=0.01,
+            ...     batch_size_train=64,
+            ...     dataset_name='CIFAR10'
+            ... )
+        
+        Note:
+            After updating, derived paths (log_dir, checkpoint_dir) and
+            experiment names are automatically recalculated.
+        """
         for key, value in kwargs.items():
             setattr(self.config, key, value)
             # Also update the internal config data
@@ -189,7 +415,21 @@ class ConfigManager:
         self.config._post_init()
     
     def save_config(self, save_path: Optional[str] = None) -> None:
-        """Save current configuration to YAML file."""
+        """Save current configuration to YAML file.
+        
+        Args:
+            save_path: Optional custom path for saving. If None, automatically
+                      generates path as '{log_dir}/config.yaml'.
+        
+        Example:
+            >>> manager = ConfigManager()
+            >>> manager.save_config()  # Saves to auto-generated path
+            >>> manager.save_config('custom/path/config.yaml')  # Custom path
+        
+        Note:
+            When using auto-generated path, the log directory is created
+            if it doesn't exist.
+        """
         if save_path is None:
             # Create logs directory if it doesn't exist
             os.makedirs(os.path.dirname(self.config.log_dir), exist_ok=True)
@@ -198,7 +438,28 @@ class ConfigManager:
         self.config.save_yaml(save_path)
     
     def load_experiment_config(self, experiment_name: str) -> None:
-        """Load a specific experiment configuration by name."""
+        """Load a specific experiment configuration by name.
+        
+        This method loads predefined experiment configurations stored in the
+        'experiment_configs' directory. It uses inheritance from the default
+        base configuration.
+        
+        Args:
+            experiment_name: Name of the experiment configuration file 
+                           (without .yaml extension).
+        
+        Raises:
+            FileNotFoundError: If the experiment configuration file doesn't exist.
+        
+        Example:
+            >>> manager = ConfigManager()
+            >>> manager.load_experiment_config('resnet_baseline')
+            >>> manager.load_experiment_config('mobilenet_small')
+        
+        Note:
+            Experiment configs should be stored in:
+            '{module_dir}/experiment_configs/{experiment_name}.yaml'
+        """
         experiment_path = os.path.join(
             os.path.dirname(__file__), 
             'experiment_configs', 

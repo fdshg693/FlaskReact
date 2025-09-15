@@ -13,15 +13,52 @@ from image.core.models.wood_net import WoodNet
 
 
 class ModelEvaluator:
-    """Evaluator for trained wood classification models."""
+    """Class for evaluating and inferencing wood classification models.
+    
+    This class loads a trained WoodNet model and provides functionality for
+    single image prediction, batch image prediction, and directory-wide evaluation.
+    
+    Attributes:
+        checkpoint_path (str): Path to the trained model checkpoint file
+        device (str): Device for inference execution ('cuda' or 'cpu')
+        img_size (int): Image size for preprocessing
+        model (Optional[WoodNet]): Loaded model instance
+        class_names (Optional[List[str]]): List of class names
+        num_classes (Optional[int]): Number of classes
+        
+    Example:
+        >>> evaluator = ModelEvaluator(
+        ...     checkpoint_path="./checkpoints/best_model.pth",
+        ...     device="cuda",
+        ...     img_size=128
+        ... )
+        >>> result = evaluator.predict_single_image("test_image.jpg")
+        >>> print(f"Predicted class: {result['predicted_class']}")
+    """
 
-    def __init__(self, checkpoint_path: str, device: str = "cuda", img_size: int = 128):
-        """Initialize model evaluator.
+    def __init__(self, checkpoint_path: str, device: str = "cuda", img_size: int = 128) -> None:
+        """Initialize ModelEvaluator.
+        
+        Loads the model from checkpoint and sets up evaluation configuration.
+        Model configuration is automatically inferred from checkpoint information or filename.
 
         Args:
-            checkpoint_path: Path to the trained model checkpoint
-            device: Device to run evaluation on ('cuda' or 'cpu')
-            img_size: Image size for preprocessing
+            checkpoint_path (str): Path to the trained model checkpoint file (.pth format)
+            device (str, optional): Device for inference execution. Specify 'cuda' or 'cpu'.
+                Defaults to 'cuda', but automatically changes to 'cpu' if CUDA is not available.
+            img_size (int, optional): Image resize size for preprocessing (square).
+                Defaults to 128.
+                
+        Raises:
+            FileNotFoundError: If the checkpoint file does not exist
+            RuntimeError: If model loading fails
+            
+        Note:
+            Model configuration (number of classes, layers, etc.) is determined in the following priority:
+            1. model_config in checkpoint_info.json
+            2. model_config in checkpoint
+            3. Parsing from directory name
+            4. Default values
         """
         self.checkpoint_path = checkpoint_path
         self.device = device if torch.cuda.is_available() else "cpu"
@@ -33,8 +70,27 @@ class ModelEvaluator:
         self.num_classes = None
         self._load_model()
 
-    def _load_model(self):
-        """Load the trained model from checkpoint."""
+    def _load_model(self) -> None:
+        """Load the trained model from checkpoint.
+        
+        This internal method performs the following processes:
+        1. Load checkpoint file
+        2. Get model configuration (from checkpoint_info.json, checkpoint, or filename)
+        3. Auto-detect number of classes
+        4. Initialize WoodNet model
+        5. Load trained weights
+        6. Set to evaluation mode
+        
+        Raises:
+            FileNotFoundError: If checkpoint file is not found
+            json.JSONDecodeError: If checkpoint_info.json format is invalid
+            KeyError: If model state dict keys are not found
+            RuntimeError: If model loading fails
+            
+        Note:
+            If number of classes is 0, attempts auto-detection from dataset directory.
+            Defaults to 3 classes for test_dataset, 2 classes for others.
+        """
         print(f"Loading model from: {self.checkpoint_path}")
 
         # Load checkpoint with weights_only=False for compatibility
@@ -121,11 +177,33 @@ class ModelEvaluator:
     def _parse_config_from_filename(self, filename: str) -> Dict[str, Any]:
         """Parse model configuration from checkpoint directory name.
 
+        Extracts model hyperparameters based on directory naming conventions.
+        Example: "2025_09_06_20_49_09_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset"
+
         Args:
-            filename: Checkpoint directory name
+            filename (str): Checkpoint directory name
+                Format: [timestamp_]img{size}_layer{num}_hidden{size}_{num}class_dropout{rate}_scale{factor}_{dataset}
 
         Returns:
-            Parsed configuration dictionary
+            Dict[str, Any]: Parsed model configuration dictionary
+                - img_size (int): Image size
+                - layer (int): Number of network layers
+                - num_hidden (int): Number of hidden units
+                - num_class (int): Number of classes
+                - dropout_rate (float): Dropout rate
+                - img_scale (float): Image scale factor
+                
+        Example:
+            >>> evaluator = ModelEvaluator("path/to/checkpoint.pth")
+            >>> config = evaluator._parse_config_from_filename(
+            ...     "img128_layer3_hidden4096_3class_dropout0.2_test_dataset"
+            ... )
+            >>> print(config)
+            {'img_size': 128, 'layer': 3, 'num_hidden': 4096, 'num_class': 3, 'dropout_rate': 0.2}
+            
+        Note:
+            - 0class with test_dataset is automatically changed to 3class
+            - Invalid values are ignored and default values are used
         """
         config = {}
         parts = filename.split("_")
@@ -160,13 +238,38 @@ class ModelEvaluator:
         return config
 
     def preprocess_image(self, image_path: str) -> torch.Tensor:
-        """Preprocess single image for evaluation.
+        """Preprocess a single image for evaluation.
+
+        Loads an image file and converts it to the format suitable for model input.
+        Processing steps:
+        1. Load image file (OpenCV BGR format)
+        2. Convert BGR → RGB color space
+        3. Resize to specified size
+        4. Normalize to [0, 1] range
+        5. Convert to PyTorch tensor and add batch dimension
 
         Args:
-            image_path: Path to the image file
+            image_path (str): Path to the image file to process
+                Supported formats: .jpg, .jpeg, .png, .bmp, .tiff
 
         Returns:
-            Preprocessed image tensor
+            torch.Tensor: Preprocessed image tensor
+                Shape: (1, 3, img_size, img_size)
+                Data type: float32
+                Value range: [0.0, 1.0]
+                
+        Raises:
+            ValueError: If the image file cannot be loaded
+            FileNotFoundError: If the image file does not exist
+            
+        Example:
+            >>> evaluator = ModelEvaluator("model.pth", img_size=128)
+            >>> tensor = evaluator.preprocess_image("sample.jpg")
+            >>> print(tensor.shape)  # torch.Size([1, 3, 128, 128])
+            
+        Note:
+            - Images are resized to square format, which may change aspect ratio
+            - If GPU is available, tensor is automatically placed on GPU memory
         """
         # Load image
         img = cv2.imread(image_path)
@@ -188,13 +291,40 @@ class ModelEvaluator:
         return img_tensor.to(self.device)
 
     def predict_single_image(self, image_path: str) -> Dict[str, Any]:
-        """Predict class for a single image.
+        """Execute class prediction for a single image.
+
+        Preprocesses the specified image file and performs classification prediction
+        with the trained model. Calculates probability distribution using softmax
+        function and uses the highest probability class as the prediction result.
 
         Args:
-            image_path: Path to the image file
+            image_path (str): Path to the image file for prediction
+                Supported formats: .jpg, .jpeg, .png, .bmp, .tiff
 
         Returns:
-            Dictionary containing prediction results
+            Dict[str, Any]: Dictionary containing prediction results
+                - predicted_class (int): Index of predicted class (0-based)
+                - confidence (float): Confidence of predicted class (0.0-1.0)
+                - probabilities (List[float]): Prediction probability list for all classes
+                - raw_output (List[float]): Model raw output (logit values)
+                
+        Raises:
+            ValueError: If the image file cannot be loaded
+            FileNotFoundError: If the image file does not exist
+            RuntimeError: If an error occurs during model inference
+            
+        Example:
+            >>> evaluator = ModelEvaluator("model.pth")
+            >>> result = evaluator.predict_single_image("wood_sample.jpg")
+            >>> print(f"Predicted class: {result['predicted_class']}")
+            >>> print(f"Confidence: {result['confidence']:.3f}")
+            >>> for i, prob in enumerate(result['probabilities']):
+            ...     print(f"Class {i}: {prob:.3f}")
+            
+        Note:
+            - Prediction is executed in model evaluation mode with gradient computation disabled
+            - Confidence is the softmax probability value of the predicted class
+            - raw_output contains logit values before activation function application
         """
         # Preprocess image
         img_tensor = self.preprocess_image(image_path)
@@ -202,6 +332,41 @@ class ModelEvaluator:
         return self.predict_image_data(img_tensor)
 
     def predict_image_data(self, img_tensor: torch.Tensor) -> Dict[str, Any]:
+        """Execute class prediction for preprocessed image tensor.
+
+        Performs model inference directly on preprocessed PyTorch tensor.
+        This method is efficient when image data is already in tensor format.
+
+        Args:
+            img_tensor (torch.Tensor): Preprocessed image tensor
+                Expected shape: (batch_size, 3, height, width)
+                Data type: float32
+                Value range: [0.0, 1.0]
+
+        Returns:
+            Dict[str, Any]: Dictionary containing prediction results
+                - predicted_class (int): Index of predicted class (0-based)
+                - confidence (float): Confidence of predicted class (0.0-1.0)
+                - probabilities (List[float]): Prediction probability list for all classes
+                - raw_output (List[float]): Model raw output (logit values)
+                
+        Raises:
+            RuntimeError: If an error occurs during model inference
+            ValueError: If tensor shape or data type is invalid
+            
+        Example:
+            >>> import torch
+            >>> evaluator = ModelEvaluator("model.pth")
+            >>> # For preprocessed tensor
+            >>> tensor = torch.randn(1, 3, 128, 128)
+            >>> result = evaluator.predict_image_data(tensor)
+            >>> print(f"Predicted class: {result['predicted_class']}")
+            
+        Note:
+            - If batch size is greater than 1, only the result of the first sample is returned
+            - Inference is executed without gradient computation for memory efficiency
+            - Tensor must be placed on the appropriate device (CPU/GPU)
+        """
         with torch.no_grad():
             output = self.model(img_tensor)
             probabilities = F.softmax(output, dim=1)
@@ -221,13 +386,43 @@ class ModelEvaluator:
         return result
 
     def predict_batch_images(self, image_paths: List[str]) -> List[Dict[str, Any]]:
-        """Predict classes for multiple images.
+        """Execute class prediction for multiple images in batch.
+
+        Executes prediction sequentially for multiple specified image files
+        and returns prediction results as a list. For images where errors occur,
+        dictionaries containing error information are also included in the results.
 
         Args:
-            image_paths: List of image file paths
+            image_paths (List[str]): List of image file paths for prediction
+                Each path must be a valid image file format
 
         Returns:
-            List of prediction results
+            List[Dict[str, Any]]: List of prediction results for each image
+                Dictionary format for successful cases:
+                - predicted_class (int): Predicted class
+                - confidence (float): Confidence
+                - probabilities (List[float]): Class probabilities
+                - raw_output (List[float]): Raw output
+                
+                Dictionary format for failed cases:
+                - image_path (str): Image path where error occurred
+                - error (str): Error message
+                
+        Example:
+            >>> evaluator = ModelEvaluator("model.pth")
+            >>> paths = ["img1.jpg", "img2.jpg", "invalid.txt"]
+            >>> results = evaluator.predict_batch_images(paths)
+            >>> for i, result in enumerate(results):
+            ...     if "error" in result:
+            ...         print(f"Image {i}: Error - {result['error']}")
+            ...     else:
+            ...         print(f"Image {i}: Class {result['predicted_class']}")
+                
+        Note:
+            - Each image is processed independently, so processing continues
+              for other images even if errors occur in some images
+            - Processing progress is output to the console
+            - Be careful about memory usage when processing large numbers of images
         """
         results = []
 
@@ -247,14 +442,46 @@ class ModelEvaluator:
     def evaluate_directory(
         self, image_dir: str, output_file: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Evaluate all images in a directory.
+        """Execute batch evaluation for all images in a directory.
+
+        Automatically detects image files in the specified directory,
+        executes prediction for all images, and summarizes statistical information.
+        Results can optionally be saved as a JSON file.
 
         Args:
-            image_dir: Directory containing images to evaluate
-            output_file: Optional path to save results as JSON
+            image_dir (str): Directory path containing images to evaluate
+            output_file (Optional[str], optional): JSON file path for saving results
+                If not specified, results are not saved
 
         Returns:
-            Evaluation results summary
+            Dict[str, Any]: Evaluation results summary dictionary
+                - total_images (int): Total number of images processed
+                - successful_predictions (int): Number of successful predictions
+                - failed_predictions (int): Number of failed predictions
+                - results (List[Dict]): Detailed results for each image
+                - class_distribution (Dict[int, int]): Number of images per class
+                - average_confidence (float): Average confidence
+                - min_confidence (float): Minimum confidence
+                - max_confidence (float): Maximum confidence
+                
+        Raises:
+            ValueError: If no image files are found in the directory
+            FileNotFoundError: If the specified directory does not exist
+            PermissionError: If there are no access permissions to directory or files
+            
+        Example:
+            >>> evaluator = ModelEvaluator("model.pth")
+            >>> summary = evaluator.evaluate_directory(
+            ...     "./test_images/",
+            ...     output_file="evaluation_results.json"
+            ... )
+            >>> print(f"Success rate: {summary['successful_predictions']/summary['total_images']:.2%}")
+            >>> print(f"Average confidence: {summary['average_confidence']:.3f}")
+            
+        Note:
+            - Supported image formats: .jpg, .jpeg, .png, .bmp, .tiff (case insensitive)
+            - If the directory for the result JSON file does not exist, it is automatically created
+            - Be careful about processing time and memory usage when processing large numbers of images
         """
         # Find all image files
         image_extensions = [".jpg", ".jpeg", ".png", ".bmp", ".tiff"]
@@ -314,15 +541,45 @@ class ModelEvaluator:
     def visualize_prediction(
         self, image_path: str, save_path: Optional[str] = None, show_image: bool = True
     ) -> np.ndarray:
-        """Visualize prediction result with image and probabilities.
+        """Visualize prediction results with image and probability information.
+
+        Visually displays prediction results for the specified image and generates
+        a visualization image including predicted class, confidence, and probability
+        distribution for each class.
 
         Args:
-            image_path: Path to the image file
-            save_path: Optional path to save visualization
-            show_image: Whether to display the image
+            image_path (str): Path to the image file for visualization
+            save_path (Optional[str], optional): Path to save visualization results
+                If not specified, results are not saved
+            show_image (bool, optional): Whether to display visualization results on screen
+                Defaults to True
 
         Returns:
-            Visualization image as numpy array
+            np.ndarray: Visualization image array data
+                Shape: (height, width, 3)
+                Data type: uint8
+                Color space: BGR (OpenCV format)
+                
+        Raises:
+            ValueError: If the image file cannot be loaded
+            FileNotFoundError: If the image file does not exist
+            RuntimeError: If an error occurs during prediction processing
+            
+        Example:
+            >>> evaluator = ModelEvaluator("model.pth")
+            >>> vis_img = evaluator.visualize_prediction(
+            ...     "sample.jpg",
+            ...     save_path="result_visualization.png",
+            ...     show_image=False
+            ... )
+            >>> print(f"Visualization image size: {vis_img.shape}")
+            
+        Note:
+            - Visualization image is generated at 600x600 pixels
+            - Original image is resized to 400x400 pixels and placed in the center
+            - Probabilities for top 5 classes are displayed
+            - If show_image=True, display ends with ESC key or window close
+            - Directory for save path is not automatically created if it doesn't exist
         """
         # Get prediction
         result = self.predict_single_image(image_path)
@@ -416,14 +673,44 @@ class ModelEvaluator:
 def predict_image_data(
     checkpoint_path: str, img_tensor: torch.Tensor
 ) -> Dict[str, Any]:
-    """Predict class for a given image tensor using the specified model checkpoint.
+    """Execute prediction for image tensor using the specified model checkpoint.
+
+    This function serves as a convenience function for the ModelEvaluator class,
+    creating a temporary model evaluator instance to execute prediction.
+    It is suitable for one-time prediction processing, but for multiple predictions,
+    using ModelEvaluator instance directly is more efficient.
 
     Args:
-        checkpoint_path: Path to the trained model checkpoint
-        img_tensor: Preprocessed image tensor
+        checkpoint_path (str): Path to the trained model checkpoint file
+            (.pth format file)
+        img_tensor (torch.Tensor): Preprocessed image tensor
+            Expected shape: (batch_size, 3, height, width)
+            Data type: float32, value range: [0.0, 1.0]
 
     Returns:
-        Dictionary containing prediction results
+        Dict[str, Any]: Dictionary containing prediction results
+            - predicted_class (int): Index of predicted class (0-based)
+            - confidence (float): Confidence of predicted class (0.0-1.0)
+            - probabilities (List[float]): Prediction probability list for all classes
+            - raw_output (List[float]): Model raw output (logit values)
+            
+    Raises:
+        FileNotFoundError: If checkpoint file does not exist
+        RuntimeError: If an error occurs during model loading or inference
+        ValueError: If tensor shape or data type is invalid
+        
+    Example:
+        >>> import torch
+        >>> img_tensor = torch.randn(1, 3, 128, 128)
+        >>> result = predict_image_data("./models/best_model.pth", img_tensor)
+        >>> print(f"Predicted class: {result['predicted_class']}")
+        >>> print(f"Confidence: {result['confidence']:.3f}")
+        
+    Note:
+        - This function creates a ModelEvaluator instance internally, so
+          overhead occurs when called multiple times
+        - For frequent prediction processing, direct use of ModelEvaluator class is recommended
+        - Device (CPU/GPU) is automatically detected and configured
     """
     evaluator = ModelEvaluator(checkpoint_path=checkpoint_path)
     return evaluator.predict_image_data(img_tensor)

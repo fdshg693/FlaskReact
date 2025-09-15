@@ -223,3 +223,5 @@ review/
 /tmp/*
 !/tmp/.gitkeep
 
+# (堰代用)プログラムファイルの和訳用に作成した'comements_ja'フォルダは無視する
+comments_ja/
