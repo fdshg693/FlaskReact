@@ -7,6 +7,7 @@ import csv
 import torch
 import torch.nn as nn
 from loguru import logger
+from config import PATHS
 
 
 def save_training_data_to_curve_plot(
@@ -153,20 +154,20 @@ def save_model_and_learning_curves_with_custom_name(
         project_root = current_file_path.parent.parent
 
     # 保存先ディレクトリの設定
-    param_dir = project_root / "param"
-    curve_log_dir = project_root / "curveLog"
-    csv_log_dir = project_root / "csvLog"
+    model_param_dir = PATHS.ml_outputs / "model_param"
+    curve_log_dir = PATHS.ml_outputs / "curveLog"
+    csv_log_dir = PATHS.ml_outputs / "csvLog"
 
     saved_files: List[str] = []
     failed_operations: List[str] = []
 
     # ディレクトリの作成
-    for directory in [param_dir, curve_log_dir, csv_log_dir]:
+    for directory in [model_param_dir, curve_log_dir, csv_log_dir]:
         directory.mkdir(exist_ok=True)
 
     # モデルパラメータの保存
     try:
-        model_file = param_dir / f"models_{file_suffix}.pth"
+        model_file = model_param_dir / f"models_{file_suffix}.pth"
         save_training_parameters(trained_model.state_dict(), str(model_file))
         saved_files.append(str(model_file))
         logger.info(f"Model parameters saved to {model_file}")
@@ -224,7 +225,7 @@ def save_model_and_learning_curves_with_custom_name(
 
     # trained_model.csvに情報を追記
     try:
-        trained_model_csv = project_root / "train_log" / "trained_model.csv"
+        trained_model_csv = PATHS.ml_outputs / "train_log" / "trained_model.csv"
 
         # CSVヘッダーとデータ行を準備
         csv_header = ["dataset_name", "epochs", "file_suffix", "timestamp"]

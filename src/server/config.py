@@ -5,6 +5,8 @@ from typing import List, Set
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from config import PATHS
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -26,24 +28,18 @@ class Settings(BaseSettings):
     max_pdf_size_mb: int = 10
 
     # Model paths
-    app_root: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parent.parent
-    )
+    app_root: Path = Field(default_factory=lambda: PATHS.src)
     model_path: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parent.parent
+        default_factory=lambda: PATHS.ml_outputs
         / "param"
         / "models_20250712_021710.pth"
     )
     scaler_path: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parent.parent
-        / "scaler"
-        / "scaler.joblib"
+        default_factory=lambda: PATHS.ml_outputs / "scaler" / "scaler.joblib"
     )
     checkpoint_path: Path = Field(
-        default_factory=lambda: Path(__file__).resolve().parent.parent
+        default_factory=lambda: PATHS.ml_outputs
         / "checkpoints"
         / "2025_09_06_20_49_09_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset"
         / "best_accuracy.pth"
     )
-
-    # No inner Config (deprecated). Use model_config above.

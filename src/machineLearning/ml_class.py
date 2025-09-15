@@ -23,7 +23,9 @@ from loguru import logger
 
 from machineLearning.save_util import save_model_and_learning_curves_with_custom_name
 from machineLearning.simple_nn import SimpleNeuralNetwork
-from machineLearning.dataset import MLCompatibleDataset
+from machineLearning.dataset import MLCompatibleDataset, from_sklearn_bunch
+
+from config import PATHS
 
 
 class BaseMLModel:
@@ -36,8 +38,6 @@ class BaseMLModel:
         self.n_samples, self.n_features = self.feature_data.shape
 
         self.feature_scaler = StandardScaler()
-        self.scaler_dir = Path(__file__).resolve().parent.parent / "scaler"
-        self.scaler_dir.mkdir(exist_ok=True)
 
         # サブクラスで設定される
         self.neural_network_model: nn.Module | None = None
@@ -90,8 +90,8 @@ class BaseMLModel:
         self.features_test = self.feature_scaler.transform(self.features_test)
         logger.info("Feature scaling complete")
 
-    def save_scaler(self, file_suffix: str) -> None:
-        scaler_file_path = self.scaler_dir / f"scaler{file_suffix}.joblib"
+    def save_scaler(self, scaler_path: Path, file_suffix: str) -> None:
+        scaler_file_path = scaler_path / f"scaler{file_suffix}.joblib"
         joblib.dump(self.feature_scaler, scaler_file_path)
         logger.info(f"Saved scaler -> {scaler_file_path}")
 
@@ -328,7 +328,7 @@ def execute_machine_learning_pipeline(
             logger.info(f"Overridden learning rate -> {learning_rate}")
     model_wrapper.split_train_test_data()
     model_wrapper.apply_feature_scaling()
-    model_wrapper.save_scaler(file_suffix)
+    model_wrapper.save_scaler(PATHS.ml_outputs / "scaler", file_suffix)
     model_wrapper.convert_to_tensor_datasets()
     model_wrapper.create_data_loaders()
     accuracy_history, loss_history = model_wrapper.train_model(epochs)
@@ -346,8 +346,9 @@ if __name__ == "__main__":  # 簡易動作確認
     from sklearn.datasets import load_iris, load_diabetes
 
     iris = load_iris()
+    iris_ds = from_sklearn_bunch(iris)
     iris_model, iris_net, iris_acc_hist, iris_loss_hist = (
-        execute_machine_learning_pipeline(iris, epochs=3)
+        execute_machine_learning_pipeline(iris_ds, epochs=3)
     )
     save_model_and_learning_curves_with_custom_name(
         iris_net, iris_acc_hist, iris_loss_hist, "iris", 3
@@ -355,8 +356,9 @@ if __name__ == "__main__":  # 簡易動作確認
     logger.info(f"Iris test metric (acc) = {iris_model.evaluate_model():.4f}")
 
     diabetes = load_diabetes()
+    diab_ds = from_sklearn_bunch(diabetes)
     diab_model, diab_net, diab_r2_hist, diab_loss_hist = (
-        execute_machine_learning_pipeline(diabetes, epochs=3)
+        execute_machine_learning_pipeline(diab_ds, epochs=3)
     )
     save_model_and_learning_curves_with_custom_name(
         diab_net, diab_r2_hist, diab_loss_hist, "diabetes", 3

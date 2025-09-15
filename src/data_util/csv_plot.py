@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 import pandas as pd
 import matplotlib.pyplot as plt
 from loguru import logger
-from config import TMP_DIR, IRIS_DATA_PATH, get_path
+from config import PATHS, get_path
 from data_util.csv_util import read_csv_from_path
 
 
@@ -226,7 +226,7 @@ def plot_scatter_from_dataframe(
 
 if __name__ == "__main__":
     df_example = read_csv_from_path(
-        IRIS_DATA_PATH,
+        PATHS.iris_data_path,
         encoding="utf-8",
     )
 
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     #     encoding="utf-8",
     # )
 
-    dir_path = get_path("outputs", root=TMP_DIR, create=True)
+    dir_path = get_path("outputs", root=PATHS.tmp, create=True)
 
     # plot_boxplots_from_dataframe(
     #     df_example,

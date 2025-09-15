@@ -4,9 +4,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from loguru import logger
+from config import load_dotenv_workspace
 
 
 def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
@@ -23,7 +23,7 @@ def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
         FileNotFoundError: If the PDF file does not exist
         ValueError: If the PDF file cannot be processed
     """
-    load_dotenv("../.env")
+    load_dotenv_workspace()
 
     # Convert to Path object if string is provided
     if isinstance(pdf_path, str):

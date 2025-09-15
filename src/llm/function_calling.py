@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 from loguru import logger
 from langchain.chat_models import init_chat_model
-from dotenv import load_dotenv
+from config import load_dotenv_workspace
 from langchain_core.messages import HumanMessage, ToolMessage, BaseMessage
 from langchain_core.tools import BaseTool
 
@@ -10,7 +10,7 @@ from llm.document_search_tools import (
     search_local_text_documents,
 )
 
-load_dotenv()
+load_dotenv_workspace()
 
 
 def function_calling(tools: List[BaseTool], query: str, verbose: bool = True) -> str:

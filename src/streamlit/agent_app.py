@@ -23,7 +23,7 @@ from langchain_core.messages import HumanMessage, BaseMessage
 from langchain_core.tools import BaseTool
 
 from llm.document_search_tools import (  # noqa: E402  (import after path tweak)
-    search_headwaters_company_info,
+    tavily_search_func,
     search_local_text_documents,
     get_local_document_content,
     search_headwaters_local_docs,
@@ -33,7 +33,7 @@ from llm.document_search_tools import (  # noqa: E402  (import after path tweak)
 def get_available_tools() -> Dict[str, BaseTool]:
     """Return mapping of selectable tool names to tool instances."""
     return {
-        "Headwaters Company Info": search_headwaters_company_info,
+        "Headwaters Company Info": tavily_search_func,
         "Local Text Document Search": search_local_text_documents,
         "Get Local Document Content": get_local_document_content,
         "Headwaters Local Docs": search_headwaters_local_docs,

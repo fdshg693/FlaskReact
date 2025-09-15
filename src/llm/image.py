@@ -4,9 +4,10 @@ import base64
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
+from config import load_dotenv_workspace
 from langchain_openai import ChatOpenAI
 from loguru import logger
+from config import PATHS
 
 
 def analyze_image(image_data: str) -> str:
@@ -28,8 +29,7 @@ def analyze_image(image_data: str) -> str:
     logger.info("Starting image analysis with OpenAI GPT-4o")
 
     # Load environment variables from .env file
-    env_path: Path = Path(__file__).parent.parent.parent / ".env"
-    load_dotenv(env_path)
+    load_dotenv_workspace()
 
     try:
         # Pass to LLM
@@ -62,7 +62,7 @@ def analyze_image(image_data: str) -> str:
 
 if __name__ == "__main__":
     # Fetch image data from local file
-    img_path: Path = Path(__file__).parent.parent.parent / "data" / "fish1.png"
+    img_path: Path = PATHS.llm_data / "image" / "fish1.png"
 
     if not img_path.exists():
         logger.error(f"Image file not found: {img_path}")

@@ -8,7 +8,6 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 from loguru import logger
 
-# Modern absolute imports - no sys.path manipulation needed
 from server.config import Settings
 from server.api.text import text_bp
 from server.api.iris import iris_bp
@@ -16,13 +15,7 @@ from server.api.pdf import pdf_bp
 from server.api.image import image_bp
 from server.pages import pages_bp
 
-# Settings (lazy load in factory)
-
-
-# Iris prediction moved to server/api/iris.py
-
-
-# No global app; use app factory below
+from config import PATHS
 
 
 def validate_file_upload(
@@ -69,28 +62,6 @@ def handle_api_errors(f):
     return decorated_function
 
 
-# Page routes moved to pages_bp
-
-
-# API endpoint configuration
-
-
-# Text API moved to text_bp
-
-
-# Image analysis API
-# Image/PDF API moved to blueprints
-
-
-# Iris API moved to iris_bp
-
-
-# Batch iris moved to iris_bp
-
-
-# Data serving moved to pages_bp
-
-
 def create_app() -> Flask:
     """Application factory aligning with the documented startup pattern.
 
@@ -98,7 +69,8 @@ def create_app() -> Flask:
     - Registers Blueprints (pages, text, iris)
     - Adds centralized error handlers
     """
-    app = Flask(__name__, static_folder="../static", static_url_path="")
+    static_dir = PATHS.static
+    app = Flask(__name__, static_folder=str(static_dir), static_url_path="")
     settings = Settings()
 
     # CORS

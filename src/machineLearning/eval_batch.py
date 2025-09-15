@@ -153,31 +153,3 @@ def evaluate_iris_batch(
         f"Batch classification prediction completed | samples={len(predictions)} features={expected_features} output_dim={output_dim}"
     )
     return predictions
-
-
-if __name__ == "__main__":
-    try:
-        from loguru import logger
-
-        # デモ入力 (Iris 想定)
-        input_data_list = [
-            [5.1, 3.5, 1.4, 0.2],
-            [6.7, 3.1, 4.7, 1.5],
-        ]
-        logger.info("--- デバッグ実行開始 ---")
-
-        current_dir = Path(__file__).resolve().parent.parent  # project root 基準
-        model_path = current_dir / "param" / "models_20250813_213851.pth"
-        scaler_path = current_dir / "scaler" / "scaler.joblib"
-
-        species = evaluate_iris_batch(input_data_list, model_path, scaler_path)
-        logger.info(f"予測結果: {species}")
-        logger.info("--- デバッグ実行終了 ---")
-    except ValueError as e:
-        logger.error(f"値エラー: {e}")
-    except FileNotFoundError as e:
-        logger.error(f"ファイルが見つかりません: {e}")
-    except Exception as e:
-        logger.exception(f"予期しないエラー: {e}")
-    finally:
-        logger.info("--- プログラム終了 ---")
