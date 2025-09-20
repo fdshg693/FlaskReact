@@ -107,12 +107,16 @@ class ModelEvaluator:
         info_path = os.path.join(checkpoint_dir, "checkpoint_info.json")
 
         model_config = {}
+        saved_class_names = []
 
         # Try to get config from checkpoint_info.json
         if os.path.exists(info_path):
             with open(info_path, "r") as f:
                 info = json.load(f)
                 model_config = info.get("model_config", {})
+                saved_class_names = info.get("class_names", [])
+                if saved_class_names:
+                    print(f"Found saved class names: {saved_class_names}")
 
         # Try to get config from the checkpoint itself
         if not model_config and "model_config" in checkpoint:
@@ -125,24 +129,42 @@ class ModelEvaluator:
 
         # Auto-detect number of classes from dataset if not specified
         if model_config.get("num_class", 0) == 0:
-            # Try to detect from dataset path in filename
-            if "test_dataset" in checkpoint_dir.lower():
-                # Count classes in test_dataset directory
-                dataset_path = "./dataset/test_dataset/"
-                if os.path.exists(dataset_path):
-                    class_dirs = [
-                        d
-                        for d in os.listdir(dataset_path)
-                        if os.path.isdir(os.path.join(dataset_path, d))
-                    ]
-                    model_config["num_class"] = len(class_dirs)
-                    print(
-                        f"Auto-detected {len(class_dirs)} classes from dataset: {class_dirs}"
-                    )
-                else:
-                    model_config["num_class"] = 3  # Default for test_dataset
+            # 保存されたクラス名がある場合はそれを使用
+            if saved_class_names:
+                model_config["num_class"] = len(saved_class_names)
+                self.class_names = saved_class_names
+                print(f"Using saved class names: {saved_class_names}")
             else:
-                model_config["num_class"] = 2  # Default fallback
+                # Try to detect from dataset path in filename
+                if "test_dataset" in checkpoint_dir.lower():
+                    # Count classes in test_dataset directory
+                    dataset_path = "./dataset/test_dataset/"
+                    if os.path.exists(dataset_path):
+                        class_dirs = [
+                            d
+                            for d in os.listdir(dataset_path)
+                            if os.path.isdir(os.path.join(dataset_path, d))
+                        ]
+                        # ディレクトリ名をソートしてOS依存を回避
+                        class_dirs.sort()
+                        model_config["num_class"] = len(class_dirs)
+                        self.class_names = class_dirs
+                        print(
+                            f"Auto-detected {len(class_dirs)} classes from dataset: {class_dirs}"
+                        )
+                    else:
+                        model_config["num_class"] = 3  # Default for test_dataset
+                        self.class_names = [f"class_{i}" for i in range(3)]
+                else:
+                    model_config["num_class"] = 2  # Default fallback
+                    self.class_names = [f"class_{i}" for i in range(2)]
+        else:
+            # クラス数が指定されている場合、保存されたクラス名があれば使用
+            if saved_class_names:
+                self.class_names = saved_class_names
+            else:
+                # デフォルトのクラス名を生成
+                self.class_names = [f"class_{i}" for i in range(model_config.get("num_class", 3))]
 
         # Initialize model with configuration
         self.num_classes = model_config.get("num_class", 3)
@@ -304,6 +326,7 @@ class ModelEvaluator:
         Returns:
             Dict[str, Any]: Dictionary containing prediction results
                 - predicted_class (int): Index of predicted class (0-based)
+                - predicted_class_name (str): Name of predicted class
                 - confidence (float): Confidence of predicted class (0.0-1.0)
                 - probabilities (List[float]): Prediction probability list for all classes
                 - raw_output (List[float]): Model raw output (logit values)
@@ -346,6 +369,7 @@ class ModelEvaluator:
         Returns:
             Dict[str, Any]: Dictionary containing prediction results
                 - predicted_class (int): Index of predicted class (0-based)
+                - predicted_class_name (str): Name of predicted class
                 - confidence (float): Confidence of predicted class (0.0-1.0)
                 - probabilities (List[float]): Prediction probability list for all classes
                 - raw_output (List[float]): Model raw output (logit values)
@@ -376,14 +400,54 @@ class ModelEvaluator:
         # Get all class probabilities
         all_probs = probabilities[0].cpu().numpy()
 
+        # Get class name for the predicted class
+        predicted_class_name = self.get_class_name_by_index(predicted_class)
+
         result = {
             "predicted_class": predicted_class,
+            "predicted_class_name": predicted_class_name,
             "confidence": confidence,
             "probabilities": all_probs.tolist(),
             "raw_output": output[0].cpu().numpy().tolist(),
         }
 
         return result
+
+    def get_class_names(self) -> List[str]:
+        """保存されたクラス名のリストを取得します。
+        
+        Returns:
+            List[str]: クラス名のリスト。順序はデータセット作成時の順番と同じ。
+            
+        Example:
+            >>> evaluator = ModelEvaluator("model.pth")
+            >>> class_names = evaluator.get_class_names()
+            >>> print(f"Available classes: {class_names}")
+            >>> result = evaluator.predict_single_image("test.jpg")
+            >>> predicted_class_name = class_names[result['predicted_class']]
+            >>> print(f"Predicted class name: {predicted_class_name}")
+        """
+        return self.class_names if self.class_names else []
+
+    def get_class_name_by_index(self, class_index: int) -> str:
+        """クラスインデックスからクラス名を取得します。
+        
+        Args:
+            class_index (int): クラスのインデックス（0ベース）
+            
+        Returns:
+            str: クラス名。インデックスが無効な場合はデフォルト名を返す。
+            
+        Example:
+            >>> evaluator = ModelEvaluator("model.pth")
+            >>> result = evaluator.predict_single_image("test.jpg")
+            >>> class_name = evaluator.get_class_name_by_index(result['predicted_class'])
+            >>> print(f"Predicted: {class_name}")
+        """
+        if self.class_names and 0 <= class_index < len(self.class_names):
+            return self.class_names[class_index]
+        else:
+            return f"class_{class_index}"
 
     def predict_batch_images(self, image_paths: List[str]) -> List[Dict[str, Any]]:
         """Execute class prediction for multiple images in batch.
@@ -400,6 +464,7 @@ class ModelEvaluator:
             List[Dict[str, Any]]: List of prediction results for each image
                 Dictionary format for successful cases:
                 - predicted_class (int): Predicted class
+                - predicted_class_name (str): Name of predicted class
                 - confidence (float): Confidence
                 - probabilities (List[float]): Class probabilities
                 - raw_output (List[float]): Raw output
@@ -670,7 +735,7 @@ class ModelEvaluator:
         return vis_img
 
 
-def predict_image_data(
+def predict_image_with_checkpoint(
     checkpoint_path: str, img_tensor: torch.Tensor
 ) -> Dict[str, Any]:
     """Execute prediction for image tensor using the specified model checkpoint.
@@ -690,6 +755,7 @@ def predict_image_data(
     Returns:
         Dict[str, Any]: Dictionary containing prediction results
             - predicted_class (int): Index of predicted class (0-based)
+            - predicted_class_name (str): Name of predicted class
             - confidence (float): Confidence of predicted class (0.0-1.0)
             - probabilities (List[float]): Prediction probability list for all classes
             - raw_output (List[float]): Model raw output (logit values)
@@ -702,7 +768,7 @@ def predict_image_data(
     Example:
         >>> import torch
         >>> img_tensor = torch.randn(1, 3, 128, 128)
-        >>> result = predict_image_data("./models/best_model.pth", img_tensor)
+        >>> result = predict_with_checkpoint("./models/best_model.pth", img_tensor)
         >>> print(f"Predicted class: {result['predicted_class']}")
         >>> print(f"Confidence: {result['confidence']:.3f}")
         

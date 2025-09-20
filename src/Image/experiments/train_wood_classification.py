@@ -185,6 +185,14 @@ def main():
         dataset_for_augmentation=dataset,
     )
 
+    # Save class names to checkpoint info for evaluator
+    logger.log_info("Saving class names...")
+    class_names = dataset.get_class_names()
+    logger.log_info(f"Class names: {class_names}")
+    
+    # Update checkpoint info with class names
+    checkpoint_manager.save_class_names(class_names)
+
     # Save final configuration
     config_manager.save_config()
 

@@ -17,7 +17,7 @@ l2softmax: true
 dropout_rate: 0.2
 
 # Training settings
-epoch: 3
+epoch: 10
 batch_size_train: 10
 batch_size_test: 10
 learning_rate: 0.001

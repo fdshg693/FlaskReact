@@ -153,9 +153,8 @@ class WoodDataset(BaseDataset):
         self.num_data = np.zeros(self.num_class)
         self.fpath_list = []
         self.label_list = []
-        # ===== 追加: クラス名リストを保存 =====
-        # self.class_names = []  # クラス名を保存するリスト
-        # ===== 追加終了 =====
+        # クラス名リストを保存（順序固定化のため）
+        self.class_names = []  # クラス名を保存するリスト
 
         class_idx = 0
         for directory in sorted(os.listdir(self.dataset_path)):
@@ -165,9 +164,8 @@ class WoodDataset(BaseDataset):
                 continue
 
             print(f"Loading class {class_idx}: {dir_path}")
-            # ===== 追加: クラス名（ディレクトリ名）を保存 =====
-            # self.class_names.append(directory)  # ディレクトリ名をクラス名として保存
-            # ===== 追加終了 =====
+            # クラス名（ディレクトリ名）を保存（データセット作成順で固定化）
+            self.class_names.append(directory)  # ディレクトリ名をクラス名として保存
 
             for filename in os.listdir(dir_path):
                 file_path = os.path.join(dir_path, filename)
@@ -187,15 +185,15 @@ class WoodDataset(BaseDataset):
             if class_idx >= self.num_class:
                 break
 
-    # ===== 追加: クラス名取得メソッド =====
-    # def get_class_names(self) -> list:
-    #     """クラス名のリストを返します。
+    def get_class_names(self) -> list:
+        """クラス名のリストを返します。
         
-    #     Returns:
-    #         list: クラス名のリスト（ディレクトリ名に基づく）
-    #     """
-    #     return self.class_names.copy() if hasattr(self, 'class_names') else []
-    # ===== 追加終了 =====
+        データセット作成順でクラス名を返すため、OS依存を回避します。
+        
+        Returns:
+            list: クラス名のリスト（ディレクトリ名に基づく、順序固定）
+        """
+        return self.class_names.copy() if hasattr(self, 'class_names') else []
 
     def _is_image_file(self, filename: str) -> bool:
         """Check if a file is a valid image based on its extension.

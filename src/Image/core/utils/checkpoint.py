@@ -209,11 +209,35 @@ class CheckpointManager:
             "best_loss": self.best_loss,
             "best_accuracy": self.best_accuracy,
             "max_checkpoints": self.max_checkpoints,
+            "class_names": getattr(self, 'class_names', []),  # クラス名を追加
         }
 
         info_path = os.path.join(self.checkpoint_dir, "checkpoint_info.json")
         with open(info_path, "w") as f:
             json.dump(info, f, indent=2)
+
+    def save_class_names(self, class_names: List[str]) -> None:
+        """クラス名を保存します。
+        
+        Args:
+            class_names: クラス名のリスト
+        """
+        self.class_names = class_names
+        self._save_checkpoint_info()
+        print(f"Class names saved: {class_names}")
+
+    def get_class_names(self) -> List[str]:
+        """保存されたクラス名を取得します。
+        
+        Returns:
+            クラス名のリスト
+        """
+        info_path = os.path.join(self.checkpoint_dir, "checkpoint_info.json")
+        if os.path.exists(info_path):
+            with open(info_path, "r") as f:
+                info = json.load(f)
+                return info.get("class_names", [])
+        return []
 
     def delete_all_checkpoints(self) -> None:
         """Delete all checkpoints and reset manager."""

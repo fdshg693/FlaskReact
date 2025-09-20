@@ -14,7 +14,7 @@ from loguru import logger
 from llm.pdf import extract_text_from_pdf
 from llm.text_splitter import split_text
 from machineLearning.eval_batch import evaluate_iris_batch
-from image.core.evaluation.evaluator import predict_image_data
+from image.core.evaluation.evaluator import predict_image_with_checkpoint
 from util.convert_json import convert_json_to_model_input
 from util.filestorage_to_tensor import filestorage_to_tensor_no_tv
 
@@ -210,15 +210,16 @@ def handle_image_analysis_request() -> Response:
     checkpoint_path = (
         APP_ROOT 
         / "checkpoints" 
-        / "2025_09_06_20_49_09_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset" 
+        / "2025_09_20_18_59_46_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset" 
         / "best_accuracy.pth"
     )
     
-    predict_result = predict_image_data(
+    predict_result = predict_image_with_checkpoint(
         checkpoint_path=str(checkpoint_path),
         img_tensor=img_tensor,
     )
-    return jsonify({"description": predict_result})
+    predict_class_name = predict_result["predicted_class_name"]
+    return jsonify({"description": predict_class_name})
 
 
 # PDF text extraction API
