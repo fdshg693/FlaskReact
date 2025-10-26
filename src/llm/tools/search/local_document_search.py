@@ -1,19 +1,11 @@
 from typing import Optional, List
 from langchain_core.tools import tool
 from pathlib import Path
-from langchain_community.tools.tavily_search import TavilySearchResults
 from loguru import logger
 from config import PATHS
 
 # Security constants
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB limit to prevent memory issues
-
-
-@tool
-def tavily_search_func(search_query: str) -> str:
-    tavily_search_tool = TavilySearchResults(max_results=2)
-    search_results = tavily_search_tool.run(search_query)
-    return str(search_results)
 
 
 @tool

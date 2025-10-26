@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import List
-from llm.text_splitter import split_text
+from llm.tools.others.text_splitter import split_text
 
 
 def split_text_service(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:

@@ -4,10 +4,11 @@ import base64
 from pathlib import Path
 from typing import Any
 
-from config import load_dotenv_workspace
 from langchain_openai import ChatOpenAI
 from loguru import logger
-from config import PATHS
+
+from config import PATHS, load_dotenv_workspace
+from llm.models import LLMModel
 
 
 def analyze_image(image_data: str) -> str:
@@ -33,7 +34,7 @@ def analyze_image(image_data: str) -> str:
 
     try:
         # Pass to LLM
-        llm = ChatOpenAI(model="gpt-4o")
+        llm = ChatOpenAI(model=LLMModel.GPT_4O)
 
         message: dict[str, Any] = {
             "role": "user",
