@@ -44,19 +44,6 @@
             },
             "console": "integratedTerminal",
             "justMyCode": true
-        },
-        {
-            "name": "Pytest (root with src PYTHONPATH)",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "pytest",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}/src"
-            },
-            "console": "integratedTerminal",
-            "justMyCode": true
         }
     ]
 }

@@ -176,33 +176,32 @@ cython_debug/
 */log/*
 */param/*
 */save/*
-*/*.pth
+*/*.pthƒ
 .DS_Store
 */*.png
 *.pth
 *.jpg
-*.jpeg
+*.jpegß
 *.png
 *.gif
-*.csv
-*.gz
-# フォルダだけ残して、配下のファイルは無視する
-/data/*
-# README.mdはGITに追加する
-!/data/README.md
 
+# CSVデータは基本的に無視するが、dataフォルダ配下のcsvファイルはGITに追加する
+*.csv
+!data/
+!data/**/*.csv
+
+# memo
 memo.md
 
+# 一時的な成果物
 /param/*
 /log/*
-param/
+param/*
 log/
 logs/
 scaler/
 checkpoints/
-
-# VSCODEの設定は統一するために、GITに追加する
-# /.vscode/
+*.gz
 
 # 色々実験用のディレクトリ
 # ディレクトリだけ残して、配下のファイルは無視する
@@ -215,7 +214,12 @@ review/
 .github/prompts/_*
 .github/prompts/＿*
 
+# サンプルVSCODE設定ファイルはGITに追加する
 .vscode/**.**
+!.vscode/sample*
 
-!.vscode/sample_launch.json
+
+# tmpフォルダ本体だけ残して、配下のファイルは無視する
+/tmp/*
+!/tmp/.gitkeep
 

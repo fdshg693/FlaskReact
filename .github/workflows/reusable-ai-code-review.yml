@@ -1,0 +1,135 @@
+# Reusable AI Code Review Workflow
+# Extracted common steps for generating diffs and requesting an AI review
+on:
+  workflow_call:
+    inputs:
+      target_branch:
+        description: 'Base branch to compare against (default: main)'
+        required: false
+        type: string
+        default: 'main'
+      ai_model:
+        description: 'Model to use for AI review'
+        required: false
+        type: string
+        default: 'gpt-4.1'
+      max_tokens:
+        description: 'Max tokens for the model'
+        required: false
+        type: number
+        default: 15000
+      temperature:
+        description: 'Temperature for the model'
+        required: false
+        type: number
+        default: 0.3
+      fetch_depth:
+        description: 'git fetch depth for checkout'
+        required: false
+        type: number
+        default: 50
+      post_pr_comment:
+        description: 'Whether to post the review to the PR (if exists)'
+        required: false
+        type: boolean
+        default: true
+      review_prompt:
+        description: 'Optional override prompt for the AI reviewer'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      review:
+        description: 'AI review text'
+      has_changes:
+        description: 'Whether diff had changes'
+
+name: Reusable AI Code Review
+
+jobs:
+  ai_review:
+    name: Generate AI Code Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    env:
+      AI_MODEL: ${{ inputs.ai_model }}
+      MAX_TOKENS: ${{ inputs.max_tokens }}
+      TEMPERATURE: ${{ inputs.temperature }}
+      FETCH_DEPTH: ${{ inputs.fetch_depth }}
+      POST_PR_COMMENT: ${{ inputs.post_pr_comment }}
+      REVIEW_PROMPT: ${{ inputs.review_prompt }}
+
+    timeout-minutes: 10
+
+    outputs:
+      review: ${{ steps.ai_review.outputs.review }}
+      has_changes: ${{ steps.generate_diff.outputs.has_changes }}
+
+    steps:
+      - name: Checkout repository with optimized history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ env.FETCH_DEPTH }}
+
+      - name: Make scripts executable
+        run: |
+          chmod +x .github/scripts/generate-diff.sh
+          chmod +x .github/scripts/generate-ai-review.sh
+
+      - name: Generate diff against base branch
+        id: generate_diff
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          INPUT_TARGET: ${{ inputs.target_branch }}
+        run: .github/scripts/generate-diff.sh
+
+      - name: Request AI code review
+        id: ai_review
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          REVIEW_PROMPT: ${{ inputs.review_prompt }}
+        run: .github/scripts/generate-ai-review.sh tmp/diff.patch
+
+      - name: Display review results
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        run: |
+          echo "## 🤖 AI Code Review Results"
+          echo ""
+          echo "${{ steps.ai_review.outputs.review }}"
+
+      - name: Upload AI review as artifact
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review-${{ github.run_number }}
+          path: |
+            tmp/ai_review_output.md
+            tmp/diff.patch
+          retention-days: 30
+
+      - name: Post review to PR (optional)
+        if: steps.generate_diff.outputs.has_changes == 'true' && github.event.pull_request && inputs.post_pr_comment == true
+        uses: actions/github-script@v7
+        env:
+          REVIEW_CONTENT: ${{ steps.ai_review.outputs.review }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const reviewContent = process.env.REVIEW_CONTENT;
+            if (reviewContent && reviewContent.trim() !== '') {
+              console.log("Posting AI review comment to PR...");
+              const prNumber = context.payload.pull_request.number;
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🤖 AI Code Review Results\n\n${reviewContent}`
+              });
+              console.log(`✅ Successfully posted review comment to PR #${prNumber}`);
+            } else {
+              console.log("❌ No review content available to post.");
+            }

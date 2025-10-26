@@ -1,0 +1,96 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Pytest: All",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "-q"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Pytest: Current File",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "-q",
+                "${file}"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Pytest: Choose File/Pattern",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "-q",
+                "${input:pytestFile}"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Pytest: Current File",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "-q",
+                "${file}"
+            ],
+            "isBackground": false,
+            "problemMatcher": [],
+            "group": "none"
+        },
+        {
+            "label": "ruff check & format(for shell)",
+            "type": "shell",
+            "command": "uv run ruff check . --fix && uv run ruff format .",
+            "isBackground": false,
+            "problemMatcher": [],
+            "group": "none"
+        },
+        {
+            "label": "ruff check & format(for windows",
+            "type": "shell",
+            "command": "uv run ruff check . --fix & uv run ruff format .",
+            "isBackground": false,
+            "problemMatcher": [],
+            "group": "none"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "pytestFile",
+            "type": "promptString",
+            "description": "Path or pytest pattern (e.g., tests/test_csv_plot.py or tests/test_csv_plot.py::TestClass::test_func or -k expr)",
+            "default": "tests/test_*.py"
+        }
+    ]
+}

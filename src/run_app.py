@@ -1,46 +1,27 @@
-#!/usr/bin/env python3
 """
-FlaskReact application launcher.
+Project launcher for FlaskReact.
 
-This script sets up the proper Python path and launches the Flask application
-with the correct environment configuration.
+Always start the app with:
+
+    uv run run_app.py
+
+This ensures proper module imports and path setup per repo guidance.
 """
 
-import os
-import sys
+from __future__ import annotations
+
 from pathlib import Path
+from loguru import logger
 
-
-def setup_environment() -> None:
-    """Setup the Python environment for the FlaskReact application."""
-    # Get the project root directory
-    project_root = Path(__file__).parent.parent.absolute()
-
-    # Add project root to Python path if not already present
-    project_root_str = str(project_root)
-    if project_root_str not in sys.path:
-        sys.path.insert(0, project_root_str)
-
-    # Set PYTHONPATH environment variable for subprocesses
-    current_pythonpath = os.environ.get("PYTHONPATH", "")
-    if project_root_str not in current_pythonpath:
-        if current_pythonpath:
-            os.environ["PYTHONPATH"] = f"{project_root_str}:{current_pythonpath}"
-        else:
-            os.environ["PYTHONPATH"] = project_root_str
+# Import the Flask app factory without side effects
+from server.app import create_app
 
 
 def main() -> None:
-    """Main entry point for the application."""
-    setup_environment()
+    project_root = Path(__file__).resolve().parent
+    logger.info(f"Starting FlaskReact from {project_root}")
 
-    # Import and run the Flask app
-    from server.app import app
-
-    print("🚀 Starting FlaskReact application...")
-    print(f"📁 Project root: {Path(__file__).parent.parent.absolute()}")
-    print("🐍 Python path configured automatically")
-
+    app = create_app()
     app.run(host="0.0.0.0", port=8000, debug=True)
 
 

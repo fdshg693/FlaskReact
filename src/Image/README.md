@@ -116,7 +116,7 @@ python experiments/train_wood_classification.py
 
 ### 4. 学習済みモデルの実行
 
-Python Debugger: Current File with Arguments (src layout)を選択した状態で、F5実行。
+Python Debugger: Current File with Arguments (src layout)を選択した状態でsrc/image/core/evaluation/evaluate_model.pyを開いて、F5実行。
 次の引数を渡す
 ```bash
 --model "./checkpoints/2025_08_24_20_09_13_img128_layer3_hidden4096_0class_dropout0.2_scale1.5_test_dataset/best_accuracy.pth" 

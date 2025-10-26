@@ -1,0 +1,40 @@
+name: Python tests
+
+on:
+  pull_request:
+    branches: main
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+      UV_PYTHON: ${{ matrix.python-version }}
+    strategy:
+      matrix:
+        python-version: [3.13]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Sync dependencies with uv
+        run: |
+          # Use the lockfile if present to ensure reproducible installs
+          if [ -f uv.lock ]; then
+            uv sync --frozen --dev
+          else
+            uv sync --dev
+          fi
+
+      - name: Run pytest (via uv)
+        run: |
+          uv run pytest -q

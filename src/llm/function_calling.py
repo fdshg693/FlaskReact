@@ -1,16 +1,15 @@
-from typing import List, Dict, Any
-from loguru import logger
+from typing import Any, Dict, List
+
 from langchain.chat_models import init_chat_model
-from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage, ToolMessage, BaseMessage
+from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage
 from langchain_core.tools import BaseTool
+from loguru import logger
 
-from llm.document_search_tools import (
-    get_local_document_content,
-    search_local_text_documents,
-)
+from config import load_dotenv_workspace
+from llm.models import LLMModel, ModelProvider
+from llm.tools.search.local_document_search import search_local_text_documents
 
-load_dotenv()
+load_dotenv_workspace()
 
 
 def function_calling(tools: List[BaseTool], query: str, verbose: bool = True) -> str:
@@ -27,7 +26,7 @@ def function_calling(tools: List[BaseTool], query: str, verbose: bool = True) ->
     """
     if verbose:
         logger.info("Initializing chat model with tools ...")
-    llm = init_chat_model("gpt-4o-mini", model_provider="openai")
+    llm = init_chat_model(LLMModel.GPT_4O_MINI, model_provider=ModelProvider.OPENAI)
     llm_with_tools = llm.bind_tools(tools)
 
     messages: List[BaseMessage] = [HumanMessage(query)]
@@ -94,7 +93,7 @@ def function_calling(tools: List[BaseTool], query: str, verbose: bool = True) ->
 
 
 if __name__ == "__main__":
-    tools: List[BaseTool] = [get_local_document_content, search_local_text_documents]
+    tools: List[BaseTool] = [search_local_text_documents]
     search_query: str = "株式会社ヘッドウォーターズの作ったアプリについて、ローカルにあるドキュメントを元に回答してください。"
     # Configure log format for clarity when run as a script
     logger.remove()

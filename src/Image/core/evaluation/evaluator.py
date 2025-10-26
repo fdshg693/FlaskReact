@@ -199,7 +199,9 @@ class ModelEvaluator:
         # Preprocess image
         img_tensor = self.preprocess_image(image_path)
 
-        # Make prediction
+        return self.predict_image_data(img_tensor)
+
+    def predict_image_data(self, img_tensor: torch.Tensor) -> Dict[str, Any]:
         with torch.no_grad():
             output = self.model(img_tensor)
             probabilities = F.softmax(output, dim=1)
@@ -210,7 +212,6 @@ class ModelEvaluator:
         all_probs = probabilities[0].cpu().numpy()
 
         result = {
-            "image_path": image_path,
             "predicted_class": predicted_class,
             "confidence": confidence,
             "probabilities": all_probs.tolist(),
@@ -410,3 +411,19 @@ class ModelEvaluator:
             cv2.destroyAllWindows()
 
         return vis_img
+
+
+def predict_image_data(
+    checkpoint_path: str, img_tensor: torch.Tensor
+) -> Dict[str, Any]:
+    """Predict class for a given image tensor using the specified model checkpoint.
+
+    Args:
+        checkpoint_path: Path to the trained model checkpoint
+        img_tensor: Preprocessed image tensor
+
+    Returns:
+        Dictionary containing prediction results
+    """
+    evaluator = ModelEvaluator(checkpoint_path=checkpoint_path)
+    return evaluator.predict_image_data(img_tensor)
