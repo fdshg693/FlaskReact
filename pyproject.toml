@@ -46,6 +46,17 @@ fix = true
 indent-width = 4
 
 [tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q"               
-testpaths = ["tests"] 
+# Pythonパスに追加するディレクトリ
+pythonpath = ["src"]
+
+# テストファイルを探索するディレクトリ
+testpaths = ["tests"]
+
+# テストファイルの命名パターン
+python_files = ["test_*.py", "*_test.py"]
+
+# テスト関数の命名パターン
+python_functions = ["test_*"]
+
+# テストクラスの命名パターン
+python_classes = ["Test*"]
