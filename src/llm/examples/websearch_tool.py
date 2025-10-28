@@ -2,6 +2,8 @@ import asyncio
 
 from agents import Agent, Runner, WebSearchTool, trace
 
+# OPENAI AGENT SDK EXAMPLE
+
 
 async def main():
     agent = Agent(

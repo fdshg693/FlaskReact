@@ -1,37 +1,40 @@
 from typing import List, Generator
 
-from langchain.chat_models import init_chat_model
-from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
+from llm.tools.search.local_document_search import create_search_local_text_tool
 
-from llm.models import LLMModel, ModelProvider, AgentPrompt
+from llm.models import LLMModel, AgentPrompt
 
 
 def create_agent_executor(
     tools: List[BaseTool],
     llm_model: LLMModel = LLMModel.GPT_4O_MINI,
-    model_provider: ModelProvider = ModelProvider.OPENAI,
 ) -> Runnable:
-    """Create a ReAct agent executor with the given tools and model."""
-    model: BaseChatModel = init_chat_model(llm_model, model_provider=model_provider)
-    agent_executor: Runnable = create_react_agent(model, tools)
-    return agent_executor
+    agent = create_agent(
+        llm_model,
+        tools=tools,
+    )
+    return agent
 
 
-def agent_run(
-    prompt: AgentPrompt,
-    tools: List[BaseTool] = [],
-    llm_model: LLMModel = LLMModel.GPT_4O_MINI,
-    model_provider: ModelProvider = ModelProvider.OPENAI,
-) -> Generator[AgentPrompt, None, None]:
-    """Run a ReAct agent with the given tools and model."""
-    model: BaseChatModel = init_chat_model(llm_model, model_provider=model_provider)
-    agent_executor: Runnable = create_react_agent(model, tools)
-    config: dict = {"configurable": {"thread_id": "abc123"}}
+def agent_run(prompt: AgentPrompt, agent) -> Generator[AgentPrompt, None, None]:
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": prompt}]},
+    )
 
-    for step in agent_executor.stream(
-        {"messages": [prompt]}, config, stream_mode="values"
-    ):
-        yield step["messages"][-1]
+    for step in result["messages"]:
+        yield step.content
+    return
+
+
+if __name__ == "__main__":
+    document_search_tool: BaseTool = create_search_local_text_tool()
+    tools: List[BaseTool] = [document_search_tool]
+    agent = create_agent_executor(tools)
+    search_query: str = "名前順にテキストファイルを並べてください。"
+    function_result: Generator[AgentPrompt, None, None] = agent_run(search_query, agent)
+    for idx, res in enumerate(function_result):
+        print(f"---- STEP {idx} ----")
+        print(res)
