@@ -23,14 +23,14 @@ from loguru import logger
 from llm import AgentPrompt, LLMModel, ModelProvider, agent_run
 from llm.tools.others.sample_tools import add_numbers
 from llm.tools.search.tavily_search import tavily_search_func
-from llm.tools.search.local_document_search import search_local_text_documents
+from llm.tools.search.local_document_search import create_search_local_text_tool
 
 
 # Available tools registry
 AVAILABLE_TOOLS: dict[str, BaseTool] = {
     "add_numbers": add_numbers,
     "tavily_search": tavily_search_func,
-    "search_local_documents": search_local_text_documents,
+    "search_local_documents": create_search_local_text_tool,
 }
 
 

@@ -1,4 +1,5 @@
-from typing import Optional, List
+from typing import Optional, List, Callable
+from functools import wraps
 from langchain_core.tools import tool
 from pathlib import Path
 from loguru import logger
@@ -8,19 +9,36 @@ from config import PATHS
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB limit to prevent memory issues
 
 
-@tool
-def search_local_text_documents(directory_path: Optional[str] = None) -> str:
+def decorator(func: Callable) -> Callable:
+    def wrapper(
+        base_path: Path = PATHS.llm_data / "text_documents",
+    ) -> str:
+        @wraps(func)
+        def search_local_text_tool(
+            directory_path: Optional[str] = None,
+        ):
+            return func(directory_path=directory_path, base_path=base_path)
+
+        return tool(search_local_text_tool)
+
+    return wrapper
+
+
+@decorator
+def create_search_local_text_tool(
+    directory_path: Optional[str] = None,
+    base_path: Path = PATHS.llm_data / "text_documents",
+):
     """
     List text files (first line preview) in a directory or a specific file
     """
 
     # Determine target path
     if not directory_path:
-        text_documents_path = PATHS.llm_data / "text_documents"
+        text_documents_path = base_path
     else:
         text_documents_path = Path(directory_path)
         try:
-            base_path = PATHS.project_root
             if not str(text_documents_path).startswith(str(base_path)):
                 logger.warning(f"Path traversal attempt detected: {directory_path}")
                 return "Error: Invalid path detected for security reasons"
@@ -33,41 +51,48 @@ def search_local_text_documents(directory_path: Optional[str] = None) -> str:
         logger.info("Non-existent directory name provided")
         return f"Non-existent directory: {text_documents_path}"
 
-    # Directory listing
+    # Recursively find all text files
     try:
-        text_files_list = [
-            p
-            for p in text_documents_path.iterdir()
-            if p.is_file() and p.suffix == ".txt"
-        ]
+        text_files_list = sorted(text_documents_path.rglob("*.txt"))
     except (OSError, PermissionError) as error:
         return f"Error accessing directory {text_documents_path}: {error}"
 
     if not text_files_list:
         return f"No text files found in the directory: {text_documents_path}"
 
-    summaries: List[str] = []
+    # Get relative paths from the base directory
+    file_paths: List[str] = []
     for txt in text_files_list:
         try:
-            if txt.stat().st_size > MAX_FILE_SIZE:
-                summaries.append(f"{txt.name}: File too large to process")
-                continue
-            with txt.open("r", encoding="utf-8") as fh:
-                first_line = fh.readline().strip()
-            summaries.append(f"{txt.name}: {first_line}")
-        except (OSError, UnicodeDecodeError, IOError) as error:
-            summaries.append(f"{txt.name}: Error reading file - {error}")
+            relative_path = txt.relative_to(text_documents_path)
+            file_size = txt.stat().st_size
+            size_str = (
+                f"{file_size / 1024:.1f}KB"
+                if file_size < 1024 * 1024
+                else f"{file_size / (1024 * 1024):.1f}MB"
+            )
+            file_paths.append(f"{relative_path} ({size_str})")
+        except (OSError, ValueError) as error:
+            logger.error(f"Error processing file {txt}: {error}")
+            continue
 
-    return "\n".join(summaries) if summaries else "No readable text files found."
+    return "\n".join(file_paths) if file_paths else "No readable text files found."
 
 
 if __name__ == "__main__":
     # Test the search_local_text_documents function
     # Test with default path (empty string)
     print("Testing with default path:")
-    print(search_local_text_documents.run({"directory_path": ""}))
+    search_tool = create_search_local_text_tool()
+    result = search_tool.run({})
+    print(result)
 
     # Test with specific path
-    print("\nTesting with specific data directory:")
-    data_directory = PATHS.llm_data / "text_documents"
-    print(search_local_text_documents.run({"directory_path": data_directory}))
+    print("\nTesting with specific subdirectory:")
+    search_tool = create_search_local_text_tool(
+        base_path=PATHS.llm_data / "text_documents"
+    )
+    result = search_tool.run(
+        {"directory_path": str(PATHS.llm_data / "text_documents" / "english")}
+    )
+    print(result)
