@@ -58,7 +58,9 @@ aiohttp==3.13.2 \
     --hash=sha256:fe242cd381e0fb65758faf5ad96c2e460df6ee5b2de1072fe97e4127927e00b4 \
     --hash=sha256:fe91b87fc295973096251e2d25a811388e7d8adf3bd2b97ef6ae78bc4ac6c476 \
     --hash=sha256:ff0a7b0a82a7ab905cbda74006318d1b12e37c797eb1b0d4eb3e316cf47f658f
-    # via langchain-community
+    # via
+    #   langchain-community
+    #   langchain-tavily
 aiosignal==1.4.0 \
     --hash=sha256:053243f8b92b990551949e63930a839ff0cf0b0ebbe0597b0f3fb19e1a0fe82e \
     --hash=sha256:f47eecd9468083c2029cc99945502cb7708b082c232f9aca65da147157b251c7
@@ -635,7 +637,9 @@ kiwisolver==1.4.9 \
 langchain==1.0.3 \
     --hash=sha256:a7d57964ed16278c991de4ab15516a81937a58c5ac7d7aadccb18431ad8179b2 \
     --hash=sha256:f96d8d185cb8cbba9793f5c648e7d5eeec688f8e3778f700d75d89d6570ae11e
-    # via flaskreact
+    # via
+    #   flaskreact
+    #   langchain-tavily
 langchain-classic==1.0.0 \
     --hash=sha256:97f71f150c10123f5511c08873f030e35ede52311d729a7688c721b4e1e01f33 \
     --hash=sha256:a63655609254ebc36d660eb5ad7c06c778b2e6733c615ffdac3eac4fbe2b12c5
@@ -652,6 +656,7 @@ langchain-core==1.0.2 \
     #   langchain-classic
     #   langchain-community
     #   langchain-openai
+    #   langchain-tavily
     #   langchain-text-splitters
     #   langgraph
     #   langgraph-checkpoint
@@ -659,6 +664,10 @@ langchain-core==1.0.2 \
 langchain-openai==1.0.1 \
     --hash=sha256:78aff09a631fccca08a64f5fc669b325d0f5821490acce024e5da4cf0a08e0d0 \
     --hash=sha256:9b61309a7268e7c1c614c554cfd66401519e7434aaefc52de7e251887aceb5f7
+    # via flaskreact
+langchain-tavily==0.2.12 \
+    --hash=sha256:d243a53f60048a18b55f5a7efd5e2dcdde6a9dbc9f84c45e5f349210303e95a3 \
+    --hash=sha256:e73ef2149b7a4e751fce75c47003d04628222b12d073dae4af2dc7f58d589e30
     # via flaskreact
 langchain-text-splitters==1.0.0 \
     --hash=sha256:d8580a20ad7ed10b432feb273e5758b2cc0902d094919629cec0e1ad691a6744 \
@@ -1486,6 +1495,7 @@ requests==2.32.5 \
     # via
     #   langchain-classic
     #   langchain-community
+    #   langchain-tavily
     #   langsmith
     #   openai-agents
     #   requests-toolbelt
