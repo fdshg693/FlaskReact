@@ -11,7 +11,7 @@ from config import PATHS, load_dotenv_workspace
 from llm.models import LLMModel
 
 
-def analyze_image(image_data: str) -> str:
+def analyze_image_raw(image_data: str) -> str:
     """Analyze an image using OpenAI's GPT-4o model.
 
     Args:
@@ -45,8 +45,7 @@ def analyze_image(image_data: str) -> str:
                 },
                 {
                     "type": "image",
-                    "source_type": "base64",
-                    "data": image_data,
+                    "base64": image_data,
                     "mime_type": "image/png",
                 },
             ],
@@ -61,6 +60,32 @@ def analyze_image(image_data: str) -> str:
         raise RuntimeError(f"Image analysis failed: {e}") from e
 
 
+def analyze_image_from_url(image_url: str) -> str:
+    """Analyze an image from a URL using OpenAI's GPT-4o model.
+
+    Args:
+        image_url: URL of the image to analyze
+    Returns:
+        A description of the image in Japanese
+    """
+    if not image_url:
+        raise ValueError("image_url cannot be empty")
+
+    logger.info(f"Fetching image from URL: {image_url}")
+
+    try:
+        import requests
+
+        response = requests.get(image_url)
+        response.raise_for_status()
+        image_data = base64.b64encode(response.content).decode("utf-8")
+        return analyze_image_raw(image_data)
+
+    except Exception as e:
+        logger.error(f"Failed to fetch or analyze image from URL: {e}")
+        raise RuntimeError(f"Image analysis from URL failed: {e}") from e
+
+
 if __name__ == "__main__":
     # Fetch image data from local file
     img_path: Path = PATHS.llm_data / "image" / "fish1.png"
@@ -73,7 +98,7 @@ if __name__ == "__main__":
     image_data: str = base64.b64encode(img_path.read_bytes()).decode("utf-8")
 
     try:
-        result: str = analyze_image(image_data)
+        result: str = analyze_image_raw(image_data)
         logger.info(f"Analysis result: {result}")
     except (ValueError, RuntimeError) as e:
         logger.error(f"Image analysis failed: {e}")

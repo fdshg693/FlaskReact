@@ -6,7 +6,7 @@ from typing import Any
 
 from langchain_community.document_loaders import PyPDFLoader
 from loguru import logger
-from config import load_dotenv_workspace
+from config import load_dotenv_workspace, PATHS
 
 
 def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
@@ -60,7 +60,7 @@ def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
 
 
 if __name__ == "__main__":
-    pdf_path = Path(__file__).parent.parent.parent / "data" / "headwaters20250521.pdf"
+    pdf_path = PATHS.llm_data / "pdf" / "sample.pdf"
 
     logger.info("Starting PDF text extraction demonstration")
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         original_filename = pdf_path.stem  # Gets filename without extension
         output_filename = f"extracted_{original_filename}_{timestamp}.txt"
-        output_file = Path(__file__).parent.parent.parent / "data" / output_filename
+        output_file = PATHS.llm_data / "pdf" / output_filename
 
         with output_file.open("w", encoding="utf-8") as f:
             for doc in docs:

@@ -24,6 +24,15 @@ def decorator(func: Callable) -> Callable:
     return wrapper
 
 
+def create_partial_tool(func: Callable, /, **fixed_kwargs) -> Callable:
+    @wraps(func)
+    def partial_tool(**kwargs):
+        combined_kwargs = {**fixed_kwargs, **kwargs}
+        return func(**combined_kwargs)
+
+    return partial_tool
+
+
 @decorator
 def create_search_local_text_tool(
     directory_path: Optional[str] = None,
