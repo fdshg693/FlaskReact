@@ -10,6 +10,14 @@ from loguru import logger
 from config import PATHS, load_dotenv_workspace
 from llm.models import LLMModel
 
+"""
+対応している画像形式(おそらくOPENAI 4oの仕様による)
+- PNG
+- JPEG
+- GIF
+- WEBP
+"""
+
 
 def analyze_image_raw(image_data: str) -> str:
     """Analyze an image using OpenAI's GPT-4o model.
@@ -74,25 +82,36 @@ def analyze_image_from_url(image_url: str) -> str:
     logger.info(f"Fetching image from URL: {image_url}")
 
     try:
-        import requests
+        llm = ChatOpenAI(model=LLMModel.GPT_4O)
 
-        response = requests.get(image_url)
-        response.raise_for_status()
-        image_data = base64.b64encode(response.content).decode("utf-8")
-        return analyze_image_raw(image_data)
+        message = {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Describe the content of this image."},
+                {
+                    "type": "image",
+                    "url": image_url,
+                    "mime_type": "image/gif",
+                },
+            ],
+        }
+
+        response: Any = llm.invoke([message])
+        logger.info("Image analysis completed successfully")
+        return response.content
 
     except Exception as e:
         logger.error(f"Failed to fetch or analyze image from URL: {e}")
         raise RuntimeError(f"Image analysis from URL failed: {e}") from e
 
 
-if __name__ == "__main__":
-    # Fetch image data from local file
+def test_analyze_image_raw():
+    """Test function for analyze_image_raw."""
     img_path: Path = PATHS.llm_data / "image" / "fish1.png"
 
     if not img_path.exists():
         logger.error(f"Image file not found: {img_path}")
-        exit(1)
+        return
 
     logger.info(f"Loading image from: {img_path}")
     image_data: str = base64.b64encode(img_path.read_bytes()).decode("utf-8")
@@ -102,5 +121,21 @@ if __name__ == "__main__":
         logger.info(f"Analysis result: {result}")
     except (ValueError, RuntimeError) as e:
         logger.error(f"Image analysis failed: {e}")
-        exit(1)
-    # Expected output: A description of the image in the data/fish1.png file
+
+
+def test_analyze_image_from_url():
+    """Test function for analyze_image_from_url."""
+
+    # sample salmon image from wikipedia
+    image_url: str = "https://upload.wikimedia.org/wikipedia/commons/b/be/Ocean_stage_and_spawning_pink_salmon.gif"
+
+    try:
+        result: str = analyze_image_from_url(image_url)
+        logger.info(f"Analysis result: {result}")
+    except (ValueError, RuntimeError) as e:
+        logger.error(f"Image analysis from URL failed: {e}")
+
+
+if __name__ == "__main__":
+    # test_analyze_image_raw()
+    test_analyze_image_from_url()
