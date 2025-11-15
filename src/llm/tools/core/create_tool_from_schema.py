@@ -6,5 +6,6 @@ def add(a: int, b: int) -> int:
     print(a + b)
 
 
-tool = StructuredTool.from_function(add)
-tool.run({"a": 1, "b": 2})  # 3
+if __name__ == "__main__":
+    tool = StructuredTool.from_function(add)
+    tool.run({"a": 1, "b": 2})  # 3
