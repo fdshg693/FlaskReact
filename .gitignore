@@ -225,3 +225,6 @@ review/
 
 # chromaのローカルDBは無視する
 chroma_langchain_db/
+
+# sekishiroフォルダは個人ドキュメント管理のため、無視する
+sekishiro/
