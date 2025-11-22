@@ -1,4 +1,3 @@
-````instructions
 ---
 applyTo: '*.js'
 ---
@@ -44,4 +43,3 @@ return React.createElement('div', { className: "example" }, 'Hello World');
 - Use `useContext` for global state management if needed.
 - Export components as named exports and import them explicitly.
 - Use ES Modules import/export syntax for better tree shaking and modern JavaScript practices.
-````

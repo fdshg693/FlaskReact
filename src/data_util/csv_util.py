@@ -7,7 +7,7 @@ import pandas as pd
 from loguru import logger
 
 
-def read_csv_from_path(
+def read_csv_into_dataframe(
     path: str | Path, *, encoding: Optional[str] = None
 ) -> pd.DataFrame:
     """Read a CSV file from a filesystem path and return a pandas DataFrame.
@@ -16,16 +16,16 @@ def read_csv_from_path(
     conventions.
 
     Args:
-            path: Path or string pointing to the CSV file.
-            encoding: Optional text encoding (passed to pandas.read_csv).
+        path: Path or string pointing to the CSV file.
+        encoding: Optional text encoding (passed to pandas.read_csv).
 
     Returns:
-            pandas.DataFrame loaded from the CSV.
+        pandas.DataFrame loaded from the CSV.
 
     Raises:
-            FileNotFoundError: If the path does not exist or is not a file.
-            pd.errors.EmptyDataError: If the CSV is empty.
-            Exception: Propagates pandas parsing errors and others.
+        FileNotFoundError: If the path does not exist or is not a file.
+        pd.errors.EmptyDataError: If the CSV is empty.
+        Exception: Propagates pandas parsing errors and others.
     """
     p = Path(path)
     logger.debug("read_csv_from_path() -> resolving path: {}", p)

@@ -225,3 +225,10 @@ review/
 
 # chromaのローカルDBは無視する
 chroma_langchain_db/
+
+# 生成ファイルは無視する
+outputs/
+output/
+
+# joblibファイルは無視する
+*.joblib
