@@ -226,5 +226,12 @@ review/
 # chromaのローカルDBは無視する
 chroma_langchain_db/
 
+# 生成ファイルは無視する
+outputs/
+output/
+
+# joblibファイルは無視する
+*.joblib
+
 # sekishiroフォルダは個人ドキュメント管理のため、無視する
 sekishiro/

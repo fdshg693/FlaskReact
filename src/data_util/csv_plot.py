@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from loguru import logger
 from config import PATHS, get_path
-from data_util.csv_util import read_csv_from_path
+from data_util.csv_util import read_csv_into_dataframe
 
 
 def plot_histograms_from_dataframe(
@@ -225,7 +225,7 @@ def plot_scatter_from_dataframe(
 
 
 if __name__ == "__main__":
-    df_example = read_csv_from_path(
+    df_example = read_csv_into_dataframe(
         PATHS.iris_data_path,
         encoding="utf-8",
     )

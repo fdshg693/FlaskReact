@@ -1,12 +1,12 @@
-from machineLearning.dataset import ml_dataset_from_csv, MLCompatibleDataset
+from machineLearning.dataset import MLDatasetConverter, MLCompatibleDataset
 from config import PATHS
-from machineLearning.ml_class import (
+from machineLearning.pipeline import (
     execute_machine_learning_pipeline,
-    save_model_and_learning_curves_with_custom_name,
+    store_model_and_learning_logs,
 )
 from loguru import logger
 
-iris_data: MLCompatibleDataset = ml_dataset_from_csv(
+iris_data: MLCompatibleDataset = MLDatasetConverter.convert(
     PATHS.iris_data_path,
     features=[
         "sepal length (cm)",
@@ -18,10 +18,15 @@ iris_data: MLCompatibleDataset = ml_dataset_from_csv(
 )
 
 
-iris_model, iris_net, iris_acc_hist, iris_loss_hist = execute_machine_learning_pipeline(
-    iris_data, epochs=2
+iris_model, iris_net, iris_acc_hist, iris_loss_hist, iris_exp_name = (
+    execute_machine_learning_pipeline(dataset=iris_data, epochs=2)
 )
-save_model_and_learning_curves_with_custom_name(
-    iris_net, iris_acc_hist, iris_loss_hist, "iris", epochs=2
+store_model_and_learning_logs(
+    trained_model=iris_net,
+    accuracy_history=iris_acc_hist,
+    loss_history=iris_loss_hist,
+    dataset_name="iris",
+    epochs=2,
+    experiment_name=iris_exp_name,
 )
 logger.info(f"Iris test metric (acc) = {iris_model.evaluate_model():.4f}")
