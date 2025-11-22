@@ -203,13 +203,6 @@ scaler/
 checkpoints/
 *.gz
 
-# 色々実験用のディレクトリ
-# ディレクトリだけ残して、配下のファイルは無視する
-/experiment/*
-
-# Copilot review files
-review/
-
 # _から始まるプロンプトファイルは無視する
 .github/prompts/_*
 .github/prompts/＿*

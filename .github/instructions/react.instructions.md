@@ -1,5 +1,5 @@
 ---
-applyTo: '*.js'
+applyTo: '**/*.js, **/*.jsx'
 ---
 ## Current Environment
 - React is used via ES Modules with Import Maps in the HTML file
