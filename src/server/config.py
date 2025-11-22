@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import List, Set
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from loguru import logger
 
 from config import PATHS
 
@@ -52,14 +53,72 @@ class Settings(BaseSettings):
     model_path: Path = Field(
         default_factory=lambda: PATHS.ml_outputs
         / "param"
-        / "models_20250712_021710.pth"
+        / "models_20250712_021710.pth_validation" #検証用に`_validation`を追加中
     )
     scaler_path: Path = Field(
-        default_factory=lambda: PATHS.ml_outputs / "scaler" / "scaler.joblib"
+        default_factory=lambda: PATHS.ml_outputs / "scaler" / "scaler.joblib_validation" #検証用に`_validation`を追加中
     )
     checkpoint_path: Path = Field(
         default_factory=lambda: PATHS.ml_outputs
         / "checkpoints"
         / "2025_09_06_20_49_09_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset"
-        / "best_accuracy.pth"
+        / "best_accuracy.pth_validation" #検証用に`_validation`を追加中
     )
+
+    # `@field_validator` 引数のフィールドに値がセットされる際に自動的に検証メソッドが実行(pydantic v2)
+    @field_validator("model_path", "scaler_path", "checkpoint_path")
+    # `@classmethod` クラスメソッドとして定義することを明記、第一引数にクラス自身を受け取る、インスタンス化せずに呼び出せる
+    @classmethod 
+    def _validate_path_existence(cls, value: Path, info) -> Path:
+        """各パスフィールドの存在を確認し、存在しない場合は警告ログを出力.
+
+        Args:
+            value: 検証対象のパス
+            info: フィールド情報：フィールド名などのメタデータ
+
+        Returns:
+            Path: 検証済みのパス
+
+        Note:
+            ファイルが存在しない場合でも起動は継続しますが、
+            警告ログが出力されます。実際のエンドポイント実行時に
+            適切なエラーハンドリングが必要です。
+        """
+        if not value.exists():
+            logger.warning(
+                f"設定されたパスが存在しません: {info.field_name}={value}. "
+                f"該当機能の利用時にエラーが発生する可能性があります。"
+            )
+        elif not value.is_file():
+            logger.warning(
+                f"設定されたパスがファイルではありません: {info.field_name}={value}"
+            )
+        return value
+
+    # `@model_validator` モデル全体の検証を行う、(mode="after") で個別フィールド検証後に実行
+    @model_validator(mode="after")
+    def _validate_startup_paths(self) -> "Settings":
+        """起動時の統合的なパス検証を実行.
+
+        Returns:
+            Settings: 検証済みの設定インスタンス
+
+        Note:
+            個別のパス検証は@field_validatorで実施済みのため、
+            ここでは追加の統合的な検証やログ出力を行います。
+        """
+        missing_paths = []
+        for field_name in ["model_path", "scaler_path", "checkpoint_path"]:
+            path = getattr(self, field_name)
+            if not path.exists():
+                missing_paths.append(f"{field_name}={path}")
+
+        if missing_paths:
+            logger.warning(
+                f"一部のモデルファイルが見つかりません: {', '.join(missing_paths)}. "
+                f"機械学習関連の機能が正常に動作しない可能性があります。"
+            )
+        else:
+            logger.info("すべてのモデルファイルパスの検証が完了しました")
+
+        return self
