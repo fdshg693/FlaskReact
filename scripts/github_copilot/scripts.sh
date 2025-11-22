@@ -3,6 +3,7 @@
 # -----------------------------------------------------------------------------
 # Script Name: scripts.sh
 # Description: Run AI reviews in parallel based on a YAML configuration file.
+# Usage: ./scripts.sh <settings_yaml_file>
 # -----------------------------------------------------------------------------
 
 # Exit immediately if a command exits with a non-zero status
@@ -85,6 +86,13 @@ main() {
     echo "Target Directories: ${#root_dirs[@]}"
     echo "---------------------------------------------------"
 
+    # Create a log directory for this run
+    # Use absolute path to avoid issues when changing directories
+    current_dir=$(pwd)
+    log_dir="${current_dir}/logs/copilot_review_$(date +%Y%m%d_%H%M%S)"
+    mkdir -p "$log_dir"
+    echo "Logs will be saved to: $log_dir"
+
     # Trap SIGINT (Ctrl+C) to kill background processes
     trap 'echo -e "\nAborting..."; kill 0' SIGINT
 
@@ -93,7 +101,7 @@ main() {
     for root_dir in "${root_dirs[@]}"; do
         (
             # Run in a subshell
-            echo "Starting review for: $root_dir"
+            # echo "Starting review for: $root_dir" # Removed to reduce noise
 
             if [ ! -d "$root_dir" ]; then
                 echo "Warning: Directory '$root_dir' does not exist. Skipping."
@@ -106,20 +114,41 @@ main() {
             # Substitute only ${root_dir}
             prompt=$(echo "$raw_prompt" | envsubst '${root_dir}')
 
-            # Change directory and run copilot
-            cd "$root_dir" || exit 1
+            # Define log file path (replace slashes with underscores for filename)
+            safe_dirname=$(echo "$root_dir" | tr '/' '_')
+            log_file="${log_dir}/${safe_dirname}.log"
+            
+            # Create the log file explicitly
+            touch "$log_file"
+
+            # Log execution details
+            {
+                echo "=== Execution Details ==="
+                echo "Timestamp: $(date)"
+                echo "Directory: $root_dir"
+                echo "Agent: $agent"
+                echo "--- Prompt ---"
+                echo "$prompt"
+                echo "--- Command ---"
+                echo "copilot --agent=\"$agent\" --prompt=\"$prompt\" --allow-all-tools"
+                echo "========================="
+                echo ""
+            } > "$log_file"
 
             # Execute copilot command
-            if copilot --agent="$agent" --prompt="$prompt"; then
+            # Redirect stdin from /dev/null to prevent interactive prompts
+            # Redirect stdout and stderr to the log file
+            if copilot --agent="$agent" --prompt="$prompt" --allow-all-tools < /dev/null >> "$log_file" 2>&1; then
                 echo "✅ [$root_dir] Review completed."
             else
-                echo "❌ [$root_dir] Review failed."
+                echo "❌ [$root_dir] Review failed. Check log: $log_file"
                 exit 1
             fi
         ) &
         
         # Store the PID of the background process
         pids+=($!)
+        echo "🚀 [$root_dir] Started review (PID: $!)"
     done
 
     # Wait for all background processes to finish
@@ -142,3 +171,4 @@ main() {
 }
 
 main "$@"
+
