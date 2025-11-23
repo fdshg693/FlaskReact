@@ -8,7 +8,7 @@ from langchain_openai import ChatOpenAI
 from loguru import logger
 
 from config import PATHS, load_dotenv_workspace
-from llm.models import LLMModel
+from llm.langchain_custom.models import LLMModel
 
 """
 対応している画像形式(おそらくOPENAI 4oの仕様による)

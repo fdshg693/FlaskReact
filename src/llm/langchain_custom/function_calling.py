@@ -4,8 +4,10 @@ from langchain_core.tools import BaseTool
 from langchain.agents import create_agent
 
 from config import load_dotenv_workspace
-from llm.tools.search.local_document_search import create_search_local_text_tool
-from llm.models import LLMModel
+from llm.langchain_custom.tools.search.local_document_search import (
+    create_search_local_text_tool,
+)
+from llm.langchain_custom.models import LLMModel
 
 load_dotenv_workspace()
 

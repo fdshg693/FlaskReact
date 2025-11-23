@@ -3,9 +3,11 @@ from typing import List, Generator
 from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from langchain.agents import create_agent
-from llm.tools.search.local_document_search import create_search_local_text_tool
+from llm.langchain_custom.tools.search.local_document_search import (
+    create_search_local_text_tool,
+)
 
-from llm.models import LLMModel, AgentPrompt
+from llm.langchain_custom.models import LLMModel, AgentPrompt
 
 
 def create_agent_executor(
