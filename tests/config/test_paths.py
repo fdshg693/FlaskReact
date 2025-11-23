@@ -33,10 +33,12 @@ class TestPaths:
 
         # Test that we cannot modify existing attributes
         with pytest.raises(ValidationError, match="frozen"):
+            # Intentionally violating frozen model for testing - type: ignore[misc] suppresses expected error
             PATHS.project_root = Path("/tmp")  # type: ignore[misc]
 
         # Test that we cannot add new attributes
         with pytest.raises(ValidationError):
+            # Intentionally adding undefined attribute for testing - type: ignore[attr-defined] suppresses expected error
             PATHS.new_attribute = "value"  # type: ignore[attr-defined]
 
     def test_direct_instantiation_warns(self) -> None:

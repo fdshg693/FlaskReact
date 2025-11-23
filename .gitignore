@@ -226,5 +226,9 @@ output/
 # joblibファイルは無視する
 *.joblib
 
-# sekishiroフォルダは個人ドキュメント管理のため、無視する
+# 個人ドキュメント管理のため無視する
 sekishiro/
+maikuma/
+seiwan/
+tamashiro/
+taishi/

@@ -11,3 +11,4 @@ target: github-copilot
   - .github/copilot-instructions.md: ワークスペース全体の概要
   - ${input:target_directory:"ルートディレクトリ"}/.github/copilot-instructions.md： target_directory配下のコードベースに特化した概要
 - 読み終えた後に、ユーザの指示に従ってください。
+- 必ず、#tool:todosを使って、TODOを作り、そして一つずつ順番に#tool:runSubagentを使って実行してください。

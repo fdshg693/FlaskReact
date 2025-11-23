@@ -116,19 +116,11 @@ class Paths(BaseModel):
             ("titanic_train_data_path", self.titanic_train_data_path),
         )
         for name, p in dataset_paths:
-            try:
-                if not p.resolve().is_relative_to(self.ml_data.resolve()):
-                    msg = f"Paths.{name} must be located under ml_data ({self.ml_data.resolve()}), but is: {p.resolve()}"
-                    logger.error(msg)
-                    raise ValueError(msg)
-            except AttributeError:
-                # Fallback for Path implementations without is_relative_to (shouldn't occur on py>=3.9)
-                p_res = p.resolve()
-                ml_res = self.ml_data.resolve()
-                if str(p_res).startswith(str(ml_res) + os.sep) is False:
-                    msg = f"Paths.{name} must be located under ml_data ({ml_res}), but is: {p_res}"
-                    logger.error(msg)
-                    raise ValueError(msg)
+            # Python 3.9+ has is_relative_to() - no fallback needed
+            if not p.resolve().is_relative_to(self.ml_data.resolve()):
+                msg = f"Paths.{name} must be located under ml_data ({self.ml_data.resolve()}), but is: {p.resolve()}"
+                logger.error(msg)
+                raise ValueError(msg)
 
         logger.debug("Paths instance validated successfully")
         return self
