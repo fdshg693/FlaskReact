@@ -199,8 +199,3 @@ uv sync --all-extras
 # 特定のグループのみ
 uv sync --only-group dev
 ```
-
-## 参考資料
-- [PEP 621 - Project metadata](https://peps.python.org/pep-0621/)
-- [uv documentation](https://docs.astral.sh/uv/)
-- [Ruff documentation](https://docs.astral.sh/ruff/)

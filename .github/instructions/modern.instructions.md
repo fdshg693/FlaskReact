@@ -13,7 +13,6 @@ applyTo: '*.py'
   - `pytest`
   - `loguru`
   - `pydantic`
-  - `pydantic`
 
 # Modern Python Development Guidelines
 
