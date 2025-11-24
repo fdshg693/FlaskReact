@@ -5,8 +5,22 @@ import csv
 import json
 import logging
 import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, NamedTuple
 import numpy as np
+
+
+class EpochMetrics(NamedTuple):
+    """Container for epoch metrics data."""
+
+    epoch: int
+    train_loss: float
+    train_acc: float
+    val_loss: float
+    val_acc: float
+    best_loss: float
+    best_acc: float
+    learning_rate: float
+    elapsed_time: float
 
 
 class Logger:
@@ -35,7 +49,7 @@ class Logger:
         self._initialize_csv()
 
         # Store metrics for CSV logging
-        self.csv_data = []
+        self.csv_data: List[EpochMetrics] = []
 
     def _setup_logger(self) -> None:
         """Set up Python logger."""
@@ -142,23 +156,23 @@ class Logger:
         self.log_info(message)
 
         # Store for CSV
-        row_data = [
-            epoch,
-            train_loss,
-            train_acc,
-            val_loss,
-            val_acc,
-            best_loss,
-            best_acc,
-            learning_rate,
-            elapsed_time,
-        ]
-        self.csv_data.append(row_data)
+        metrics = EpochMetrics(
+            epoch=epoch,
+            train_loss=train_loss,
+            train_acc=train_acc,
+            val_loss=val_loss,
+            val_acc=val_acc,
+            best_loss=best_loss,
+            best_acc=best_acc,
+            learning_rate=learning_rate,
+            elapsed_time=elapsed_time,
+        )
+        self.csv_data.append(metrics)
 
         # Write to CSV immediately for real-time monitoring
         with open(self.csv_file, "a", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(row_data)
+            writer.writerow(metrics)
 
     def log_model_info(self, model_info: Dict[str, Any]) -> None:
         """Log model information.

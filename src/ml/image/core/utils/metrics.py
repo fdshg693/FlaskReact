@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report
 class MetricsCalculator:
     """Class for calculating various metrics during training and evaluation."""
 
-    def __init__(self, num_classes: int):
+    def __init__(self, num_classes: Any):
         """Initialize metrics calculator.
 
         Args:
@@ -20,12 +20,12 @@ class MetricsCalculator:
 
     def reset(self) -> None:
         """Reset all accumulated metrics."""
-        self.total_loss = 0.0
-        self.total_correct = 0
-        self.total_samples = 0
-        self.all_predictions = []
-        self.all_targets = []
-        self.confusion_mat = np.zeros((self.num_classes, self.num_classes))
+        self.total_loss: float = 0.0
+        self.total_correct: int = 0
+        self.total_samples: int = 0
+        self.all_predictions: list[int] = []
+        self.all_targets: list[int] = []
+        self.confusion_mat: np.ndarray = np.zeros((self.num_classes, self.num_classes))
 
     def update(
         self, predictions: torch.Tensor, targets: torch.Tensor, loss: float

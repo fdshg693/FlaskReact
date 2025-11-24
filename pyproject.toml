@@ -1,7 +1,7 @@
 [project]
 name = "flaskreact"
 version = "0.1.0"
-description = "Add your description here"
+description = "a test ml/llm project with flask and react"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -30,6 +30,7 @@ dependencies = [
     "pytest>=8.4.1",
     "ruff>=0.12.2",
     "scikit-learn>=1.7.0",
+    "scikit-learn-stubs>=0.0.3",
     "streamlit>=1.48.0",
     "tool>=0.8.0",
     "torch>=2.7.1",
@@ -46,15 +47,16 @@ exclude = ["data*", "log*", "param*", "scaler*", "static*", "csvLog*", "curveLog
 [tool.uv]
 python-preference = "system"
 
+# ======= ruff設定 =======
 [tool.ruff]
 line-length = 88
 fix = true
 indent-width = 4
 
+# ======= pytest設定 =======
 [tool.pytest.ini_options]
 # Pythonパスに追加するディレクトリ
 pythonpath = ["src"]
-
 # テストファイルを探索するディレクトリ
 testpaths = ["tests"]
 
@@ -66,3 +68,7 @@ python_functions = ["test_*"]
 
 # テストクラスの命名パターン
 python_classes = ["Test*"]
+
+# ======= mypy設定 =======
+[tool.mypy]
+ignore_missing_imports = false

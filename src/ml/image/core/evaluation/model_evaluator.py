@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import json
 
-from ml.image.core.models.image_model import ImageModel
+from ..models.image_model import ImageModel
 
 
 class ModelEvaluator:
@@ -28,9 +28,9 @@ class ModelEvaluator:
         self.img_size = img_size
 
         # Load model and configuration
-        self.model = None
-        self.class_names = None
-        self.num_classes = None
+        self.model: ImageModel | None = None
+        self.class_names: list[str] | None = None
+        self.num_classes: int | None = None
         self._load_model()
 
     def _load_model(self):
@@ -127,7 +127,7 @@ class ModelEvaluator:
         Returns:
             Parsed configuration dictionary
         """
-        config = {}
+        config: Dict[str, Any] = {}
         parts = filename.split("_")
 
         for part in parts:
@@ -202,11 +202,14 @@ class ModelEvaluator:
         return self.predict_image_data(img_tensor)
 
     def predict_image_data(self, img_tensor: torch.Tensor) -> Dict[str, Any]:
+        if self.model is None:
+            raise RuntimeError("Model is not loaded")
+
         with torch.no_grad():
             output = self.model(img_tensor)
             probabilities = F.softmax(output, dim=1)
-            predicted_class = torch.argmax(output, dim=1).item()
-            confidence = probabilities[0, predicted_class].item()
+            predicted_class = int(torch.argmax(output, dim=1).item())
+            confidence = float(probabilities[0, predicted_class].item())
 
         # Get all class probabilities
         all_probs = probabilities[0].cpu().numpy()
@@ -258,28 +261,28 @@ class ModelEvaluator:
         """
         # Find all image files
         image_extensions = [".jpg", ".jpeg", ".png", ".bmp", ".tiff"]
-        image_paths = []
+        image_paths: list[Path] = []
 
         for ext in image_extensions:
             image_paths.extend(Path(image_dir).glob(f"*{ext}"))
             image_paths.extend(Path(image_dir).glob(f"*{ext.upper()}"))
 
-        image_paths = [str(p) for p in image_paths]
+        image_paths_str: list[str] = [str(p) for p in image_paths]
 
-        if not image_paths:
+        if not image_paths_str:
             raise ValueError(f"No images found in directory: {image_dir}")
 
-        print(f"Found {len(image_paths)} images to evaluate")
+        print(f"Found {len(image_paths_str)} images to evaluate")
 
         # Predict all images
-        results = self.predict_batch_images(image_paths)
+        results = self.predict_batch_images(image_paths_str)
 
         # Calculate summary statistics
         successful_predictions = [r for r in results if "error" not in r]
         failed_predictions = [r for r in results if "error" in r]
 
         summary = {
-            "total_images": len(image_paths),
+            "total_images": len(image_paths_str),
             "successful_predictions": len(successful_predictions),
             "failed_predictions": len(failed_predictions),
             "results": results,
@@ -287,8 +290,8 @@ class ModelEvaluator:
 
         if successful_predictions:
             # Class distribution
-            class_counts = {}
-            confidence_scores = []
+            class_counts: Dict[int, int] = {}
+            confidence_scores: list[float] = []
 
             for result in successful_predictions:
                 pred_class = result["predicted_class"]
@@ -329,6 +332,8 @@ class ModelEvaluator:
 
         # Load and prepare image for visualization
         img = cv2.imread(image_path)
+        if img is None:
+            raise ValueError(f"Could not load image: {image_path}")
         img = cv2.resize(img, (400, 400))
 
         # Create visualization
