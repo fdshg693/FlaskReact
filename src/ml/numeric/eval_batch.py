@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from loguru import logger
 from sklearn.preprocessing import StandardScaler
 
-from numeric.simple_nn import SimpleNeuralNetwork
+from ml.numeric.simple_nn import SimpleNeuralNetwork
 
 
 def evaluate_iris_batch(

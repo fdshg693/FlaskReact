@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import json
 
-from image.core.models.image_model import ImageModel
+from ml.image.core.models.image_model import ImageModel
 
 
 class ModelEvaluator:

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, Literal, Optional
 
 from loguru import logger
-from image.core.evaluation.model_evaluator import ModelEvaluator
+from ml.image.core.evaluation.model_evaluator import ModelEvaluator
 
 
 def find_available_checkpoints(

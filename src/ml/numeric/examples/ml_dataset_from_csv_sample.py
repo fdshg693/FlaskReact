@@ -1,6 +1,6 @@
-from numeric.dataset import MLDatasetConverter, MLCompatibleDataset
+from ml.numeric.dataset import MLDatasetConverter, MLCompatibleDataset
 from config import PATHS
-from numeric.pipeline import (
+from ml.numeric.pipeline import (
     execute_machine_learning_pipeline,
     store_model_and_learning_logs,
 )

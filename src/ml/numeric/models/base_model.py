@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from loguru import logger
 
-from numeric.dataset import MLCompatibleDataset
+from ml.numeric.dataset import MLCompatibleDataset
 from config import ensure_path_exists
 
 

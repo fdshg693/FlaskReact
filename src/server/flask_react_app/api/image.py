@@ -5,9 +5,11 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 import torch
 
-from server.config import Settings
+from server.flask_react_app.config import Settings
 from services.image_service import predict_image_service
 from util.filestorage_to_tensor import filestorage_to_tensor_no_tv
+
+__all__ = ["image_bp"]
 
 image_bp = Blueprint("image", __name__, url_prefix="/api")
 

@@ -6,8 +6,10 @@ from flask import Blueprint, Response, jsonify, request
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from server.config import Settings
+from server.flask_react_app.config import Settings
 from services.pdf_service import extract_pdf_text_service
+
+__all__ = ["pdf_bp"]
 
 pdf_bp = Blueprint("pdf", __name__, url_prefix="/api")
 

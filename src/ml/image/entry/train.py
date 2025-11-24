@@ -8,13 +8,13 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
-from image.core.models.image_model import ImageModel
-from image.core.datasets.wood_dataset import WoodDataset
-from image.core.training.classification_trainer import ClassificationTrainer
-from image.core.utils.logger import Logger
-from image.core.utils.visualization import Visualizer
-from image.core.utils.checkpoint import CheckpointManager
-from image.config.base_config import ConfigManager
+from ml.image.core.models.image_model import ImageModel
+from ml.image.core.datasets.wood_dataset import WoodDataset
+from ml.image.core.training.classification_trainer import ClassificationTrainer
+from ml.image.core.utils.logger import Logger
+from ml.image.core.utils.visualization import Visualizer
+from ml.image.core.utils.checkpoint import CheckpointManager
+from ml.image.config.base_config import ConfigManager
 
 
 def main():

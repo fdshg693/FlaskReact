@@ -86,7 +86,7 @@ class Paths(BaseModel):
 
         # Enforce that certain fields are immediate children of project_root.
         # This ensures the canonical layout: <project_root>/src, <project_root>/data, etc.
-        top_level_fields = ("src", "data", "static", "logs", "outputs", "tmp")
+        top_level_fields = ("src", "data", "static", "logs")
         for name in top_level_fields:
             value = getattr(self, name)
             # Use resolve() to normalize symlinks/relative bits

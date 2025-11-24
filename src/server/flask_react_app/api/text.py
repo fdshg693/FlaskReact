@@ -4,7 +4,9 @@ from flask import Blueprint, jsonify, request, Response
 from pydantic import BaseModel, Field, ValidationError
 from loguru import logger
 
-from llm.tools.others.text_splitter import split_text
+from llm.langchain_custom.tools.others.text_splitter import split_text
+
+__all__ = ["text_bp"]
 
 text_bp = Blueprint("text", __name__, url_prefix="/api")
 

@@ -14,7 +14,7 @@ from pathlib import Path
 from loguru import logger
 
 # Import the Flask app factory without side effects
-from server.app import create_app
+from server.flask_react_app.app import create_app
 
 
 def main() -> None:

@@ -6,8 +6,10 @@ from pydantic import BaseModel, Field, ValidationError
 from loguru import logger
 from functools import lru_cache
 
-from numeric.eval_batch import evaluate_iris_batch
-from server.config import Settings
+from ml.numeric.eval_batch import evaluate_iris_batch
+from server.flask_react_app.config import Settings
+
+__all__ = ["iris_bp"]
 
 iris_bp = Blueprint("iris", __name__, url_prefix="/api")
 

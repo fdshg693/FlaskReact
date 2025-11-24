@@ -9,12 +9,9 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 from loguru import logger
 
-from server.config import Settings
-from server.api.text import text_bp
-from server.api.iris import iris_bp
-from server.api.pdf import pdf_bp
-from server.api.image import image_bp
-from server.pages import pages_bp
+from server.flask_react_app.config import Settings
+from server.flask_react_app.api import image_bp, iris_bp, pdf_bp, text_bp
+from server.flask_react_app.pages import pages_bp
 
 from config import PATHS
 

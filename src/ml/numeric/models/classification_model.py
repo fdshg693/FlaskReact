@@ -6,9 +6,9 @@ import torch.nn as nn
 from torch.utils.data import TensorDataset
 from loguru import logger
 
-from numeric.models.base_model import BaseMLModel
-from numeric.simple_nn import SimpleNeuralNetwork
-from numeric.dataset import MLCompatibleDataset
+from ml.numeric.models.base_model import BaseMLModel
+from ml.numeric.simple_nn import SimpleNeuralNetwork
+from ml.numeric.dataset import MLCompatibleDataset
 
 
 class ClassificationMLModel(BaseMLModel):
