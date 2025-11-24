@@ -42,6 +42,7 @@ class Paths(BaseModel):
 
     # ML outputs
     ml_outputs: Path
+    ml_image_data: Path
     ml_learning_curves_dir: Path
 
     llm_data: Path
@@ -100,15 +101,6 @@ class Paths(BaseModel):
                 )
                 logger.error(msg)
                 raise ValueError(msg)
-
-        # Ensure ml_data is a direct child of data (project root -> data -> ml_data)
-        if self.ml_data.resolve().parent != self.data.resolve():
-            msg = (
-                f"Paths.ml_data must be a direct child of data ({self.data.resolve()}), "
-                f"but is: {self.ml_data.resolve()}"
-            )
-            logger.error(msg)
-            raise ValueError(msg)
 
         # Ensure dataset file paths live under ml_data
         dataset_paths = (
@@ -175,20 +167,36 @@ class Paths(BaseModel):
 
         # data関連
         data = root / "data"
+        # =============
+        # 一次データ
+        # =============
         original_data = data / "original_sources"
-        outputs = data / "outputs"
-        tmp = data / "tmp"
 
-        ml_data = data / "machineLearning"
+        ml_data = original_data / "ml"
+
         iris_data_path = ml_data / "iris" / "iris.csv"
         diabetes_data_path = ml_data / "diabetes" / "diabetes.csv"
         titanic_test_data_path = ml_data / "others" / "titanic_test.csv"
         titanic_train_data_path = ml_data / "others" / "titanic_train.csv"
 
-        ml_outputs = outputs / "machineLearning"
+        llm_data = original_data / "llm"
+
+        # =============
+        # 生成データ（参照・加工用）
+        # =============
+        outputs = data / "outputs"
+
+        ml_outputs = outputs / "ml"
+
+        # テスト用画像の出力先
+        ml_image_data = ml_outputs / "image"
+
         ml_learning_curves_dir = ml_outputs / "learning_curves"
 
-        llm_data = data / "llm"
+        # =============
+        # 一時出力データ（参照・加工されることを想定しない）
+        # =============
+        tmp = data / "tmp"
 
         logger.info("Building Paths instance from root: {}", root)
 
@@ -208,6 +216,7 @@ class Paths(BaseModel):
             titanic_test_data_path=titanic_test_data_path,
             titanic_train_data_path=titanic_train_data_path,
             ml_outputs=ml_outputs,
+            ml_image_data=ml_image_data,
             ml_learning_curves_dir=ml_learning_curves_dir,
             llm_data=llm_data,
         )

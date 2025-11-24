@@ -165,9 +165,6 @@ cython_debug/
 # dataはdataフォルダ配下にまとめて、data直下の.gitignoreで個別に無視設定する
 # ここでは、汎用的なミニマルな無視設定を行う
 
-# memo関係は全て無視する
-**memo**
-
 # 機械学習関連の一時的な成果物
 param/
 params/
