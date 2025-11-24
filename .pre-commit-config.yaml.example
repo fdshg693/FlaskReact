@@ -1,3 +1,7 @@
+# ===========================
+# 使用まえに.exampleを外して設定してください
+# ===========================
+
 repos:
   # https://docs.astral.sh/uv/guides/integration/pre-commit/
   # To make sure your uv.lock file is up to date even if your pyproject.toml file was changed:

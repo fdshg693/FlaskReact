@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from numeric.dataset import MLDatasetConverter
+from ml.numeric.dataset import MLDatasetConverter
 
 
 def test_dataframe_to_ml_dataset_happy_path():

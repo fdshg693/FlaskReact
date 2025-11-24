@@ -28,10 +28,11 @@ class Paths(BaseModel):
     data: Path
     static: Path
     logs: Path
-    outputs: Path
-    tmp: Path
 
     # dataset dirs/files
+    original_data: Path
+    outputs: Path
+    tmp: Path
     ml_data: Path
     iris_data_path: Path
     diabetes_data_path: Path
@@ -161,11 +162,18 @@ class Paths(BaseModel):
 
         # Build all paths
         src = root / "src"
-        data = root / "data"
+
+        # Flaskサーバー利用静的ファイル
         static = root / "static"
+
+        # ログファイル格納ディレクトリ
         logs = root / "logs"
-        outputs = root / "outputs"
-        tmp = root / "tmp"
+
+        # data関連
+        data = root / "data"
+        original_data = data / "original_sources"
+        outputs = data / "outputs"
+        tmp = data / "tmp"
 
         ml_data = data / "machineLearning"
         iris_data_path = ml_data / "iris" / "iris.csv"
@@ -184,10 +192,11 @@ class Paths(BaseModel):
             project_root=root,
             src=src,
             data=data,
-            static=static,
-            logs=logs,
+            original_data=original_data,
             outputs=outputs,
             tmp=tmp,
+            static=static,
+            logs=logs,
             ml_data=ml_data,
             iris_data_path=iris_data_path,
             diabetes_data_path=diabetes_data_path,
