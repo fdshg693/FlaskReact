@@ -17,7 +17,7 @@ def serve_root_page() -> Response:
     Returns:
         Response: static/home/index.html を配信
     """
-    home_static_path = PATHS.static / "home"
+    home_static_path = PATHS.flask_static / "home"
     return send_from_directory(str(home_static_path), "index.html")
 
 
@@ -30,7 +30,7 @@ def serve_home_page() -> Response:
     Returns:
         Response: static/home/index.html を配信
     """
-    home_static_path = PATHS.static / "home"
+    home_static_path = PATHS.flask_static / "home"
     return send_from_directory(str(home_static_path), "index.html")
 
 
@@ -43,7 +43,7 @@ def serve_csv_test_page() -> Response:
     Returns:
         Response: static/csvTest/index.html を配信
     """
-    csv_test_static_path = PATHS.static / "csvTest"
+    csv_test_static_path = PATHS.flask_static / "csvTest"
     return send_from_directory(str(csv_test_static_path), "index.html")
 
 
@@ -56,7 +56,7 @@ def serve_image_page() -> Response:
     Returns:
         Response: static/image/index.html を配信
     """
-    image_static_path = PATHS.static / "image"
+    image_static_path = PATHS.flask_static / "image"
     return send_from_directory(str(image_static_path), "index.html")
 
 
@@ -86,7 +86,7 @@ def serve_data_files(path: str) -> Response:
             {"error": {"code": "INVALID_PATH", "message": "Invalid file path"}}
         ), 400
 
-    data_static_path = PATHS.static / "data"
+    data_static_path = PATHS.flask_static / "data"
     try:
         # パスを正規化してdataディレクトリ内に収まっているか検証
         full_path = (data_static_path / path).resolve()

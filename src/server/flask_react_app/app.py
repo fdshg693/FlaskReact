@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from flask import Flask, jsonify
 from flask_cors import CORS
 from werkzeug.datastructures import FileStorage
@@ -138,8 +136,9 @@ def create_app() -> Flask:
     """
 
     # src/server/config/paths.pyから該当パスのインスタンスを生成
-    static_dir = PATHS.static
+    static_dir = PATHS.flask_static
     # Flaskクラスの引数の意味[__name__: モジュール名。Flaskはこれを使ってリソースの場所を特定する。][#static_folder: staticのディレクトリパス。][#static_url_path: staticにアクセスするためのURLパス。]
+    # static_url_pathを空文字列にすることで、各ページディレクトリ配下のアセット(home/js/App.js等)を直接参照可能にする
     app = Flask(__name__, static_folder=str(static_dir), static_url_path="")
     # .envファイルからFLASKREACT_プレフィックス付きの環境変数を自動読み込み（実際には"FLASKREACT_"プレフィックスが存在していないため、何も渡されていない）
     settings = Settings()
@@ -195,11 +194,3 @@ def create_app() -> Flask:
     app.register_blueprint(image_bp)
 
     return app
-
-
-if __name__ == "__main__":
-    print("🚀 Starting FlaskReact application...")
-    print(f"📁 Project root: {Path(__file__).parent.parent.absolute()}")
-    print("🐍 Python path configured automatically")
-
-    create_app().run(host="0.0.0.0", port=8000, debug=True)

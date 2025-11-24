@@ -26,7 +26,8 @@ class Paths(BaseModel):
     # top-level dirs
     src: Path
     data: Path
-    static: Path
+    frontend: Path
+    flask_static: Path
     logs: Path
 
     # dataset dirs/files
@@ -86,7 +87,7 @@ class Paths(BaseModel):
 
         # Enforce that certain fields are immediate children of project_root.
         # This ensures the canonical layout: <project_root>/src, <project_root>/data, etc.
-        top_level_fields = ("src", "data", "static", "logs")
+        top_level_fields = ("src", "data", "frontend", "logs")
         for name in top_level_fields:
             value = getattr(self, name)
             # Use resolve() to normalize symlinks/relative bits
@@ -163,8 +164,11 @@ class Paths(BaseModel):
         # Build all paths
         src = root / "src"
 
+        # フロントエンド
+        frontend = root / "frontend"
+
         # Flaskサーバー利用静的ファイル
-        static = root / "static"
+        flask_static = frontend / "flask_static"
 
         # ログファイル格納ディレクトリ
         logs = root / "logs"
@@ -192,10 +196,11 @@ class Paths(BaseModel):
             project_root=root,
             src=src,
             data=data,
+            frontend=frontend,
             original_data=original_data,
             outputs=outputs,
             tmp=tmp,
-            static=static,
+            flask_static=flask_static,
             logs=logs,
             ml_data=ml_data,
             iris_data_path=iris_data_path,

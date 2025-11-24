@@ -52,7 +52,7 @@ class TestPaths:
                 project_root=Path("/tmp"),
                 src=Path("/tmp/src"),
                 data=Path("/tmp/data"),
-                static=Path("/tmp/static"),
+                flask_static=Path("/tmp/static"),
                 logs=Path("/tmp/logs"),
                 outputs=Path("/tmp/outputs"),
                 tmp=Path("/tmp/tmp"),
@@ -77,7 +77,7 @@ class TestPaths:
                 project_root=123,  # type: ignore[arg-type]
                 src=Path("/tmp/src"),
                 data=Path("/tmp/data"),
-                static=Path("/tmp/static"),
+                flask_static=Path("/tmp/static"),
                 logs=Path("/tmp/logs"),
                 outputs=Path("/tmp/outputs"),
                 tmp=Path("/tmp/tmp"),
@@ -100,7 +100,7 @@ class TestPaths:
                 project_root="/tmp",  # String instead of Path
                 src=Path("/tmp/src"),
                 data=Path("/tmp/data"),
-                static=Path("/tmp/static"),
+                flask_static=Path("/tmp/static"),
                 logs=Path("/tmp/logs"),
                 outputs=Path("/tmp/outputs"),
                 tmp=Path("/tmp/tmp"),
