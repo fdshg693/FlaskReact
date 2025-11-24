@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import List
 
-from machineLearning.eval_batch import evaluate_iris_batch
+from numeric.eval_batch import evaluate_iris_batch
 
 
 @lru_cache(maxsize=1)

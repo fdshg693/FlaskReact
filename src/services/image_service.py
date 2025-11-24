@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
-from image.core.evaluation.evaluator import predict_image_data
+from image.core.evaluation.model_evaluator import predict_image_data
 import torch
 
 

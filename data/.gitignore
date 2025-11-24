@@ -1,0 +1,15 @@
+# dataフォルダのGIT管理
+
+# PDFはファイル容量などを考えて、sampleから始まるファイルのみGITに追加する
+**/*.pdf
+!**/sample*.pdf
+# 画像ファイルも同様にして、sampleから始まるファイルのみGITに追加する
+**/*.png
+!**/sample*.png
+
+**/*.jpeg
+!**/sample*.jpeg
+**/*.jpg
+!**/sample*.jpg
+
+# csv, txt ファイルなどは基本的にGIT管理する
