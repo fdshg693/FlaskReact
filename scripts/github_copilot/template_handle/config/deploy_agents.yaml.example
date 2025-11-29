@@ -1,0 +1,23 @@
+# Agent Deployment Configuration
+# 
+# This file specifies which agents to deploy from .template/agents/ to .github/agents/.
+# 
+# Usage:
+#   python scripts/user/deploy_agents.py scripts/config/sample_deploy_agents.yaml
+#   python scripts/user/deploy_agents.py scripts/config/sample_deploy_agents.yaml --overwrite
+#   python scripts/user/deploy_agents.py scripts/config/sample_deploy_agents.yaml --no-overwrite
+#
+# Pattern formats:
+#   - Directory pattern (ends with /): Include all files in that directory
+#     Example: "coder/" includes all agents in .template/agents/coder/
+#   
+#   - File pattern: Include specific file by name (without .agent.md extension)
+#     Example: "coder/backend" includes .template/agents/coder/backend.agent.md
+
+# Include patterns - specify which agents to deploy
+include:
+  - coder/                    # All coder agents (backend, frontend, script)
+  - general/basic             # General basic agent
+  - runner/                   # All runner agents
+  # - help/explanation        # Uncomment to include help agents
+  # - meta/                   # Uncomment to include all meta agents

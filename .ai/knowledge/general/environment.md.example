@@ -1,0 +1,11 @@
+# This file contains environment-specific information for This PC.
+
+## OS
+Mac | Windows | Linux
+
+## Commands available
+- uv
+- source /Users/seiwan/CodeStudy/FlaskReact/.venv/bin/activate: activate virtual environment
+- pyhon3・pip3: available without activating virtual environment
+- python・pip: available after activating virtual environment
+- etc.

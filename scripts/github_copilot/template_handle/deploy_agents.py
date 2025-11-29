@@ -1,229 +1,291 @@
 """
-`.github_copilot_template\agents`を元に、.github\agentsへエージェントを展開するスクリプト。
-Agent Template Deployment Script
+エージェントデプロイスクリプト
+================================
 
-Copies agent files from .github_copilot_template/agents/ to .github/agents/,
-flattening the directory structure by converting path separators to dots.
+概要:
+    `.github_copilot_template/` 配下の `.agent.md` ファイルを
+    `.github/agents/` へ展開するスクリプト。
+    `.agent.md` 以外のファイルは無視される。
 
-Usage:
-    python scripts/github_copilot/setting_utils/deploy_agents.py [config.yaml] [--overwrite | --no-overwrite]
+パス変換ルール:
+    テンプレートディレクトリからの相対パスを `.` 区切りに変換して
+    `.github/agents/` 直下に配置する。
 
-Arguments:
-    config.yaml     Optional YAML config file specifying which agents to include
-    --overwrite     Overwrite existing agent files (default)
-    --no-overwrite  Skip files that already exist in destination
+    例:
+        .github_copilot_template/coder/script/.agent.md
+        → .github/agents/coder.script.agent.md
 
-Examples:
-    python scripts/github_copilot/setting_utils/deploy_agents.py                              # Copy all agents, overwrite existing
-    python scripts/github_copilot/setting_utils/deploy_agents.py agents-config.yaml           # Copy only specified agents
-    python scripts/github_copilot/setting_utils/deploy_agents.py --no-overwrite               # Copy all, skip existing files
-    python scripts/github_copilot/setting_utils/deploy_agents.py config.yaml --no-overwrite   # Copy specified, skip existing
+設定ファイル:
+    scripts/github_copilot/template_handle/config/deploy_agents.yaml.example
+
+使用方法:
+    python scripts/github_copilot/template_handle/deploy_agents.py [OPTIONS] [CONFIG]
+
+引数:
+    CONFIG              デプロイ対象を指定するYAML設定ファイル（任意）
+
+オプション:
+    --overwrite         既存ファイルを上書き（デフォルト）
+    --no-overwrite      既存ファイルをスキップ
+    --clean             デプロイ前に .github/agents/ 内の全ファイルを削除
+
+実行例:
+    # 全エージェントをデプロイ（既存ファイルは上書き）
+    python scripts/github_copilot/template_handle/deploy_agents.py
+
+    # 設定ファイルで指定したエージェントのみデプロイ
+    python scripts/github_copilot/template_handle/deploy_agents.py agents-config.yaml
+
+    # 既存ファイルをスキップしてデプロイ
+    python scripts/github_copilot/template_handle/deploy_agents.py --no-overwrite
+
+    # クリーンデプロイ（削除後にデプロイ）
+    python scripts/github_copilot/template_handle/deploy_agents.py --clean
+
+    # 組み合わせ例
+    python scripts/github_copilot/template_handle/deploy_agents.py config.yaml --clean
 """
 
-import os
+from pathlib import Path
 import shutil
 import sys
-from pathlib import Path
 
 
-def load_yaml_config(config_path: str) -> list[str]:
+def parse_yaml_include(yaml_path: Path) -> list[str]:
     """
-    Parse a simple YAML config file for include patterns.
-    Returns a list of include patterns.
-
-    Note: Uses simple parsing to avoid external dependencies.
+    簡易YAMLパーサー：includeセクションのリストを取得する。
+    標準ライブラリのみを使用するため、シンプルな形式のみ対応。
     """
-    includes = []
-    with open(config_path, "r", encoding="utf-8") as f:
-        in_include_section = False
+    patterns = []
+    in_include_section = False
+
+    with yaml_path.open(encoding="utf-8") as f:
         for line in f:
             stripped = line.strip()
-            if stripped == "include:":
+
+            # コメントまたは空行はスキップ
+            if not stripped or stripped.startswith("#"):
+                continue
+
+            # includeセクションの開始を検出
+            if stripped.startswith("include:"):
                 in_include_section = True
                 continue
-            if in_include_section:
-                if stripped.startswith("- "):
-                    # Extract the pattern, remove comments
-                    pattern = stripped[2:].split("#")[0].strip()
-                    if pattern:
-                        includes.append(pattern)
-                elif stripped and not stripped.startswith("#"):
-                    # New section started
-                    break
-    return includes
 
-
-def should_include_file(relative_path: str, includes: list[str]) -> bool:
-    """
-    Check if a file should be included based on the include patterns.
-
-    Args:
-        relative_path: Path relative to .github_copilot_template/agents/ (e.g., 'coder/backend.agent.md')
-        includes: List of include patterns from YAML config
-
-    Returns:
-        True if file should be included
-    """
-    if not includes:
-        return True  # No config means include all
-
-    for pattern in includes:
-        if pattern.endswith("/"):
-            # Directory pattern - check if file is under this directory
-            dir_pattern = pattern.rstrip("/")
-            if relative_path.startswith(dir_pattern + "/") or relative_path.startswith(
-                dir_pattern + "\\"
+            # 別のセクションが始まったら終了
+            if (
+                not line.startswith(" ")
+                and not line.startswith("\t")
+                and ":" in stripped
             ):
-                return True
-        else:
-            # File pattern - check for exact match (without extension)
-            file_name_without_ext = os.path.splitext(os.path.basename(relative_path))[0]
-            # Remove .agent suffix if present
-            if file_name_without_ext.endswith(".agent"):
-                file_name_without_ext = file_name_without_ext[:-6]
+                in_include_section = False
+                continue
 
-            # Check if pattern matches the file name or relative path without extension
-            path_without_ext = os.path.splitext(relative_path)[0]
-            if path_without_ext.endswith(".agent"):
-                path_without_ext = path_without_ext[:-6]
+            # includeセクション内のリストアイテムを解析
+            if in_include_section and stripped.startswith("-"):
+                # コメント部分を除去
+                item = stripped[1:].split("#")[0].strip()
+                # クォートを除去
+                item = item.strip("'\"")
+                if item:
+                    patterns.append(item)
 
-            if pattern == file_name_without_ext or pattern == path_without_ext:
-                return True
-
-    return False
+    return patterns
 
 
-def flatten_path(relative_path: str) -> str:
+def get_all_agent_files(template_dir: Path) -> list[Path]:
     """
-    Convert a relative path to a flattened filename.
-    Path separators are converted to dots.
-
-    Example: 'coder/backend.agent.md' -> 'coder.backend.agent.md'
+    テンプレートディレクトリ配下のすべての.agent.mdファイルを取得する。
     """
-    # Normalize path separators and convert to dots
-    normalized = relative_path.replace("\\", "/").replace("/", ".")
-    return normalized
+    return list(template_dir.rglob(".agent.md"))
+
+
+def filter_by_patterns(
+    agent_files: list[Path], patterns: list[str], template_dir: Path
+) -> list[Path]:
+    """
+    パターンに基づいてエージェントファイルをフィルタリングする。
+
+    パターン形式:
+    - ディレクトリパターン（/で終わる）: そのディレクトリ配下のすべてのファイルを含む
+      例: "coder/" は .github_copilot_template/coder/ 配下のすべてを含む
+    - ファイルパターン: 特定のサブディレクトリを指定
+      例: "general/basic" は .github_copilot_template/general/basic/.agent.md を含む
+    """
+    filtered = []
+
+    for agent_file in agent_files:
+        # テンプレートディレクトリからの相対パス（.agent.mdを除いた親ディレクトリ）
+        relative_path = agent_file.parent.relative_to(template_dir)
+
+        for pattern in patterns:
+            if pattern.endswith("/"):
+                # ディレクトリパターン: パターンで始まるパスをすべて含む
+                pattern_dir = pattern.rstrip("/")
+                if (
+                    str(relative_path).startswith(pattern_dir)
+                    or str(relative_path) == pattern_dir
+                ):
+                    filtered.append(agent_file)
+                    break
+            else:
+                # ファイルパターン: 完全一致
+                if str(relative_path) == pattern:
+                    filtered.append(agent_file)
+                    break
+
+    return filtered
+
+
+def generate_dest_filename(agent_file: Path, template_dir: Path) -> str:
+    """
+    ソースファイルのパスから宛先ファイル名を生成する。
+
+    例: .github_copilot_template/coder/script/.agent.md -> coder.script.agent.md
+    """
+    relative_path = agent_file.parent.relative_to(template_dir)
+    # パスの区切りを.に変換
+    name_parts = relative_path.parts
+    return ".".join(name_parts) + ".agent.md"
 
 
 def deploy_agents(
-    source_dir: Path, dest_dir: Path, includes: list[str] = None, overwrite: bool = True
-) -> tuple[list[tuple[str, str]], list[str]]:
+    template_dir: Path,
+    dest_dir: Path,
+    patterns: list[str] | None = None,
+    overwrite: bool = True,
+    clean: bool = False,
+) -> tuple[list[str], list[str], list[str], list[str]]:
     """
-    Deploy agent files from source to destination with flattened structure.
-
-    Args:
-        source_dir: Source directory (.github_copilot_template/agents/)
-        dest_dir: Destination directory (.github/agents/)
-        includes: Optional list of include patterns
-        overwrite: If True, overwrite existing files. If False, skip them.
+    エージェントファイルを展開する。
 
     Returns:
-        Tuple of (copied_files, skipped_files) where:
-        - copied_files: List of (source_path, dest_path) tuples for copied files
-        - skipped_files: List of destination paths that were skipped (already exist)
+        tuple[list[str], list[str], list[str], list[str]]: (コピー成功, スキップ, エラー, 削除済み)のリスト
     """
-    if includes is None:
-        includes = []
+    copied = []
+    skipped = []
+    errors = []
+    deleted = []
 
-    copied_files = []
-    skipped_files = []
+    # すべての.agent.mdファイルを取得
+    agent_files = get_all_agent_files(template_dir)
 
-    # Ensure destination directory exists
+    # パターンが指定されている場合はフィルタリング
+    if patterns:
+        agent_files = filter_by_patterns(agent_files, patterns, template_dir)
+
+    # クリーンモード：宛先ディレクトリのすべてのファイルを削除
+    if clean and dest_dir.exists():
+        for file in dest_dir.iterdir():
+            if file.is_file():
+                try:
+                    file.unlink()
+                    deleted.append(str(file))
+                except Exception as e:
+                    errors.append(f"Failed to delete {file}: {e}")
+
+    # 宛先ディレクトリを作成
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    # Walk through source directory
-    for root, dirs, files in os.walk(source_dir):
-        for file in files:
-            source_path = Path(root) / file
-            relative_path = source_path.relative_to(source_dir).as_posix()
+    for agent_file in agent_files:
+        dest_filename = generate_dest_filename(agent_file, template_dir)
+        dest_path = dest_dir / dest_filename
 
-            # Check if file should be included
-            if not should_include_file(relative_path, includes):
-                continue
-
-            # Create flattened destination filename
-            dest_filename = flatten_path(relative_path)
-            dest_path = dest_dir / dest_filename
-
-            # Check if file exists and handle overwrite option
+        try:
             if dest_path.exists() and not overwrite:
-                skipped_files.append(str(dest_path))
-                print(f"Skipped (exists): {relative_path} -> {dest_filename}")
+                skipped.append(f"{agent_file} -> {dest_path} (already exists)")
                 continue
 
-            # Copy file
-            shutil.copy2(source_path, dest_path)
-            copied_files.append((str(source_path), str(dest_path)))
-            print(f"Copied: {relative_path} -> {dest_filename}")
+            shutil.copy2(agent_file, dest_path)
+            copied.append(f"{agent_file} -> {dest_path}")
+        except Exception as e:
+            errors.append(f"{agent_file}: {e}")
 
-    return copied_files, skipped_files
+    return copied, skipped, errors, deleted
 
 
-def parse_args(args: list[str]) -> tuple[str | None, bool]:
-    """
-    Parse command line arguments.
+def main():
+    # プロジェクトルートを特定（このスクリプトの3階層上）
+    script_path = Path(__file__).resolve()
+    project_root = script_path.parent.parent.parent.parent
 
-    Args:
-        args: List of command line arguments (excluding script name)
+    template_dir = project_root / ".github_copilot_template"
+    dest_dir = project_root / ".github" / "agents"
 
-    Returns:
-        Tuple of (config_path, overwrite_flag)
-    """
-    config_path = None
-    overwrite = True  # Default: overwrite existing files
+    # デフォルト設定
+    config_path: Path | None = None
+    overwrite = True
+    clean = False
 
+    # 引数を解析
+    args = sys.argv[1:]
     for arg in args:
         if arg == "--overwrite":
             overwrite = True
         elif arg == "--no-overwrite":
             overwrite = False
-        elif not arg.startswith("-"):
-            config_path = arg
+        elif arg == "--clean":
+            clean = True
+        elif arg.endswith(".yaml") or arg.endswith(".yml"):
+            config_path = Path(arg)
+            if not config_path.is_absolute():
+                config_path = project_root / config_path
 
-    return config_path, overwrite
-
-
-def main():
-    # Determine project root (parent of scripts folder)
-    script_path = Path(__file__).resolve()
-    project_root = script_path.parent.parent.parent.parent
-
-    source_dir = project_root / ".github_copilot_template" / "agents"
-    dest_dir = project_root / ".github" / "agents"
-
-    # Check source directory exists
-    if not source_dir.exists():
-        print(f"Error: Source directory not found: {source_dir}")
+    # テンプレートディレクトリの存在確認
+    if not template_dir.exists():
+        print(f"Error: Template directory not found: {template_dir}")
         sys.exit(1)
 
-    # Parse command line arguments
-    config_path, overwrite = parse_args(sys.argv[1:])
-
-    # Load config if provided
-    includes = []
+    # パターンを取得
+    patterns: list[str] | None = None
     if config_path:
-        if not os.path.exists(config_path):
-            # Try relative to project root
-            config_path = project_root / config_path
-        if os.path.exists(config_path):
-            print(f"Loading config from: {config_path}")
-            includes = load_yaml_config(str(config_path))
-            print(f"Include patterns: {includes}")
-        else:
-            print(f"Warning: Config file not found: {sys.argv[1]}")
+        if not config_path.exists():
+            print(f"Error: Config file not found: {config_path}")
+            sys.exit(1)
+        patterns = parse_yaml_include(config_path)
+        print(f"Using config: {config_path}")
+        print(f"Include patterns: {patterns}")
 
-    # Deploy agents
-    print("\nDeploying agents...")
-    print(f"Source: {source_dir}")
-    print(f"Destination: {dest_dir}")
-    print(f"Overwrite existing: {overwrite}\n")
+    if clean:
+        print("Clean mode enabled: will delete all existing files in destination")
 
-    copied, skipped = deploy_agents(source_dir, dest_dir, includes, overwrite)
+    # エージェントを展開
+    copied, skipped, errors, deleted = deploy_agents(
+        template_dir, dest_dir, patterns, overwrite, clean
+    )
 
-    print("\nDeployment complete.")
-    print(f"  Copied: {len(copied)} file(s)")
+    # 結果を表示
+    print(f"\n{'=' * 60}")
+    print("Deployment Summary")
+    print(f"{'=' * 60}")
+
+    if deleted:
+        print(f"\nDeleted ({len(deleted)} files):")
+        for item in deleted:
+            print(f"  🗑 {item}")
+
+    if copied:
+        print(f"\nCopied ({len(copied)} files):")
+        for item in copied:
+            print(f"  ✓ {item}")
+
     if skipped:
-        print(f"  Skipped: {len(skipped)} file(s) (already exist)")
+        print(f"\nSkipped ({len(skipped)} files):")
+        for item in skipped:
+            print(f"  ⊘ {item}")
+
+    if errors:
+        print(f"\nErrors ({len(errors)} files):")
+        for item in errors:
+            print(f"  ✗ {item}")
+
+    print(f"\n{'=' * 60}")
+    print(
+        f"Total: {len(deleted)} deleted, {len(copied)} copied, {len(skipped)} skipped, {len(errors)} errors"
+    )
+
+    if errors:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
