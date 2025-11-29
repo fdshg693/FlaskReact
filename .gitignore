@@ -68,11 +68,12 @@ venv.bak/
 .DS_Store
 
 # テンプレートから自動生成されるGithub Copilot設定ファイル群
-.github/agents
-.github/prompts/**/default.prompt.md
+.github/agents/
+.github/prompts/
+.github_copilot_template/**/default.prompt.md
 
 # AI用の一時的なタスクファイル
-.copilot/tasks/
+.github/tasks
 
 # 環境固有の情報（Mac・Windows・使えるコマンドの種類など）
 **environment.md
