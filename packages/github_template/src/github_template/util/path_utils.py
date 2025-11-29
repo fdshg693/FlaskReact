@@ -11,17 +11,23 @@ def get_project_root() -> Path:
     """
     プロジェクトのルートディレクトリを取得する
 
+    カレントワーキングディレクトリ（CWD）を基準とし、
     pyproject.tomlが存在するディレクトリをプロジェクトルートとして判定します。
 
     Returns:
         Path: プロジェクトルートのパス
     """
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent / "pyproject.toml").exists():
-            return parent
-    # pyproject.tomlが見つからない場合、スクリプトの4階層上を返す
-    return Path(__file__).resolve().parent.parent.parent.parent.parent
+    cwd = Path.cwd().resolve()
+
+    # CWDから親を辿ってpyproject.tomlを探す
+    current = cwd
+    while current != current.parent:
+        if (current / "pyproject.toml").exists():
+            return current
+        current = current.parent
+
+    # pyproject.tomlが見つからない場合はCWDを返す
+    return cwd
 
 
 def path_to_dot_notation(path: Path, base_dir: Path) -> str:
