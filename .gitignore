@@ -183,7 +183,9 @@ outputs/
 
 # 設定YAMLファイルはGITから外して、サンプルYAMLファイルのみGITに追加する
 **.yaml
+**.yml
 !**.yaml.example
+!**.yml.example
 
 # サンプルVSCODE設定ファイルはGITに追加する
 .vscode/**.**
