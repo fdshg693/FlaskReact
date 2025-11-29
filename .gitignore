@@ -1,4 +1,80 @@
 # =======================================
+# プロジェクト固有の無視設定
+# =======================================
+
+# dataはdataフォルダ配下にまとめて、data直下の.gitignoreで個別に無視設定する
+# ここでは、汎用的なミニマルな無視設定を行う
+
+# 機械学習関連の一時的な成果物
+param/
+params/
+scaler/
+checkpoints/
+*.gz
+*.joblib
+*.pth
+
+# 様々なバックアップ
+.backup/
+
+# 出力成果物
+log/
+logs/
+tmp/
+temp/
+output/
+outputs/
+
+# 設定YAMLファイルはGITから外して、サンプルYAMLファイルのみGITに追加する
+**.yaml
+**.yml
+!**.yaml.example
+!**.yml.example
+
+# サンプルVSCODE設定ファイルはGITに追加する
+.vscode/**.**
+!.vscode/*.example
+
+# chromaのローカルDBは無視する
+chroma_langchain_db/
+
+# 個人ドキュメントのため無視する
+## ディレクトリごと無視
+sekishiro/
+maikuma/
+seiwan/
+tamashiro/
+taishi/
+## 以下の名前が含まれているファイル・ディレクトリを無視する
+**sekishiro_experiments**
+**maikuma_experiments**
+**seiwan_experiments**
+**tamashiro_experiments**
+**taishi_experiments**
+
+# Environments
+.env
+.venv
+.env/
+.venv/
+env/
+venv/
+ENV/
+VENV/
+env.bak/
+venv.bak/
+
+# MacOS関連
+.DS_Store
+
+# テンプレートから自動生成されるGithub Copilot設定ファイル群
+.github/agents
+.github/prompts/**/default.prompt.md
+
+# AI用の一時的なタスクファイル
+.copilot/tasks/
+
+# =======================================
 # 一般的なpython・pythonツール無視設定
 # =======================================
 
@@ -55,16 +131,6 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
 # Flask stuff:
 instance/
 .webassets-cache
@@ -106,15 +172,6 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -144,59 +201,3 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
-*/log/*
-*/param/*
-*/save/*
-*/*.pthƒ
-.DS_Store
-*/*.png
-*.pth
-*.jpg
-*.jpegß
-*.png
-*.gif
-
-
-# =======================================
-# プロジェクト固有の無視設定
-# =======================================
-
-# dataはdataフォルダ配下にまとめて、data直下の.gitignoreで個別に無視設定する
-# ここでは、汎用的なミニマルな無視設定を行う
-
-# 機械学習関連の一時的な成果物
-param/
-params/
-scaler/
-checkpoints/
-*.gz
-*.joblib
-
-# 出力成果物
-log/
-logs/
-tmp/
-temp/
-output/
-outputs/
-
-# 設定YAMLファイルはGITから外して、サンプルYAMLファイルのみGITに追加する
-**.yaml
-**.yml
-!**.yaml.example
-!**.yml.example
-
-# サンプルVSCODE設定ファイルはGITに追加する
-.vscode/**.**
-!.vscode/*.example
-
-# chromaのローカルDBは無視する
-chroma_langchain_db/
-
-# 個人ドキュメントのため無視する
-sekishiro/
-maikuma/
-seiwan/
-tamashiro/
-taishi/

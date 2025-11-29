@@ -1,6 +1,3 @@
----
-applyTo: '*.py'
----
 # Current Environment
 - You are in a Python environment with the following libraries shown in requirements.txt
 - you are using python3.13.5
