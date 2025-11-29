@@ -13,10 +13,19 @@
 ==============================================================================
 テンプレートディレクトリからの相対パスを `.` 区切りに変換して
 `.github/agents/` 直下に配置します。
+outputsセクションの各エントリごとにファイルを生成し、nameを末尾に追加します。
 
 例:
-    .github_copilot_template/coder/script/.agent.md
-    → .github/agents/coder.script.agent.md
+    .github_copilot_template/coder/script/.agent.md (outputs: [default, debug])
+    → .github/agents/coder.script.default.agent.md
+    → .github/agents/coder.script.debug.agent.md
+
+==============================================================================
+変数置換ルール
+==============================================================================
+${custom:name} 形式の変数を outputs の値で置換します。
+- 値が "default" の場合: ${input:name:"custom_inputsのdefault値"} に変換
+- それ以外の場合: その値で直接置換
 
 ==============================================================================
 設定ファイル
@@ -48,16 +57,26 @@ scripts/github_copilot/template_handle/config/deploy_agents.yaml.example
 """
 
 from pathlib import Path
-import shutil
 import sys
 
 from util.path_utils import get_project_root, path_to_dot_notation
+from util.substitution_utils import (
+    get_output_values_without_name,
+    substitute_custom_variables,
+)
 from util.template_utils import (
     find_agent_files,
     get_agents_dir,
     get_template_base_dir,
 )
-from util.yaml_utils import parse_yaml_include
+from util.yaml_utils import (
+    extract_custom_inputs,
+    extract_outputs,
+    parse_frontmatter,
+    parse_yaml_include,
+    rebuild_content_with_frontmatter,
+    remove_custom_sections_from_frontmatter,
+)
 
 
 def filter_by_patterns(
@@ -105,21 +124,112 @@ def filter_by_patterns(
     return filtered
 
 
-def generate_dest_filename(agent_file: Path, template_dir: Path) -> str:
+def generate_dest_filename(
+    agent_file: Path, template_dir: Path, output_name: str
+) -> str:
     """
     ソースファイルのパスから宛先ファイル名を生成する
 
-    例: .github_copilot_template/coder/script/.agent.md -> coder.script.agent.md
+    例: .github_copilot_template/coder/script/.agent.md (output_name: "default")
+        -> coder.script.default.agent.md
 
     Args:
         agent_file: ソースの.agent.mdファイルパス
         template_dir: テンプレートディレクトリのパス
+        output_name: outputエントリのname
 
     Returns:
         str: 宛先ファイル名
     """
     agent_name = path_to_dot_notation(agent_file.parent, template_dir)
-    return f"{agent_name}.agent.md"
+    return f"{agent_name}.{output_name}.agent.md"
+
+
+def process_agent_file(
+    agent_file: Path,
+    template_dir: Path,
+    dest_dir: Path,
+    overwrite: bool,
+) -> tuple[list[str], list[str], list[str]]:
+    """
+    単一のエージェントファイルを処理する
+
+    Args:
+        agent_file: 処理対象の.agent.mdファイルパス
+        template_dir: テンプレートディレクトリのパス
+        dest_dir: 宛先ディレクトリのパス
+        overwrite: 既存ファイルを上書きするか
+
+    Returns:
+        tuple: (コピー成功, スキップ, エラー) のリスト
+    """
+    copied: list[str] = []
+    skipped: list[str] = []
+    errors: list[str] = []
+
+    try:
+        # ファイル内容を読み込む
+        content = agent_file.read_text(encoding="utf-8")
+
+        # フロントマターを解析
+        try:
+            frontmatter, body = parse_frontmatter(content)
+        except ValueError as e:
+            errors.append(f"{agent_file}: {e}")
+            return copied, skipped, errors
+
+        # outputsセクションを取得（なければエラー）
+        try:
+            outputs = extract_outputs(frontmatter)
+        except ValueError as e:
+            errors.append(f"{agent_file}: {e}")
+            return copied, skipped, errors
+
+        # custom_inputsを取得
+        custom_inputs = extract_custom_inputs(frontmatter)
+
+        # custom_inputsとoutputsを除いたフロントマターを作成
+        cleaned_frontmatter = remove_custom_sections_from_frontmatter(frontmatter)
+
+        # 各outputエントリごとにファイルを生成
+        for output_entry in outputs:
+            output_name = output_entry.get("name")
+            if not output_name:
+                errors.append(f"{agent_file}: outputエントリにnameがありません")
+                continue
+
+            # 宛先ファイル名を生成
+            dest_filename = generate_dest_filename(
+                agent_file, template_dir, output_name
+            )
+            dest_path = dest_dir / dest_filename
+
+            # 既存チェック
+            if dest_path.exists() and not overwrite:
+                skipped.append(f"{agent_file} -> {dest_path} (既に存在)")
+                continue
+
+            # 変数置換用の値を取得（nameを除く）
+            output_values = get_output_values_without_name(output_entry)
+
+            # 本文の変数を置換
+            substituted_body = substitute_custom_variables(
+                body, output_values, custom_inputs
+            )
+
+            # 最終コンテンツを生成
+            final_content = rebuild_content_with_frontmatter(
+                cleaned_frontmatter, substituted_body
+            )
+
+            # ファイルを書き込む
+            dest_path.write_text(final_content, encoding="utf-8")
+            copied.append(f"{agent_file} -> {dest_path}")
+
+    except Exception as e:
+        errors.append(f"{agent_file}: {e}")
+
+    return copied, skipped, errors
 
 
 def deploy_agents(
@@ -131,6 +241,9 @@ def deploy_agents(
 ) -> tuple[list[str], list[str], list[str], list[str]]:
     """
     エージェントファイルを展開する
+
+    各.agent.mdファイルのoutputsセクションに基づいて、
+    複数のファイルを生成します。
 
     Args:
         template_dir: テンプレートディレクトリのパス
@@ -167,19 +280,14 @@ def deploy_agents(
     # 宛先ディレクトリを作成
     dest_dir.mkdir(parents=True, exist_ok=True)
 
+    # 各エージェントファイルを処理
     for agent_file in agent_files:
-        dest_filename = generate_dest_filename(agent_file, template_dir)
-        dest_path = dest_dir / dest_filename
-
-        try:
-            if dest_path.exists() and not overwrite:
-                skipped.append(f"{agent_file} -> {dest_path} (既に存在)")
-                continue
-
-            shutil.copy2(agent_file, dest_path)
-            copied.append(f"{agent_file} -> {dest_path}")
-        except Exception as e:
-            errors.append(f"{agent_file}: {e}")
+        file_copied, file_skipped, file_errors = process_agent_file(
+            agent_file, template_dir, dest_dir, overwrite
+        )
+        copied.extend(file_copied)
+        skipped.extend(file_skipped)
+        errors.extend(file_errors)
 
     return copied, skipped, errors, deleted
 
