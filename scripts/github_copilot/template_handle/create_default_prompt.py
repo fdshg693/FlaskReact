@@ -46,11 +46,7 @@ def generate_prompt_content(agent_name: str) -> str:
     Returns:
         str: ファイルに書き込む内容
     """
-    content = f"""---
-agent: {agent_name}
----
-read .github/tasks/{agent_name}.md to understand your task.
-"""
+    content = f"""read .github/tasks/{agent_name}.md to understand your task."""
     return content
 
 
