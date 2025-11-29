@@ -31,9 +31,10 @@ default.prompt.mdファイルを作成します。
     python scripts/github_copilot/template_handle/create_default_prompt.py
 """
 
-from util.path_utils import get_project_root, path_to_dot_notation
-from util.template_utils import find_leaf_directories, get_template_base_dir
 from pathlib import Path
+
+from ..util.path_utils import get_project_root, path_to_dot_notation
+from ..util.template_utils import find_leaf_directories, get_template_base_dir
 
 
 def generate_prompt_content(agent_name: str) -> str:
@@ -46,7 +47,12 @@ def generate_prompt_content(agent_name: str) -> str:
     Returns:
         str: ファイルに書き込む内容
     """
-    content = f"""read .github/tasks/{agent_name}.md to understand your task."""
+    content = f"""
+    ---
+    agent: {agent_name}
+    ---    
+    read .github/tasks/{agent_name}.md to understand your task.    
+    """
     return content
 
 

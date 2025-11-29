@@ -31,12 +31,13 @@ taskファイルの内容
     python scripts/github_copilot/template_handle/create_task_from_agent.py
 """
 
-from util.path_utils import get_project_root
-from util.template_utils import (
+from pathlib import Path
+
+from ..util.path_utils import get_project_root
+from ..util.template_utils import (
     get_agents_dir,
     get_tasks_dir,
 )
-from pathlib import Path
 
 
 def find_agent_files_in_agents_dir(agents_dir: Path) -> list[Path]:

@@ -46,6 +46,19 @@ def get_agents_dir(project_root: Path) -> Path:
     return project_root / ".github" / "agents"
 
 
+def get_prompts_dir(project_root: Path) -> Path:
+    """
+    .github/promptsディレクトリのパスを取得する
+
+    Args:
+        project_root: プロジェクトルートのパス
+
+    Returns:
+        Path: .github/promptsディレクトリのパス
+    """
+    return project_root / ".github" / "prompts"
+
+
 def find_leaf_directories(base_dir: Path) -> list[Path]:
     """
     指定ディレクトリ配下の最下層ディレクトリを全て取得する
@@ -95,3 +108,26 @@ def find_agent_files(base_dir: Path) -> list[Path]:
         agent_files.append(agent_file)
 
     return agent_files
+
+
+def find_prompt_files(base_dir: Path) -> list[Path]:
+    """
+    指定ディレクトリ配下の全ての.prompt.mdファイルを取得する
+
+    Args:
+        base_dir: 探索対象のベースディレクトリ
+
+    Returns:
+        list[Path]: .prompt.mdファイルのパスリスト
+    """
+    prompt_files: list[Path] = []
+
+    if not base_dir.exists():
+        print(f"警告: ディレクトリが存在しません: {base_dir}")
+        return prompt_files
+
+    # 再帰的に.prompt.mdファイルを探索
+    for prompt_file in base_dir.rglob("*.prompt.md"):
+        prompt_files.append(prompt_file)
+
+    return prompt_files

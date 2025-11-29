@@ -59,17 +59,17 @@ scripts/github_copilot/template_handle/config/deploy_agents.yaml.example
 from pathlib import Path
 import sys
 
-from util.path_utils import get_project_root, path_to_dot_notation
-from util.substitution_utils import (
+from ..util.path_utils import get_project_root, path_to_dot_notation
+from ..util.substitution_utils import (
     get_output_values_without_name,
     substitute_custom_variables,
 )
-from util.template_utils import (
+from ..util.template_utils import (
     find_agent_files,
     get_agents_dir,
     get_template_base_dir,
 )
-from util.yaml_utils import (
+from ..util.yaml_utils import (
     extract_custom_inputs,
     extract_outputs,
     parse_frontmatter,
