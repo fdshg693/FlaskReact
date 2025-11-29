@@ -1,134 +1,143 @@
 #!/usr/bin/env bash
-# Generate AI Code Review Script
-# This script generates a diff and creates an AI code review using OpenAI API
+# AI コードレビュー生成スクリプト
+# このスクリプトは差分を生成し、OpenAI API を使用して AI コードレビューを作成します
 #
-# Usage:
+# 使用方法:
 #   ./scripts/generate_pr.sh [base_branch]
 #
-# Arguments:
-#   base_branch: Optional. The base branch to compare against (default: main)
+# 引数:
+#   base_branch: オプション。比較対象のベースブランチ（デフォルト: main）
 #
-# Required files:
-#   - .env: Environment variables file (OPENAI_API_KEY required)
+# 必要なファイル:
+#   - .env: 環境変数ファイル（OPENAI_API_KEY が必要）
 #
-# Outputs:
-#   - tmp/diff.patch: Generated diff file
-#   - tmp/ai_review_output.md: AI-generated review
+# 出力:
+#   - tmp/diff.patch: 生成された差分ファイル
+#   - tmp/ai_review_output.md: AI が生成したレビュー
 
+#-e (errexit): コマンドがエラー(終了コード 0以外)を返したら即座にスクリプトを停止
+#-u (nounset): 未定義の変数を参照した場合にエラーを出してスクリプトを停止
+#-o pipefail: パイプライン内のいずれかのコマンドが失敗した場合にパイプライン全体を失敗とみなす
 set -euo pipefail
 
-# Get the script directory (absolute path)
+# スクリプトのディレクトリを取得（絶対パス）
+# pwd: 現在のディレクトリを表示(print working directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Change to project root
+# プロジェクトルートに移動
 cd "$PROJECT_ROOT"
 
-echo "🚀 Starting AI Code Review Process"
+echo "🚀 AI コードレビュープロセスを開始します"
 echo "================================================"
 
-# Load environment variables from .env file
+# .env ファイルから環境変数を読み込み
+# -f: ファイルが存在しないかどうかをチェックする条件式（存在しない場合はtrueを返す）
 if [ ! -f .env ]; then
-  echo "❌ Error: .env file not found in project root"
-  echo "Please create .env file based on sample.env"
+  echo "❌ エラー: プロジェクトルートに .env ファイルが見つかりません"
+  echo "sample.env を参考に .env ファイルを作成してください"
   exit 1
 fi
 
-echo "📁 Loading environment variables from .env..."
-# Export variables from .env file
-# Using set -a to automatically export all variables
+echo "📁 .env から環境変数を読み込み中..."
+# .env ファイルから変数をエクスポート
+# set -a を使用して全ての変数を自動的にエクスポート
 set -a
 source .env
 set +a
 
-# Validate required environment variables
+# 必須の環境変数を検証
+# -z: 文字列が空かどうかをチェックする条件式（空ならtrueを返す）
 if [ -z "${OPENAI_API_KEY:-}" ]; then
-  echo "❌ Error: OPENAI_API_KEY is not set in .env file"
+  echo "❌ エラー: OPENAI_API_KEY が .env ファイルに設定されていません"
   exit 1
 fi
 
-# Set default values for AI model configuration
+# AI モデル設定のデフォルト値を設定
 export AI_MODEL="${AI_MODEL:-gpt-4.1}"
 export MAX_TOKENS="${MAX_TOKENS:-10000}"
 export TEMPERATURE="${TEMPERATURE:-0.1}"
 
-echo "✅ Environment variables loaded"
-echo "   - Model: $AI_MODEL"
-echo "   - Max Tokens: $MAX_TOKENS"
+echo "✅ 環境変数の読み込み完了"
+echo "   - モデル: $AI_MODEL"
+echo "   - 最大トークン数: $MAX_TOKENS"
 echo "   - Temperature: $TEMPERATURE"
 echo ""
 
-# Determine base branch
+# ベースブランチを決定
 BASE_BRANCH="${1:-main}"
-echo "📊 Base branch for comparison: $BASE_BRANCH"
+echo "📊 比較対象のベースブランチ: $BASE_BRANCH"
 
-# Create temporary GITHUB_OUTPUT file for compatibility with existing scripts
+# 既存のスクリプトとの互換性のために一時的な GITHUB_OUTPUT ファイルを作成
 TEMP_OUTPUT=$(mktemp)
 trap 'rm -f "$TEMP_OUTPUT"' EXIT
 export GITHUB_OUTPUT="$TEMP_OUTPUT"
 
-# Step 1: Generate diff using generate-diff.sh
+# ステップ 1: generate-diff.sh を使用して差分を生成
 echo ""
 echo "================================================"
-echo "📝 Step 1: Generating diff..."
+echo "📝 ステップ 1: 差分を生成中..."
 echo "================================================"
 
-# Set variables needed by generate-diff.sh
+# generate-diff.sh に必要な変数を設定
 export INPUT_TARGET="$BASE_BRANCH"
 
-# Run the generate-diff script
+# generate-diff スクリプトを実行
 if [ -f ".github/scripts/generate-diff.sh" ]; then
   bash .github/scripts/generate-diff.sh
 else
-  echo "❌ Error: .github/scripts/generate-diff.sh not found"
+  echo "❌ エラー: .github/scripts/generate-diff.sh が見つかりません"
   exit 1
 fi
 
-# Check if diff was generated
+# 差分が生成されたか確認
 if [ ! -f tmp/diff.patch ]; then
-  echo "❌ Error: tmp/diff.patch was not created"
+  echo "❌ エラー: tmp/diff.patch が作成されませんでした"
   exit 1
 fi
 
-# Check if there are changes
+# 変更があるか確認
+# grep: テキストファイルやストリーム内でパターン（文字列や正規表現）に一致する行を検索。
+# -d='=': 区切り文字を '=' に設定
+# cut -f2: 区切り文字で分割した2番目のフィールドを抽出
 HAS_CHANGES=$(grep "has_changes=" "$GITHUB_OUTPUT" | cut -d'=' -f2 || echo "false")
 
 if [ "$HAS_CHANGES" = "false" ]; then
-  echo "ℹ️ No changes detected. Skipping AI review."
+  echo "ℹ️ 変更が検出されませんでした。AI レビューをスキップします。"
   exit 0
 fi
 
-echo "✅ Diff generated successfully"
+echo "✅ 差分の生成が完了しました"
 echo ""
 
-# Step 2: Generate AI review using generate-ai-review.sh
+# ステップ 2: generate-ai-review.sh を使用して AI レビューを生成
 echo "================================================"
-echo "🤖 Step 2: Generating AI review..."
+echo "🤖 ステップ 2: AI レビューを生成中..."
 echo "================================================"
 
-# Run the AI review script
+# AI レビュースクリプトを実行
 if [ -f ".github/scripts/generate-ai-review.sh" ]; then
   bash .github/scripts/generate-ai-review.sh tmp/diff.patch
 else
-  echo "❌ Error: .github/scripts/generate-ai-review.sh not found"
+  echo "❌ エラー: .github/scripts/generate-ai-review.sh が見つかりません"
   exit 1
 fi
 
-# Check if review was generated
+# レビューが生成されたか確認
 if [ ! -f tmp/ai_review_output.md ]; then
-  echo "❌ Error: tmp/ai_review_output.md was not created"
+  echo "❌ エラー: tmp/ai_review_output.md が作成されませんでした"
   exit 1
 fi
 
 echo ""
 echo "================================================"
-echo "✅ AI Code Review Completed!"
+echo "✅ AI コードレビューが完了しました！"
 echo "================================================"
 echo ""
-echo "📄 Generated files:"
-echo "   - tmp/diff.patch: Git diff between $BASE_BRANCH and current branch"
-echo "   - tmp/ai_review_output.md: AI-generated code review"
+echo "📄 生成されたファイル:"
+echo "   - tmp/diff.patch: $BASE_BRANCH と現在のブランチ間の Git 差分"
+echo "   - tmp/ai_review_output.md: AI が生成したコードレビュー"
 echo ""
-echo "📖 View the review:"
+echo "📖 レビューを確認するには:"
 echo "   cat tmp/ai_review_output.md"
 echo ""
