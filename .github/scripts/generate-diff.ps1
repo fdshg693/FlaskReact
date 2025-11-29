@@ -80,11 +80,19 @@ if (-not (Test-Path -Path "tmp")) {
 # --no-color: ANSIカラーコードを出力しない(ファイル保存やAPI送信用にプレーンテキスト化)
 # --ignore-space-change: 空白のみの変更を無視(インデント調整などのノイズを除外)
 # > tmp/diff.patch: 出力をファイルにリダイレクト
-git diff "origin/$BASE_BRANCH...HEAD" `
+# 注記: PowerShellの文字化け対策として以下を実施:
+# 1. [Console]::OutputEncoding をUTF-8に設定して git diff の出力を正しく受け取る
+# 2. Out-File -Encoding utf8NoBOM でBOMなしUTF-8で保存(PS 6.0+)
+#    または [System.IO.File]::WriteAllText で明示的にUTF-8エンコーディングを指定
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$diffContent = git diff "origin/$BASE_BRANCH...HEAD" `
     --unified=3 `
     --no-color `
-    --ignore-space-change `
-| Out-File -FilePath "tmp/diff.patch" -Encoding utf8
+    --ignore-space-change
+
+# UTF-8 (BOMなし) でファイルに保存
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::WriteAllText((Resolve-Path ".\tmp\diff.patch").Path, $diffContent, $utf8NoBom)
 
 # 差分に内容があるかチェック
 if (-not (Test-Path -Path "tmp/diff.patch") -or (Get-Item "tmp/diff.patch").Length -eq 0) {
