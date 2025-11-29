@@ -1,4 +1,4 @@
-# AI コードレビュー生成スクリプト (PowerShell版)
+﻿# AI コードレビュー生成スクリプト (PowerShell版)
 # このスクリプトは差分を生成し、OpenAI API を使用して AI コードレビューを作成します
 #
 # 使用方法:
@@ -40,14 +40,14 @@ Write-Host "📁 .env から環境変数を読み込み中..." -ForegroundColor 
 # .env ファイルを読み込んで環境変数に設定
 Get-Content $EnvFile | ForEach-Object {
     $line = $_.Trim()
-    # コメント行と空行をスキップ
+    # コメント行と空行をスキップ（#が行間にある場合に対応できていない）
     if ($line -and -not $line.StartsWith("#")) {
         $parts = $line -split "=", 2
         if ($parts.Count -eq 2) {
             $key = $parts[0].Trim()
             $value = $parts[1].Trim()
             # 引用符を削除
-            $value = $value -replace '^["'']|["'']$', ''
+            $value = $value -replace "^[""']|[""']`$", ''
             [Environment]::SetEnvironmentVariable($key, $value, "Process")
         }
     }
@@ -75,7 +75,7 @@ if ([string]::IsNullOrEmpty($MaxTokens)) {
 
 $Temperature = [Environment]::GetEnvironmentVariable("TEMPERATURE", "Process")
 if ([string]::IsNullOrEmpty($Temperature)) {
-    $Temperature = "0.1"
+    $Temperature = "0.01"
     [Environment]::SetEnvironmentVariable("TEMPERATURE", $Temperature, "Process")
 }
 
@@ -104,18 +104,18 @@ try {
     [Environment]::SetEnvironmentVariable("INPUT_TARGET", $BaseBranch, "Process")
 
     # generate-diff スクリプトを実行
-    $DiffScript = Join-Path $ProjectRoot ".github\scripts\generate-diff.ps1"
+    $DiffScript = Join-Path $ProjectRoot '.github\scripts\generate-diff.ps1'
     if (-not (Test-Path $DiffScript)) {
-        Write-Host "❌ エラー: .github\scripts\generate-diff.ps1 が見つかりません" -ForegroundColor Red
+        Write-Host '❌ エラー: .github\scripts\generate-diff.ps1 が見つかりません' -ForegroundColor Red
         exit 1
     }
 
-    & pwsh -File $DiffScript
+    & powershell.exe -ExecutionPolicy Bypass -File $DiffScript
 
     # 差分が生成されたか確認
-    $DiffFile = Join-Path $ProjectRoot "tmp\diff.patch"
+    $DiffFile = Join-Path $ProjectRoot 'tmp\diff.patch'
     if (-not (Test-Path $DiffFile)) {
-        Write-Host "❌ エラー: tmp\diff.patch が作成されませんでした" -ForegroundColor Red
+        Write-Host '❌ エラー: tmp\diff.patch が作成されませんでした' -ForegroundColor Red
         exit 1
     }
 
@@ -140,18 +140,18 @@ try {
     Write-Host "================================================" -ForegroundColor Cyan
 
     # AI レビュースクリプトを実行
-    $ReviewScript = Join-Path $ProjectRoot ".github\scripts\generate-ai-review.ps1"
+    $ReviewScript = Join-Path $ProjectRoot '.github\scripts\generate-ai-review.ps1'
     if (-not (Test-Path $ReviewScript)) {
-        Write-Host "❌ エラー: .github\scripts\generate-ai-review.ps1 が見つかりません" -ForegroundColor Red
+        Write-Host '❌ エラー: .github\scripts\generate-ai-review.ps1 が見つかりません' -ForegroundColor Red
         exit 1
     }
 
-    & pwsh -File $ReviewScript -DiffFile $DiffFile
+    & powershell.exe -ExecutionPolicy Bypass -File $ReviewScript -DiffFile $DiffFile
 
     # レビューが生成されたか確認
-    $ReviewFile = Join-Path $ProjectRoot "tmp\ai_review_output.md"
+    $ReviewFile = Join-Path $ProjectRoot 'tmp\ai_review_output.md'
     if (-not (Test-Path $ReviewFile)) {
-        Write-Host "❌ エラー: tmp\ai_review_output.md が作成されませんでした" -ForegroundColor Red
+        Write-Host '❌ エラー: tmp\ai_review_output.md が作成されませんでした' -ForegroundColor Red
         exit 1
     }
 
@@ -160,12 +160,12 @@ try {
     Write-Host "✅ AI コードレビューが完了しました！" -ForegroundColor Green
     Write-Host "================================================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "📄 生成されたファイル:"
-    Write-Host "   - tmp\diff.patch: $BaseBranch と現在のブランチ間の Git 差分"
-    Write-Host "   - tmp\ai_review_output.md: AI が生成したコードレビュー"
-    Write-Host ""
-    Write-Host "📖 レビューを確認するには:"
-    Write-Host "   Get-Content tmp\ai_review_output.md"
+    Write-Host '📝 生成されたファイル:'
+    Write-Host ('   - tmp\diff.patch: ' + $BaseBranch + ' と現在のブランチ間の Git 差分')
+    Write-Host '   - tmp\ai_review_output.md: AI が生成したコードレビュー'
+    Write-Host ''
+    Write-Host '📖 レビューを確認するには:'
+    Write-Host '   Get-Content tmp\ai_review_output.md'
     Write-Host ""
 }
 finally {
