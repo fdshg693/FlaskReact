@@ -1,7 +1,10 @@
 name: "Copilot Setup Steps"
 
-# Automatically run the setup steps when they are changed to allow for easy validation, and
-# allow manual testing through the repository's "Actions" tab
+# クラウド上のCoding Agentが動作する環境のセットアップとして利用されるワークフローです。
+# Coding Agentが動作する環境のセットアップ以外で、以下の3つのトリガーで実行されます。
+# 1. ファイルの追加・編集時 → copilot-setup-steps.ymlをリポジトリに追加またはpushしたとき
+# 2. PRでの変更時 → このファイルを変更するPull Requestを作成したとき
+# 3. Actionsタブからの手動実行 → workflow_dispatchで手動トリガー
 on:
   workflow_dispatch:
   push:
@@ -46,26 +49,17 @@ jobs:
 
       - name: Verify installation
         run: |
+          echo "uv check:"
           uv --version
           uv run python --version
-          uv run python -c "import flask; print(f'Flask {flask.__version__} installed')"
-          uv run python -c "import pandas; print(f'Pandas {pandas.__version__} installed')"
-          uv run python -c "import sklearn; print(f'Scikit-learn {sklearn.__version__} installed')"
 
-      - name: Run basic project validation
-        run: |
-          # Validate the project structure
-          ls -la
-          ls -la data/
-          ls -la llm/
-          ls -la machineLearning/
-          ls -la static/
-          ls -la server/
-          
-          # Check if the main entry point exists
-          test -f run_app.py && echo "✓ run_app.py exists"
-          test -f server/app.py && echo "✓ server/app.py exists"
-          test -f pyproject.toml && echo "✓ pyproject.toml exists"
+          echo "Checking standard packages installed:"
+          uv run python -c "import flask; print(f'Flask installed')"
+          uv run python -c "import pandas; print(f'Pandas installed')"
+          uv run python -c "import sklearn; print(f'Scikit-learn installed')"
+
+          echo "Checking manual-created packages installed:"
+          uv run python -c "import github_template; print(f'GitHub Template installed')"
 
       - name: Cache uv dependencies
         uses: actions/cache@v4
