@@ -1,0 +1,18 @@
+{
+    "servers": {
+        // Github CopilotにWEB検索機能を追加するMCP
+        // 単なるWEBページ取得なら、組み込みの#tool:fetchで十分ですが、
+        // 検索エンジンを使ったり、ページの要約を取得したりする場合に便利です。
+        "tavily-remote-mcp": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote",
+                // NEVER COMMIT YOUR API KEY!!!!!
+                "https://mcp.tavily.com/mcp/?tavilyApiKey=<YOUR_API_KEY_HERE>",
+            ]
+        }
+    },
+    "inputs": []
+}

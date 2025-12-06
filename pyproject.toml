@@ -41,8 +41,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["llm*", "machineLearning*", "util*", "scrape*", "server*"]
-exclude = ["data*", "log*", "param*", "scaler*", "static*", "csvLog*", "curveLog*", "experiment*", "maikuma*", "test*", "docs*"]
+where = ["src"]
 
 [tool.uv]
 python-preference = "system"
