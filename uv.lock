@@ -816,6 +816,7 @@ dependencies = [
     { name = "fastmcp" },
     { name = "flask" },
     { name = "flask-cors" },
+    { name = "github-template" },
     { name = "langchain" },
     { name = "langchain-chroma" },
     { name = "langchain-community" },
@@ -849,6 +850,7 @@ requires-dist = [
     { name = "fastmcp", specifier = ">=2.13.1" },
     { name = "flask", specifier = ">=3.1.1" },
     { name = "flask-cors", specifier = ">=6.0.1" },
+    { name = "github-template", editable = "packages/github_template" },
     { name = "langchain", specifier = ">=1.0.2" },
     { name = "langchain-chroma", specifier = ">=1.0.0" },
     { name = "langchain-community", specifier = ">=0.4.1" },
@@ -1008,6 +1010,21 @@ sdist = { url = "https://files.pythonhosted.org/packages/72/94/63b0fc47eb32792c7
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl", hash = "sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf", size = 62794, upload-time = "2025-01-02T07:20:43.624Z" },
 ]
+
+[[package]]
+name = "github-template"
+version = "0.1.0"
+source = { editable = "packages/github_template" }
+dependencies = [
+    { name = "pyyaml" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pyyaml" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "gitpython"
