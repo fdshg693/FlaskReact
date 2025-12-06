@@ -28,6 +28,7 @@ outputs/
 # 設定YAMLファイルはGITから外して、サンプルYAMLファイルのみGITに追加する
 **.yaml
 **.yml
+!.github/workflows/**.yml
 !**.yaml.example
 !**.yml.example
 

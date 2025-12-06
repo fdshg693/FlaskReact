@@ -1,0 +1,36 @@
+# ======================================================================
+# AI Code Review Workflow
+# ======================================================================
+# This workflow uses OpenAI's GPT-4o-mini to automatically review code changes
+# and provide feedback in Japanese. It can be triggered manually via workflow_dispatch.
+#
+# Prerequisites:
+# - OPENAI_API_KEY secret must be configured in the repository settings
+# - The workflow requires jq for JSON processing (pre-installed on Ubuntu runners)
+#
+# Output:
+# - AI review comments are available in the job output as 'review' variable
+# ======================================================================
+
+name: AI Code Review Pull Request Workflow
+
+# Trigger: Manual execution only (can be extended to pull_request events)
+on: 
+  push:
+    branches:
+      - main
+  pull_request:      # ここを追加
+    types: [opened, synchronize, reopened]
+
+jobs:
+  ai_review:
+    uses: ./.github/workflows/reusable-ai-code-review.yml
+    with:
+      target_branch: 'main'
+      ai_model: 'gpt-4.1'
+      max_tokens: 15000
+      temperature: 0.3
+      fetch_depth: 50
+      post_pr_comment: true
+    # Configuration constants
+

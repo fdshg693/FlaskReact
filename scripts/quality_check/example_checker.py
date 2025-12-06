@@ -9,8 +9,10 @@
 そして、.exampleファイルは全てGit管理下にあることを確認する
 元のファイルは、GIT管理から外れていることを確認する
 
+結果はscripts/quality_check/output配下にMarkdown形式で出力される
 """
 
+from datetime import datetime
 from pathlib import Path
 import subprocess
 
@@ -72,22 +74,26 @@ def get_git_tracked_files(project_root: Path) -> set[Path]:
         return set()
 
 
-def check_example_files(project_root: Path) -> tuple[list[str], list[str]]:
+def check_example_files(
+    project_root: Path,
+) -> tuple[list[str], list[str], list[dict[str, str]]]:
     """
     .exampleファイルのチェックを実行する
 
     Returns:
-        tuple[list[str], list[str]]: (警告メッセージリスト, 情報メッセージリスト)
+        tuple[list[str], list[str], list[dict[str, str]]]:
+            (警告メッセージリスト, 情報メッセージリスト, ファイル情報リスト)
     """
     warnings: list[str] = []
     infos: list[str] = []
+    file_infos: list[dict[str, str]] = []
 
     example_files = find_example_files(project_root)
     git_tracked_files = get_git_tracked_files(project_root)
 
     if not example_files:
         infos.append("✓ .exampleファイルは見つかりませんでした")
-        return warnings, infos
+        return warnings, infos, file_infos
 
     infos.append(f"検出された.exampleファイル: {len(example_files)}件")
     infos.append("-" * 50)
@@ -96,6 +102,16 @@ def check_example_files(project_root: Path) -> tuple[list[str], list[str]]:
         relative_example = example_file.relative_to(project_root)
         original_file = get_original_file_path(example_file)
         relative_original = original_file.relative_to(project_root)
+
+        # ファイル情報を収集
+        file_info = {
+            "example_path": str(relative_example),
+            "original_path": str(relative_original),
+            "original_exists": original_file.exists(),
+            "example_in_git": example_file in git_tracked_files,
+            "original_in_git": original_file in git_tracked_files,
+        }
+        file_infos.append(file_info)
 
         # 1. 元のファイルが存在するかチェック
         if not original_file.exists():
@@ -116,7 +132,95 @@ def check_example_files(project_root: Path) -> tuple[list[str], list[str]]:
                 f"⚠ 元のファイルがGit管理下にあります（除外推奨）: {relative_original}"
             )
 
-    return warnings, infos
+    return warnings, infos, file_infos
+
+
+def generate_markdown_report(
+    project_root: Path,
+    warnings: list[str],
+    infos: list[str],
+    file_infos: list[dict[str, str]],
+) -> str:
+    """
+    Markdown形式のレポートを生成する
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    lines = [
+        "# Example File Check Report",
+        "",
+        f"**実行日時**: {timestamp}",
+        f"**プロジェクトルート**: `{project_root}`",
+        "",
+        "---",
+        "",
+        "## 概要",
+        "",
+    ]
+
+    for info in infos:
+        lines.append(info)
+
+    lines.extend(["", "---", "", "## ファイル一覧", ""])
+
+    if file_infos:
+        lines.append(
+            "| # | Exampleファイル | 元のファイル | 元ファイル存在 | Example Git管理 | 元ファイル Git管理 |"
+        )
+        lines.append(
+            "|---|----------------|-------------|:------------:|:--------------:|:-----------------:|"
+        )
+
+        for i, info in enumerate(file_infos, 1):
+            original_exists = "✅" if info["original_exists"] else "❌"
+            example_in_git = "✅" if info["example_in_git"] else "❌"
+            original_in_git = "⚠️" if info["original_in_git"] else "✅"
+
+            lines.append(
+                f"| {i} | `{info['example_path']}` | `{info['original_path']}` | "
+                f"{original_exists} | {example_in_git} | {original_in_git} |"
+            )
+    else:
+        lines.append("_ファイルが見つかりませんでした_")
+
+    lines.extend(["", "---", "", "## 警告", ""])
+
+    if warnings:
+        lines.append(f"**警告件数**: {len(warnings)}")
+        lines.append("")
+        for i, warning in enumerate(warnings, 1):
+            # 複数行の警告を整形
+            warning_lines = warning.split("\n")
+            lines.append(f"### 警告 {i}")
+            lines.append("")
+            for wl in warning_lines:
+                lines.append(f"> {wl}")
+            lines.append("")
+    else:
+        lines.append("✅ **全てのチェックに合格しました**")
+
+    lines.extend(["", "---", "", "## 凡例", ""])
+    lines.append("- **元ファイル存在**: ✅ = 存在する, ❌ = 存在しない")
+    lines.append("- **Example Git管理**: ✅ = Git管理下, ❌ = Git管理外（要対応）")
+    lines.append(
+        "- **元ファイル Git管理**: ✅ = Git管理外（正常）, ⚠️ = Git管理下（除外推奨）"
+    )
+
+    return "\n".join(lines)
+
+
+def save_markdown_report(project_root: Path, content: str) -> Path:
+    """
+    Markdownレポートをファイルに保存する
+    """
+    output_dir = project_root / "scripts" / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = output_dir / f"example_check_{timestamp}.md"
+
+    output_file.write_text(content, encoding="utf-8")
+    return output_file
 
 
 def main() -> int:
@@ -130,7 +234,14 @@ def main() -> int:
     print(f"プロジェクトルート: {project_root}")
     print("=" * 50)
 
-    warnings, infos = check_example_files(project_root)
+    warnings, infos, file_infos = check_example_files(project_root)
+
+    # Markdownレポートを生成して保存
+    markdown_content = generate_markdown_report(
+        project_root, warnings, infos, file_infos
+    )
+    output_file = save_markdown_report(project_root, markdown_content)
+    print(f"レポートを保存しました: {output_file}")
 
     # 情報メッセージを出力
     for info in infos:
