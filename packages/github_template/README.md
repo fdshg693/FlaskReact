@@ -6,12 +6,10 @@ GitHub Copilot テンプレート管理ツール
 
 ## インストール
 
-```bash
-# 開発モードでインストール
-uv pip install -e packages/github_template
+プロジェクトルートで `uv sync` を実行すると、自動的にエディタブルインストールされます。
 
-# または pip を使用
-pip install -e packages/github_template
+```bash
+uv sync
 ```
 
 ## 使用方法
@@ -110,7 +108,3 @@ include:
 cd packages/github_template
 pytest
 ```
-
-## ライセンス
-
-MIT

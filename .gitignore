@@ -29,6 +29,7 @@ outputs/
 **.yaml
 **.yml
 !.github/workflows/**.yml
+!.github/ISSUE_TEMPLATE/config.yml
 !**.yaml.example
 !**.yml.example
 

@@ -43,19 +43,6 @@ PyTorch を使用した木材画像の自動分類システムです。CNN ベ�
 └── tests/                    # テストコード
 ```
 
-## 🛠️ セットアップ
-
-### 必要条件
-
-- Python 3.8+
-- CUDA 対応 GPU（推奨）
-
-### 依存関係のインストール
-
-```bash
-pip install -r requirements.txt
-```
-
 ### 主要パッケージ
 
 - **PyTorch**: ディープラーニングフレームワーク
