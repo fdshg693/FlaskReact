@@ -12,8 +12,18 @@
 |---------|------|---------|--------|
 | **project_overview/** | プロジェクト全体像の理解 | プロジェクト固有情報。新規メンバー向け | [INDEX](./project_overview/00_INDEX.md) |
 | **dev_contract/** | 開発規約・ルール | チーム共通のルール。Git管理 | [INDEX](./dev_contract/INDEX.md) |
-| **problems/** | 課題・改善点の管理 | 優先度とステータスで体系的に管理 | [INDEX](./problems/INDEX.md) |
+| **problems/** | 課題・改善点の管理 | 優先度とステータスで体系的に管理 | GithubのIssueによる管理[ISSUE管理](./problems/ISSUE管理.md)|
+| **project_tech/** | プロジェクト固有の技術情報 | プロジェクト固有の技術情報。Git管理 | [フォルダ](./project_tech/) |
 | **tech_knowledge/** | 技術的な知識・ノウハウ | 汎用的な技術情報。Git管理 | [フォルダ](./tech_knowledge/) |
+
+- 注意点
+   - プロジェクト固有の情報
+      - 技術的な情報 -> `project_tech/`
+      - 技術的な詳細に踏み込まない全体像 -> `project_overview/`
+      - 開発ルール・規約 -> `dev_contract/`
+   - プロジェクトに依存しない情報
+      - 技術的な情報 -> `tech_knowledge/`
+      - 非技術的な情報 -> 基本的に作成しない（必要なら `docs/misc/` 等を作成）   
 
 ### AI用ドキュメント（英語）
 
@@ -41,7 +51,6 @@ docs/tech_knowledge/
 
 1. **[project_overview/00_INDEX.md](./project_overview/00_INDEX.md)** - プロジェクト概要を理解
 2. **[dev_contract/INDEX.md](./dev_contract/INDEX.md)** - 開発規約を確認
-3. **[TODOS.md](./TODOS.md)** - 現在の作業状況を把握
 
 ### 開発中にドキュメントを探す場合
 
@@ -111,30 +120,12 @@ docs/tech_knowledge/
 
 ---
 
-## 🛠️ メンテナンスタスク
-
-### 月次タスク
-
-- [ ] 各INDEXファイルの更新履歴を確認
-- [ ] `TODOS.md` の完了項目を整理
-- [ ] `problems/` の課題ステータスを更新
-- [ ] 古いドキュメントの整理・アーカイブ
-
-### 随時タスク
-
-- [ ] 新機能追加時: `project_overview/` の更新
-- [ ] ルール変更時: `dev_contract/` の更新
-- [ ] 技術的発見: `tech_knowledge/` に記録
-- [ ] 課題発見: `problems/` または `TODOS.md` に追加
-
 ---
 
 ## 📚 関連リソース
 
 - **プロジェクトルート**: [../README.md](../README.md)
 - **開発規約**: [dev_contract/INDEX.md](./dev_contract/INDEX.md)
-- **課題管理**: [problems/INDEX.md](./problems/INDEX.md)
-- **作業中タスク**: [TODOS.md](./TODOS.md)
 
 ---
 
