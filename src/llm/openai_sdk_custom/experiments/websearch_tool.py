@@ -1,6 +1,6 @@
 import asyncio
 
-from agents import Agent, Runner, WebSearchTool, trace
+from agents import Agent, Runner, WebSearchTool, trace, RunResult
 
 # OPENAI AGENT SDK EXAMPLE
 
@@ -15,7 +15,7 @@ async def main():
     )
 
     with trace("Web search example"):
-        result = await Runner.run(
+        result: RunResult = await Runner.run(
             agent,
             "search the web for 'local sports news' and give me 1 interesting update in a sentence.",
         )
