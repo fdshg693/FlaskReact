@@ -10,7 +10,48 @@ Usage:
 """
 
 import sys
-import msvcrt
+import platform
+
+if platform.system() == "Windows":
+    import msvcrt
+
+    def get_arrow_key():
+        """Read arrow key input on Windows."""
+        if msvcrt.kbhit():
+            key = msvcrt.getch()
+            if key == b"\xe0":  # Arrow key prefix on Windows
+                arrow = msvcrt.getch()
+                if arrow == b"H":  # Up arrow
+                    return "up"
+                elif arrow == b"P":  # Down arrow
+                    return "down"
+            elif key == b"\r":  # Enter key
+                return "enter"
+        return None
+else:
+    import tty
+    import termios
+
+    def get_arrow_key():
+        """Read arrow key input on Unix/macOS."""
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            key = sys.stdin.read(1)
+            if key == "\x1b":  # Escape sequence
+                next_char = sys.stdin.read(1)
+                if next_char == "[":
+                    arrow = sys.stdin.read(1)
+                    if arrow == "A":  # Up arrow
+                        return "up"
+                    elif arrow == "B":  # Down arrow
+                        return "down"
+            elif key == "\r":  # Enter key
+                return "enter"
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return None
 
 
 def clear_lines(n):
@@ -30,21 +71,6 @@ def display_choices(message, choices, selected_index):
         else:
             print(f"    {choice}")
     sys.stdout.flush()
-
-
-def get_arrow_key():
-    """Read arrow key input on Windows."""
-    if msvcrt.kbhit():
-        key = msvcrt.getch()
-        if key == b"\xe0":  # Arrow key prefix on Windows
-            arrow = msvcrt.getch()
-            if arrow == b"H":  # Up arrow
-                return "up"
-            elif arrow == b"P":  # Down arrow
-                return "down"
-        elif key == b"\r":  # Enter key
-            return "enter"
-    return None
 
 
 def select_choice(message, choices):
