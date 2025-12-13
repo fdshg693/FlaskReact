@@ -92,6 +92,36 @@ def display_weather(weather_data: dict) -> None:
         st.markdown(f"🌇 **日の入り**: {sunset.strftime('%H:%M')}")
 
 
+def format_weather_as_chat_response(weather_data: dict) -> str:
+    """天気情報をチャット形式のテキストに整形"""
+    if not weather_data:
+        return "申し訳ございません。天気情報の取得に失敗しました。"
+    
+    city_name = weather_data['name']
+    temp = weather_data['main']['temp']
+    feels_like = weather_data['main']['feels_like']
+    weather_desc = weather_data['weather'][0]['description']
+    humidity = weather_data['main']['humidity']
+    wind_speed = weather_data['wind']['speed']
+    
+    sunrise = datetime.fromtimestamp(weather_data['sys']['sunrise'])
+    sunset = datetime.fromtimestamp(weather_data['sys']['sunset'])
+    
+    response = f"""
+{city_name}の現在の天気をお知らせします！
+
+🌡️ **気温**: {temp:.1f}°C（体感温度: {feels_like:.1f}°C）
+☁️ **天気**: {weather_desc}
+💧 **湿度**: {humidity}%
+💨 **風速**: {wind_speed} m/s
+🌅 **日の出**: {sunrise.strftime('%H:%M')}
+🌇 **日の入り**: {sunset.strftime('%H:%M')}
+
+他に気になる地名があれば教えてください！
+"""
+    return response
+
+
 def main() -> None:
     st.set_page_config(page_title="天気予報", page_icon="🌤️", layout="centered")
     
@@ -166,6 +196,44 @@ def main() -> None:
                 if weather_data:
                     st.success("天気情報を取得しました！")
                     display_weather(weather_data)
+    
+    # チャット形式のセクション
+    st.markdown("---")
+    st.header("💬 チャット形式で天気を聞く")
+    st.markdown("地名を入力すると、AIが天気情報を教えてくれます")
+    
+    # セッションステートの初期化
+    if "chat_messages" not in st.session_state:
+        st.session_state.chat_messages = []
+    
+    # チャット履歴の表示
+    for message in st.session_state.chat_messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    # チャット入力
+    if prompt := st.chat_input("地名を入力してください（例: 東京、大阪、福岡）"):
+        # APIキーのチェック
+        if current_api_key == "YOUR_API_KEY_HERE" or not current_api_key:
+            st.error("APIキーを設定してください")
+        else:
+            # ユーザーメッセージを追加
+            st.session_state.chat_messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            # アシスタントの応答
+            with st.chat_message("assistant"):
+                with st.spinner("天気情報を取得中..."):
+                    weather_data = get_weather(prompt, current_api_key)
+                    
+                    if weather_data:
+                        response = format_weather_as_chat_response(weather_data)
+                    else:
+                        response = f"申し訳ございません。「{prompt}」の天気情報を取得できませんでした。\n\n日本の都市名（例: 東京、大阪、札幌など）を入力してください。"
+                    
+                    st.markdown(response)
+                    st.session_state.chat_messages.append({"role": "assistant", "content": response})
 
 
 if __name__ == "__main__":
