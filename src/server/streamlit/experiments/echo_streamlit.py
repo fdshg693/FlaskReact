@@ -21,6 +21,8 @@ def main() -> None:
         st.chat_message("user").markdown(prompt)
 
         with st.chat_message("assistant"):
+            body = st.empty()  # 回答表示専用の場所を確保
+            body.markdown("")  # 先に空で上書き（これで前回の残像を消す）
             with st.spinner("Thinking..."):
                 time.sleep(1)  # Simulate processing delay
                 try:
@@ -29,7 +31,7 @@ def main() -> None:
                     st.error(f"Model call failed: {exc}")
                     st.stop()
 
-            st.markdown(answer)
+            body.markdown(answer)
 
         st.session_state.last_prompt = prompt
         st.session_state.last_answer = answer
