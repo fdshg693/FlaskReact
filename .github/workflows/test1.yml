@@ -1,26 +1,36 @@
 # ======================================================================
-# Test Dispatch Workflow
+# AI Code Review Workflow (PowerShell Edition)
 # ======================================================================
-# This workflow is for testing purposes and simply prints "Hello World"
-# It can be triggered manually via workflow_dispatch.
+# This workflow uses OpenAI's GPT-4o-mini to automatically review code changes
+# and provide feedback in English. It can be triggered manually via workflow_dispatch.
+# This version is optimized for PowerShell execution on Windows runners.
+#
+# Prerequisites:
+# - OPENAI_API_KEY secret must be configured in the repository settings
+# - The workflow uses PowerShell for JSON processing
+#
+# Output:
+# - AI review comments are available in the job output as 'review' variable
 # ======================================================================
 
-name: Test Dispatch Workflow
+name: AI Code Review Dispatch Workflow (PowerShell)
 
-# Trigger: Manual execution only
+# Trigger: Manual execution only (can be extended to pull_request events)
 on:
   workflow_dispatch:
     inputs:
-      message:
-        description: "Custom message (default: Hello World)"
+      target_branch:
+        description: "Base branch to compare against (default: main)"
         required: false
-        default: "Hello World"
-        type: string
+        default: "main"
 
 jobs:
-  hello_world:
-    runs-on: windows-latest
-    steps:
-      - name: Print Hello World
-        shell: pwsh
-        run: Write-Host "${{ inputs.message }}"
+  ai_review:
+    uses: ./.github/workflows/reusable-ai-code-review-pwsh.yml
+    with:
+      target_branch: ${{ inputs.target_branch || 'main' }}
+      ai_model: "gpt-4.1"
+      max_tokens: 15000
+      temperature: 0.3
+      fetch_depth: 50
+    secrets: inherit
