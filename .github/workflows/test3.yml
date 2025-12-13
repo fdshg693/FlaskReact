@@ -1,0 +1,236 @@
+# Reusable AI Code Review Workflow (PowerShell Optimized)
+# PowerShell scripts for Windows-based CI/CD pipelines
+on:
+  workflow_call:
+    inputs:
+      target_branch:
+        description: 'Base branch to compare against (default: main)'
+        required: false
+        type: string
+        default: 'main'
+      ai_model:
+        description: 'Model to use for AI review'
+        required: false
+        type: string
+        default: 'gpt-4.1'
+      max_tokens:
+        description: 'Max tokens for the model'
+        required: false
+        type: number
+        default: 15000
+      temperature:
+        description: 'Temperature for the model'
+        required: false
+        type: number
+        default: 0.01
+      fetch_depth:
+        description: 'git fetch depth for checkout'
+        required: false
+        type: number
+        default: 50
+      post_pr_comment:
+        description: 'Whether to post the review to the PR (if exists)'
+        required: false
+        type: boolean
+        default: true
+      review_prompt:
+        description: 'Optional override prompt for the AI reviewer'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      review:
+        description: 'AI review text'
+        value: ${{ jobs.ai_review.outputs.review }}
+      has_changes:
+        description: 'Whether diff had changes'
+        value: ${{ jobs.ai_review.outputs.has_changes }}
+
+name: Reusable AI Code Review (PowerShell)
+
+jobs:
+  ai_review:
+    name: Generate AI Code Review (Windows)
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    env:
+      AI_MODEL: ${{ inputs.ai_model }}
+      MAX_TOKENS: ${{ inputs.max_tokens }}
+      TEMPERATURE: ${{ inputs.temperature }}
+      FETCH_DEPTH: ${{ inputs.fetch_depth }}
+      POST_PR_COMMENT: ${{ inputs.post_pr_comment }}
+      REVIEW_PROMPT: ${{ inputs.review_prompt }}
+
+    timeout-minutes: 10
+
+    outputs:
+      review: ${{ steps.ai_review.outputs.review }}
+      has_changes: ${{ steps.generate_diff.outputs.has_changes }}
+
+    steps:
+      - name: Checkout repository with optimized history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ env.FETCH_DEPTH }}
+
+      - name: Generate diff against base branch
+        id: generate_diff
+        shell: pwsh
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          INPUT_TARGET: ${{ inputs.target_branch }}
+        run: |
+          # Determine target branch
+          $targetBranch = if ($env:PR_BASE_REF) { $env:PR_BASE_REF } else { $env:INPUT_TARGET }
+          Write-Host "Generating diff against branch: $targetBranch"
+          
+          # Ensure target branch is available
+          git fetch origin "${targetBranch}:${targetBranch}" --depth=$env:FETCH_DEPTH
+          
+          # Create tmp directory if it doesn't exist
+          if (-not (Test-Path "tmp")) {
+            New-Item -ItemType Directory -Path "tmp" | Out-Null
+          }
+          
+          # Generate diff
+          $diffOutput = git diff "origin/$targetBranch...HEAD"
+          
+          if ([string]::IsNullOrWhiteSpace($diffOutput)) {
+            Write-Host "No changes detected between origin/$targetBranch and HEAD"
+            "has_changes=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            exit 0
+          }
+          
+          # Save diff to file
+          $diffOutput | Out-File -FilePath "tmp/diff.patch" -Encoding utf8
+          Write-Host "Diff generated successfully ($(($diffOutput -split "`n").Count) lines)"
+          "has_changes=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Request AI code review
+        id: ai_review
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        shell: pwsh
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          REVIEW_PROMPT: ${{ inputs.review_prompt }}
+        run: |
+          # Read diff file
+          if (-not (Test-Path "tmp/diff.patch")) {
+            Write-Error "Diff file not found"
+            exit 1
+          }
+          
+          $diffContent = Get-Content "tmp/diff.patch" -Raw
+          
+          # Prepare AI review prompt
+          $defaultPrompt = @"
+You are an expert code reviewer. Analyze the following git diff and provide:
+1. Summary of changes
+2. Potential issues or bugs
+3. Security concerns
+4. Performance considerations
+5. Best practices recommendations
+6. Code quality improvements
+
+Focus on actionable feedback. Be concise but thorough.
+
+Diff:
+$diffContent
+"@
+          
+          $prompt = if ($env:REVIEW_PROMPT) { 
+            "$env:REVIEW_PROMPT`n`nDiff:`n$diffContent" 
+          } else { 
+            $defaultPrompt 
+          }
+          
+          # Prepare API request
+          $headers = @{
+            "Content-Type" = "application/json"
+            "Authorization" = "Bearer $env:OPENAI_API_KEY"
+          }
+          
+          $body = @{
+            model = $env:AI_MODEL
+            messages = @(
+              @{
+                role = "user"
+                content = $prompt
+              }
+            )
+            max_tokens = [int]$env:MAX_TOKENS
+            temperature = [double]$env:TEMPERATURE
+          } | ConvertTo-Json -Depth 10
+          
+          Write-Host "Requesting AI review (model: $env:AI_MODEL)..."
+          
+          try {
+            $response = Invoke-RestMethod `
+              -Uri "https://api.openai.com/v1/chat/completions" `
+              -Method Post `
+              -Headers $headers `
+              -Body $body `
+              -TimeoutSec 120
+            
+            $reviewContent = $response.choices[0].message.content
+            
+            # Save review to file
+            $reviewContent | Out-File -FilePath "tmp/ai_review_output.md" -Encoding utf8
+            
+            # Set output for GitHub Actions (handle multiline)
+            $reviewEscaped = $reviewContent -replace '%', '%25' -replace '\r', '%0D' -replace '\n', '%0A'
+            "review=$reviewEscaped" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            
+            Write-Host "✅ AI review completed successfully"
+          }
+          catch {
+            Write-Error "Failed to get AI review: $_"
+            Write-Error $_.Exception.Message
+            exit 1
+          }
+
+      - name: Display review results
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        shell: pwsh
+        run: |
+          Write-Host "## 🤖 AI Code Review Results"
+          Write-Host ""
+          if (Test-Path "tmp/ai_review_output.md") {
+            Get-Content "tmp/ai_review_output.md"
+          }
+
+      - name: Upload AI review as artifact
+        if: steps.generate_diff.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-code-review-${{ github.run_number }}
+          path: |
+            tmp/ai_review_output.md
+            tmp/diff.patch
+          retention-days: 30
+
+      - name: Post review to PR (optional)
+        if: steps.generate_diff.outputs.has_changes == 'true' && github.event.pull_request && inputs.post_pr_comment == true
+        uses: actions/github-script@v7
+        env:
+          REVIEW_CONTENT: ${{ steps.ai_review.outputs.review }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const reviewContent = process.env.REVIEW_CONTENT;
+            if (reviewContent && reviewContent.trim() !== '') {
+              console.log("Posting AI review comment to PR...");
+              const prNumber = context.payload.pull_request.number;
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `## 🤖 AI Code Review Results\n\n${reviewContent}`
+              });
+              console.log(`✅ Successfully posted review comment to PR #${prNumber}`);
+            } else {
+              console.log("❌ No review content available to post.");
+            }
