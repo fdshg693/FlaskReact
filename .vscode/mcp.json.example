@@ -12,12 +12,22 @@
                 // NEVER COMMIT YOUR API KEY!!!!!
                 "https://mcp.tavily.com/mcp/?tavilyApiKey=<YOUR_API_KEY_HERE>",
             ]
-        }
-    },
-    // Githubの操作を行うMCP
-    "github-remote-mcp": {
-        "url": "https://api.githubcopilot.com/mcp/",
-        "type": "http"
-    }
+        },
+        // Githubの操作を行うMCP
+        // ただ、最新アップデートでGithub Copilotに組み込まれたので、なくても良いかも。
+        "github-remote-mcp": {
+			"url": "https://api.githubcopilot.com/mcp/",
+			"type": "http"
+		},
+        // ローカルに設置したMCPを使う場合の例
+        "test": {
+			"type": "stdio",
+			"command": "uv",
+			"args": [
+				"run",
+				"/Users/seiwan/CodeStudy/FlaskReact/src/llm/mcp_custom/experiments/simple_server.py"
+			]
+		}
+    },    
     "inputs": []
 }
