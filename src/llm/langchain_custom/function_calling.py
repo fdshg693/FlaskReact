@@ -2,6 +2,8 @@ from typing import List
 
 from langchain_core.tools import BaseTool
 from langchain.agents import create_agent
+from langgraph.graph.state import CompiledStateGraph
+from typing import Any
 
 from config import load_dotenv_workspace
 from llm.langchain_custom.tools.search.local_document_search import (
@@ -26,7 +28,7 @@ def function_calling(
     Returns:
         str: The result from the agent after processing the query.
     """
-    agent = create_agent(
+    agent: CompiledStateGraph[Any] = create_agent(
         model=llm_model,
         tools=tools,
     )

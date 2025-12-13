@@ -9,7 +9,7 @@
 そして、.exampleファイルは全てGit管理下にあることを確認する
 元のファイルは、GIT管理から外れていることを確認する
 
-結果はscripts/quality_check/output配下にMarkdown形式で出力される
+結果はscripts/output配下にMarkdown形式で出力される
 """
 
 from datetime import datetime

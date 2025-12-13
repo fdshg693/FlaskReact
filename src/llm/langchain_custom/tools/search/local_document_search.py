@@ -39,7 +39,12 @@ def create_search_local_text_tool(
     base_path: Path = PATHS.llm_data / "text_documents",
 ):
     """
-    List text files (first line preview) in a directory or a specific file
+    ローカルドキュメントディレクトリ内のテキストファイルを検索します。
+    Args:
+        directory_path (Optional[str]): 検索対象のディレクトリパス
+        base_path (Path): ベースとなるドキュメントディレクトリパス
+    Returns:
+        str: 検索結果のテキストリスト
     """
 
     # Determine target path
@@ -101,7 +106,5 @@ if __name__ == "__main__":
     search_tool = create_search_local_text_tool(
         base_path=PATHS.llm_data / "text_documents"
     )
-    result = search_tool.run(
-        {"directory_path": str(PATHS.llm_data / "text_documents" / "english")}
-    )
+    result = search_tool.run({"directory_path": str(PATHS.llm_data)})
     print(result)

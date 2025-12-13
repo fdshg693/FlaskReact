@@ -34,10 +34,11 @@
             "subProcess": true
         },
         {
-            "name": "Python: Current File (src layout)",
+            "name": "Python: UV Run (Current File)",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
+            "python": "${workspaceFolder}/.venv/bin/python", // Windowsなら Scripts/python.exe
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"
