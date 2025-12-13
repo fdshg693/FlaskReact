@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from langchain_community.document_loaders import PyPDFLoader
+from langchain_core.documents import Document
 from loguru import logger
-from config import load_dotenv_workspace, PATHS
+from config import load_dotenv_workspace, PATHS, ensure_path_exists
 
 
 def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
@@ -40,7 +41,7 @@ def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
             mode="single",
         )
 
-        documents = loader.lazy_load()
+        documents: Iterator[Document] = loader.lazy_load()
         docs_serializable: list[dict[str, Any]] = []
 
         for doc in documents:
@@ -70,12 +71,15 @@ if __name__ == "__main__":
         # Create output filename with format: extracted_{original_filename}_{timestamp}.txt
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         original_filename = pdf_path.stem  # Gets filename without extension
-        output_filename = f"extracted_{original_filename}_{timestamp}.txt"
-        output_file = PATHS.llm_data / "pdf" / output_filename
+        output_file = (
+            PATHS.outputs / "pdf" / f"extracted_{original_filename}_{timestamp}.txt"
+        )
+        ensure_path_exists(path=output_file, is_file=True)
 
         with output_file.open("w", encoding="utf-8") as f:
-            for doc in docs:
-                f.write(f"{doc['page_content']}\n")
+            for i, doc in enumerate(docs):
+                f.write(f"Page {i + 1}:\n{doc['page_content']}\n")
+                f.write("\n" + "=" * 80 + "\n\n")  # Separator between pages
 
         logger.info(f"Extracted {len(docs)} documents from {pdf_path}")
         logger.info(f"Saved extracted documents to {output_file}")

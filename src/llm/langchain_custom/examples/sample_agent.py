@@ -1,6 +1,6 @@
 from llm.langchain_custom import agent_run, create_agent_executor, LLMModel, AgentPrompt
 
-from llm.langchain_custom.tools.others.sample_tools import add_numbers
+from llm.langchain_custom.examples.sample_tools import add_numbers
 
 
 def main() -> None:

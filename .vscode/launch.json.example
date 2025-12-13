@@ -38,7 +38,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
-            "python": "${workspaceFolder}/.venv/bin/python", // Windowsなら Scripts/python.exe
+            "python": "${workspaceFolder}/.venv/bin/python", // Windowsなら ${workspaceFolder}/.venv/bin/Scripts/python.exe
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}/src"

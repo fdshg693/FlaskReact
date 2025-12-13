@@ -1,3 +1,8 @@
+"""
+エージェントの作成と実行に関するモジュール（langchain組み込み機能のラッパー）
+現在機能していないようなので、要修正
+"""
+
 from typing import List, Generator
 
 from langchain_core.runnables import Runnable

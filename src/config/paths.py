@@ -301,13 +301,16 @@ def ensure_path_exists(path: Path, *, is_file: bool = False) -> Path:
     Args:
         path: Path to ensure exists.
         is_file: If True, only create parent directories (not the file itself).
+                 Always set True for file paths, because if not, it will try to create a directory with the file name.
 
     Returns:
-        The path (for chaining).
+        The exact path given(for chaining).
 
     Example:
         >>> log_file = ensure_path_exists(PATHS.logs / "app.log", is_file=True)
+            This will create the logs directory if it doesn't exist.
         >>> data_dir = ensure_path_exists(PATHS.data / "cache")
+            This will create the data/cache directory if it doesn't exist.
     """
     if is_file:
         path.parent.mkdir(parents=True, exist_ok=True)

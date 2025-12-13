@@ -1,3 +1,8 @@
+"""
+シンプルなテキスト分割ツールを提供するモジュール
+RAGやドキュメント処理において、長いテキストを扱いやすいチャンクに分割するために使用されます。
+"""
+
 from __future__ import annotations
 
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
@@ -48,7 +53,7 @@ if __name__ == "__main__":
     )
 
     logger.info("Starting text splitting demonstration")
-    chunks = split_text(sample_text, chunk_size=50, chunk_overlap=10)
+    chunks: list[str] = split_text(sample_text, chunk_size=50, chunk_overlap=10)
 
     for i, chunk in enumerate(chunks, 1):
         logger.info(f"Chunk {i}: {chunk}")

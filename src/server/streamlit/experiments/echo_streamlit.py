@@ -1,3 +1,7 @@
+"""
+ユーザーの入力をそのまま反復するシンプルなStreamlitアプリ
+"""
+
 from __future__ import annotations
 
 import streamlit as st

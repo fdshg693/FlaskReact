@@ -1,3 +1,7 @@
+"""
+langchainの内部機能を利用した、低レイヤーのツール作成サンプル（まだ未運用）
+"""
+
 from langchain_core.tools import StructuredTool
 
 
