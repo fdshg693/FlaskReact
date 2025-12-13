@@ -128,12 +128,12 @@ jobs:
           # Prepare AI review prompt
           $defaultPrompt = @"
 You are an expert code reviewer. Analyze the following git diff and provide:
-1. Summary of changes
-2. Potential issues or bugs
-3. Security concerns
-4. Performance considerations
-5. Best practices recommendations
-6. Code quality improvements
+- Summary of changes
+- Potential issues or bugs
+- Security concerns
+- Performance considerations
+- Best practices recommendations
+- Code quality improvements
 
 Focus on actionable feedback. Be concise but thorough.
 
