@@ -1,7 +1,6 @@
 """LLM model and provider enums for type-safe configuration."""
 
 from enum import StrEnum
-from langchain_core.messages import HumanMessage
 
 
 class ModelProvider(StrEnum):
@@ -17,6 +16,3 @@ class LLMModel(StrEnum):
     GPT_4O = "gpt-4o"
     GPT_4O_MINI = "gpt-4o-mini"
     GPT_5 = "gpt-5"
-
-
-AgentPrompt = HumanMessage
