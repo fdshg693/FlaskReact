@@ -6,7 +6,11 @@ from __future__ import annotations
 
 import streamlit as st
 
+from config import load_dotenv_workspace
 from llm.langchain_custom.examples.simple_call import main as call_simple_model
+
+# .envを読み込む
+load_dotenv_workspace()
 
 
 def main() -> None:
