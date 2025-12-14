@@ -3,30 +3,50 @@
 現在機能していないようなので、要修正
 """
 
-from typing import List, Generator
+from typing import Iterator, List, Any
 
-from langchain_core.runnables import Runnable
 from langchain_core.tools import BaseTool
 from langchain.agents import create_agent
-from llm.langchain_custom.tools.search.local_document_search import (
-    create_search_local_text_tool,
-)
+from langgraph.graph.state import CompiledStateGraph
 
-from llm.langchain_custom.models import LLMModel, AgentPrompt
+from llm.langchain_custom.models import LLMModel
 
 
 def create_agent_executor(
     tools: List[BaseTool],
     llm_model: LLMModel = LLMModel.GPT_4O_MINI,
-) -> Runnable:
-    agent = create_agent(
+) -> CompiledStateGraph[Any]:
+    """
+    エージェントを作成する関数。
+    作られたエージェントは、指定されたツールとLLMモデルを使用して動作します。
+    Args:
+        tools (List[BaseTool]): エージェントが使用するツールのリスト。
+        llm_model (LLMModel): 使用するLLMモデル。デフォルトはGPT_4O_MINI。
+    Returns:
+        CompiledStateGraph[Any]: 作成されたエージェント。
+    Example:
+        agent = create_agent_executor(some_tools, some_llm_model)
+
+        result = agent.invoke({"messages": [{"role": "user", "content": "質問内容"}]})
+    """
+    agent: CompiledStateGraph[Any] = create_agent(
         llm_model,
         tools=tools,
     )
     return agent
 
 
-def agent_run(prompt: AgentPrompt, agent) -> Generator[AgentPrompt, None, None]:
+def agent_run(prompt: str, agent: CompiledStateGraph[Any]) -> Iterator[Any]:
+    """
+    エージェントを実行し、ステップごとに結果を生成する関数。
+    Args:
+        prompt (str): ユーザーからの入力プロンプト。
+        agent (CompiledStateGraph[Any]): 実行するエージェント。
+    Yields:
+        Iterator[Any]: エージェントの各ステップの結果を順次生成。
+    Example:
+        results = agent_run("質問内容", agent)
+    """
     result = agent.invoke(
         {"messages": [{"role": "user", "content": prompt}]},
     )
@@ -37,11 +57,13 @@ def agent_run(prompt: AgentPrompt, agent) -> Generator[AgentPrompt, None, None]:
 
 
 if __name__ == "__main__":
-    document_search_tool: BaseTool = create_search_local_text_tool()
-    tools: List[BaseTool] = [document_search_tool]
-    agent = create_agent_executor(tools)
-    search_query: str = "名前順にテキストファイルを並べてください。"
-    function_result: Generator[AgentPrompt, None, None] = agent_run(search_query, agent)
+    from llm.langchain_custom.examples.sample_tools import add_numbers
+
+    sample_tools: List[BaseTool] = [add_numbers]
+    sample_agent: CompiledStateGraph[Any] = create_agent_executor(sample_tools)
+    search_query: str = "ツールを使って2+3+6を計算してください"
+    function_result: Iterator[Any] = agent_run(prompt=search_query, agent=sample_agent)
     for idx, res in enumerate(function_result):
         print(f"---- STEP {idx} ----")
         print(res)
+        print("\n")

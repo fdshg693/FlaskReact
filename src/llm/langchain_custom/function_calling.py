@@ -1,9 +1,8 @@
-from typing import List
+from typing import List, Any
 
 from langchain_core.tools import BaseTool
 from langchain.agents import create_agent
 from langgraph.graph.state import CompiledStateGraph
-from typing import Any
 
 from config import load_dotenv_workspace
 from llm.langchain_custom.tools.search.local_document_search import (

@@ -5,6 +5,10 @@ from typing import List
 @tool
 def add_numbers(nums: List[float]) -> float:
     """Add a list of numbers together."""
+    print("=" * 20)
+    print("add_numbers called")
+    print(f"Adding numbers: {nums}")
+    print("=" * 20)
     return sum(nums)
 
 
