@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+from typing import Literal, TypedDict
 
 from config import load_dotenv_workspace
 
@@ -9,9 +10,9 @@ load_dotenv_workspace()
 client = OpenAI()
 
 
-def call_simple_model(prompt: str) -> str:
-    response = client.responses.create(model="gpt-5-nano", input=prompt)
-    return response.output_text
+class ChatMessage(TypedDict):
+    role: Literal["user", "assistant"]
+    content: str
 
 
 def main() -> None:
@@ -22,6 +23,12 @@ def main() -> None:
         "Single-turn Q&A Streamlit chat using your shared LangChain model initializer."
     )
 
+    # セッションの状態を初期化
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = []
+
+    messages = st.session_state["messages"]
+
     with st.sidebar:
         with st.expander("🔍 Debug: Session State", expanded=False):
             st.json(dict(st.session_state))
@@ -30,6 +37,7 @@ def main() -> None:
 
     # On submit, render only the current exchange.
     if prompt:
+        messages.append({"role": "user", "content": prompt})
         st.chat_message("user").markdown(prompt)
 
         with st.chat_message("assistant"):
@@ -62,3 +70,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def call_simple_model(prompt: str) -> str:
+    response = client.responses.create(model="gpt-5-nano", input=prompt)
+    return response.output_text
