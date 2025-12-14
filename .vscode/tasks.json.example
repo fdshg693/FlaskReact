@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Pytest: All",
+            "label": "すべてのpytestを実行",
             "type": "shell",
             "command": "uv",
             "args": [
@@ -19,7 +19,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Pytest: Current File",
+            "label": "現在開いているファイルのpytestを実行",
             "type": "shell",
             "command": "uv",
             "args": [
@@ -37,7 +37,7 @@
             "problemMatcher": []
         },
         {
-            "label": "Pytest: Choose File/Pattern",
+            "label": "pytest: ファイル/パターンを選択して実行",
             "type": "shell",
             "command": "uv",
             "args": [
@@ -55,31 +55,9 @@
             "problemMatcher": []
         },
         {
-            "label": "Pytest: Current File",
-            "type": "shell",
-            "command": "uv",
-            "args": [
-                "run",
-                "pytest",
-                "-q",
-                "${file}"
-            ],
-            "isBackground": false,
-            "problemMatcher": [],
-            "group": "none"
-        },
-        {
-            "label": "ruff check & format(for shell)",
+            "label": "RUFFを実行して自動修正",
             "type": "shell",
             "command": "uv run ruff check . --fix && uv run ruff format .",
-            "isBackground": false,
-            "problemMatcher": [],
-            "group": "none"
-        },
-        {
-            "label": "ruff check & format(for windows",
-            "type": "shell",
-            "command": "uv run ruff check . --fix & uv run ruff format .",
             "isBackground": false,
             "problemMatcher": [],
             "group": "none"
@@ -89,7 +67,7 @@
         {
             "id": "pytestFile",
             "type": "promptString",
-            "description": "Path or pytest pattern (e.g., tests/test_csv_plot.py or tests/test_csv_plot.py::TestClass::test_func or -k expr)",
+            "description": "パスか、pytestのパターン(e.g., tests/test_csv_plot.py or tests/test_csv_plot.py::TestClass::test_func or -k expr)",
             "default": "tests/test_*.py"
         }
     ]

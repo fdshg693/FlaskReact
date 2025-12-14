@@ -8,7 +8,7 @@ from ml.numeric.dataset import MLDatasetConverter
 
 
 def test_dataframe_to_ml_dataset_happy_path():
-    df = pd.DataFrame(
+    df: pd.DataFrame = pd.DataFrame(
         {
             "data": [
                 [1.0, 2.0, 3.0],

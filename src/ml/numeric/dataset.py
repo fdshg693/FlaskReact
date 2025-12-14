@@ -5,7 +5,6 @@ from typing import Any, Iterable
 
 import numpy as np
 import pandas as pd
-from data_util.csv_util import read_csv_into_dataframe
 from loguru import logger
 from pydantic import (
     BaseModel,
@@ -15,6 +14,8 @@ from pydantic import (
     field_validator,
 )
 from sklearn.utils import Bunch
+
+from util.data_handler.csv_util import read_csv_into_dataframe
 
 
 class MLCompatibleDataset(BaseModel):
@@ -334,7 +335,7 @@ class MLDatasetConverter:
         encoding: str | None = None,
         dropna: bool = False,
         # 共通パラメータ
-        dtype: np.dtype | None = np.float32,
+        dtype: np.dtype,
     ) -> MLCompatibleDataset:
         """
         入力データの型を自動判定し、適切な変換メソッドを呼び出す。

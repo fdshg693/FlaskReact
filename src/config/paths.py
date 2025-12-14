@@ -6,18 +6,24 @@ from pathlib import Path
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
-# Flag to control singleton instantiation
+# シングルトンビルド中フラグ
+# 基本FALSEに設定して、このファイル内のシングルトンインスタンス生成の直前にTRUEに設定する（生成後はFALSEに戻す）
+# シングルトンPROJECTPATHSが唯一のインスタンスであることを保証し、直接インスタンス化を警告するために使用する
 _BUILDING_SINGLETON = False
 
 
 class Paths(BaseModel):
-    """Immutable container for project paths.
+    """
+    プロジェクトパスを格納したシングルトンPROJECTPATHSを作成するためのクラス。
 
-    Use PATHS (module-level singleton) for common access:
-        from config import PATHS
-        data_dir = PATHS.data
+    Note;
+        直接のインスタンス化は行わない。
+        不変オブジェクトとして振る舞う。
 
-    Note: Direct instantiation is prevented. Use the module-level PATHS singleton.
+    Examples:
+        >>> from config.paths import PROJECTPATHS
+        >>> print(PROJECTPATHS.data)
+        /path/to/project/data
     """
 
     # root
@@ -47,29 +53,42 @@ class Paths(BaseModel):
 
     llm_data: Path
 
-    # Prevent modification after creation
+    # Pydanticモデルとしての振る舞いの設定
+    # arbitrary_types_allowed=True -> Path型などのPydanticモデル外の型を許可
+    # frozen=True -> インスタンスを不変にする
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
+    # field_validatorは、モデルのフィールドごとにバリデーションを行うためのデコレータ。
+    # "*"は全フィールドを意味するワイルドカード。全てのPathフィールドに対して適用される。
+    # mode="before"は、自動型変換などのバリデーションが行われる前にこのメソッドが呼び出されることを意味する。
     @field_validator("*", mode="before")
     @classmethod
     def _ensure_path_type(cls, value: object) -> Path:
-        """Ensure all fields are Path instances (not strings or other types)."""
+        """
+        全てのPathフィールドに対して、strが渡された場合にPathに変換するバリデータ。
+        """
         if isinstance(value, Path):
             return value
         if isinstance(value, str):
-            logger.warning(
-                "Converting string to Path (prefer passing Path objects): {}", value
+            import warnings
+
+            warnings.warn(
+                f"Converting string to Path (prefer passing Path objects): {value}",
+                UserWarning,
+                stacklevel=3,
             )
             return Path(value)
         msg = f"Expected Path or str, got {type(value).__name__}"
         raise TypeError(msg)
 
+    # model_validatorは、モデル全体のバリデーションを行うためのデコレータ。
+    # mode="after"は、全てのフィールドのバリデーションが終わった後にこのメソッドが呼び出されることを意味する。
     @model_validator(mode="after")
     def _validate_paths(self) -> Paths:
         """Validate that all paths are properly formed."""
         global _BUILDING_SINGLETON  # noqa: PLW0603
 
-        # Warn if instantiated outside singleton pattern
+        # シングルトン以外での直接インスタンス化を警告
         if not _BUILDING_SINGLETON:
             import warnings
 
@@ -86,57 +105,24 @@ class Paths(BaseModel):
             # Convert to absolute
             object.__setattr__(self, "project_root", self.project_root.resolve())
 
-        # Enforce that certain fields are immediate children of project_root.
-        # This ensures the canonical layout: <project_root>/src, <project_root>/data, etc.
-        top_level_fields = ("src", "data", "frontend", "logs")
-        for name in top_level_fields:
-            value = getattr(self, name)
-            # Use resolve() to normalize symlinks/relative bits
-            val_parent = value.resolve().parent
-            root_resolved = self.project_root.resolve()
-            if val_parent != root_resolved:
-                msg = (
-                    f"Paths.{name} must be a direct child of project_root ({root_resolved}), "
-                    f"but is: {value.resolve()}"
-                )
-                logger.error(msg)
-                raise ValueError(msg)
-
-        # Ensure dataset file paths live under ml_data
-        dataset_paths = (
-            ("iris_data_path", self.iris_data_path),
-            ("diabetes_data_path", self.diabetes_data_path),
-            ("titanic_test_data_path", self.titanic_test_data_path),
-            ("titanic_train_data_path", self.titanic_train_data_path),
-        )
-        for name, p in dataset_paths:
-            # Python 3.9+ has is_relative_to() - no fallback needed
-            if not p.resolve().is_relative_to(self.ml_data.resolve()):
-                msg = f"Paths.{name} must be located under ml_data ({self.ml_data.resolve()}), but is: {p.resolve()}"
-                logger.error(msg)
-                raise ValueError(msg)
-
         logger.debug("Paths instance validated successfully")
         return self
 
     @classmethod
     def _build(cls, root: Path | None = None) -> Paths:
-        """Build a Paths instance from project root.
-
-        INTERNAL USE ONLY - Use the module-level PATHS singleton instead.
-
-        If root is None, it tries:
-        1) env var PROJECT_ROOT
-        2) two-level parent from this file (repo root)
+        """
+        シングルトンPROJECTPATHSを構築するためのクラスメソッド。
+        外部からこのメソッドを呼び出してインスタンス化しないこと。
 
         Args:
-            root: Optional project root path. If None, auto-detected.
+            root: このプロジェクトのルートパス。Noneの場合、自動検出される。
+            Noneの場合、環境変数PROJECT_ROOTから取得し、設定されていない場合はこのファイルの2階層上をルートとする。
 
         Returns:
-            Configured Paths instance.
+            Paths: 構築されたPathsインスタンス。
 
         Raises:
-            RuntimeError: If project root cannot be determined.
+            RuntimeError: プロジェクトルートが特定できない場合に発生。
         """
         if root is None:
             env_root = os.getenv("PROJECT_ROOT")
@@ -144,7 +130,7 @@ class Paths(BaseModel):
                 root = Path(env_root).resolve()
                 logger.debug("Using PROJECT_ROOT from env: {}", root)
             else:
-                # src/config/paths.py -> parents[2] == repo root
+                # repo root/src/config/paths.py -> parents[2] == repo root/
                 root = Path(__file__).resolve().parents[2]
                 logger.debug("Using inferred project root: {}", root)
 
@@ -222,7 +208,7 @@ class Paths(BaseModel):
         )
 
 
-# Singleton instance to be imported across the app
+# このファイルのこの部分でのみシングルトンインスタンスを構築可能にする
 _BUILDING_SINGLETON = True
 PROJECTPATHS: Paths = Paths._build()
 _BUILDING_SINGLETON = False
