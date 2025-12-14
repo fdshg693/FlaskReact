@@ -12,7 +12,7 @@ import numpy as np
 from loguru import logger
 from PIL import Image, ImageDraw
 
-from config import PATHS, ensure_path_exists
+from config import PROJECTPATHS, ensure_path_exists
 
 # TODO: tqdmによるプログレスバー・typerによるCLI強化
 # PYTEST追加
@@ -235,7 +235,7 @@ def create_test_image(
 
 
 def create_test_dataset(
-    base_dir: Path | None = PATHS.ml_image_data,
+    base_dir: Path | None = PROJECTPATHS.ml_image_data,
     classes: list[str] | None = ["oak", "pine", "birch"],
     images_per_class: int = DEFAULT_IMAGES_PER_CLASS,
     image_width: int = DEFAULT_IMAGE_WIDTH,
@@ -352,4 +352,4 @@ def create_test_dataset(
 
 
 if __name__ == "__main__":
-    create_test_dataset(base_dir=PATHS.ml_image_data, images_per_class=3)
+    create_test_dataset(base_dir=PROJECTPATHS.ml_image_data, images_per_class=3)

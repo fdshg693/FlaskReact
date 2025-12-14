@@ -7,7 +7,7 @@ from typing import Any
 from langchain_openai import ChatOpenAI
 from loguru import logger
 
-from config import PATHS
+from config import PROJECTPATHS
 from llm.langchain_custom.models import LLMModel
 
 """
@@ -104,7 +104,7 @@ def analyze_image_from_url(image_url: str) -> str:
 
 def test_analyze_image_raw():
     """Test function for analyze_image_raw."""
-    img_path: Path = PATHS.llm_data / "image" / "fish1.png"
+    img_path: Path = PROJECTPATHS.llm_data / "image" / "fish1.png"
 
     if not img_path.exists():
         logger.error(f"Image file not found: {img_path}")

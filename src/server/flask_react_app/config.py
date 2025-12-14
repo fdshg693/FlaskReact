@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from config import PATHS, load_dotenv_workspace
+from config import PROJECTPATHS, load_dotenv_workspace
 
 
 def init_env() -> None:
@@ -66,19 +66,19 @@ class Settings(BaseSettings):
     # TODO: ファイルが存在しない場合のデフォルトの動作を定義する必要あり
     # TODO: パスの記述方法をべた書きから変更する必要あり（修正案：①環境変数で指定可能にする,②最新のモデルを自動検出する関数を作成,③設定ファイル(YAML/JSON)で管理）
     # モデルのファイルパス設定
-    app_root: Path = Field(default_factory=lambda: PATHS.src)
+    app_root: Path = Field(default_factory=lambda: PROJECTPATHS.src)
     model_path: Path = Field(
-        default_factory=lambda: PATHS.ml_outputs
+        default_factory=lambda: PROJECTPATHS.ml_outputs
         / "param"
         / "models_20250712_021710.pth_validation"  # 検証用に`_validation`を追加中
     )
     scaler_path: Path = Field(
-        default_factory=lambda: PATHS.ml_outputs
+        default_factory=lambda: PROJECTPATHS.ml_outputs
         / "scaler"
         / "scaler.joblib_validation"  # 検証用に`_validation`を追加中
     )
     checkpoint_path: Path = Field(
-        default_factory=lambda: PATHS.ml_outputs
+        default_factory=lambda: PROJECTPATHS.ml_outputs
         / "checkpoints"
         / "2025_09_06_20_49_09_img128_layer3_hidden4096_3class_dropout0.2_scale1.5_test_dataset"
         / "best_accuracy.pth_validation"  # 検証用に`_validation`を追加中

@@ -8,7 +8,7 @@ from loguru import logger
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 
-from config import PATHS
+from config import PROJECTPATHS
 from server.flask_react_app.api import image_bp, iris_bp, pdf_bp, text_bp
 from server.flask_react_app.config import get_settings
 from server.flask_react_app.pages import pages_bp
@@ -136,7 +136,7 @@ def create_app() -> Flask:
     """
 
     # src/server/config/paths.pyから該当パスのインスタンスを生成
-    static_dir = PATHS.flask_static
+    static_dir = PROJECTPATHS.flask_static
     # Flaskクラスの引数の意味[__name__: モジュール名。Flaskはこれを使ってリソースの場所を特定する。][#static_folder: staticのディレクトリパス。][#static_url_path: staticにアクセスするためのURLパス。]
     # static_url_pathを空文字列にすることで、各ページディレクトリ配下のアセット(home/js/App.js等)を直接参照可能にする
     app = Flask(__name__, static_folder=str(static_dir), static_url_path="")

@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 from loguru import logger
 
-from config import PATHS
+from config import PROJECTPATHS
 
 
 def store_model_and_learning_logs(
@@ -57,7 +57,7 @@ def store_model_and_learning_logs(
 
     # プロジェクトルートの決定
     if log_dirs_root is None:
-        log_dirs_root = PATHS.ml_outputs
+        log_dirs_root = PROJECTPATHS.ml_outputs
 
     # 保存先ディレクトリの設定 (実験ごとのフォルダを作成)
     experiment_dir = log_dirs_root / experiment_name

@@ -6,7 +6,7 @@ import numpy as np
 import torch.nn as nn
 from loguru import logger
 
-from config import PATHS
+from config import PROJECTPATHS
 from ml.numeric.dataset import MLCompatibleDataset
 from ml.numeric.models.base_model import BaseMLModel
 from ml.numeric.models.classification_model import ClassificationMLModel
@@ -51,7 +51,7 @@ def execute_machine_learning_pipeline(
         experiment_name = time.strftime("%Y%m%d_%H%M%S")
 
     if log_dirs_root is None:
-        log_dirs_root = PATHS.ml_outputs
+        log_dirs_root = PROJECTPATHS.ml_outputs
 
     save_dir = log_dirs_root / experiment_name
 

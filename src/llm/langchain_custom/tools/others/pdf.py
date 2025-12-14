@@ -8,7 +8,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from loguru import logger
 
-from config import PATHS, ensure_path_exists
+from config import PROJECTPATHS, ensure_path_exists
 
 
 def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     from config import load_dotenv_workspace
 
     load_dotenv_workspace()
-    pdf_path = PATHS.llm_data / "pdf" / "sample.pdf"
+    pdf_path = PROJECTPATHS.llm_data / "pdf" / "sample.pdf"
 
     logger.info("Starting PDF text extraction demonstration")
 
@@ -74,7 +74,9 @@ if __name__ == "__main__":
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         original_filename = pdf_path.stem  # Gets filename without extension
         output_file = (
-            PATHS.outputs / "pdf" / f"extracted_{original_filename}_{timestamp}.txt"
+            PROJECTPATHS.outputs
+            / "pdf"
+            / f"extracted_{original_filename}_{timestamp}.txt"
         )
         ensure_path_exists(path=output_file, is_file=True)
 

@@ -8,7 +8,7 @@ import pandas as pd
 from data_util.csv_util import read_csv_into_dataframe
 from loguru import logger
 
-from config import PATHS, get_path
+from config import PROJECTPATHS, get_path
 
 
 def plot_histograms_from_dataframe(
@@ -227,7 +227,7 @@ def plot_scatter_from_dataframe(
 
 if __name__ == "__main__":
     df_example = read_csv_into_dataframe(
-        PATHS.iris_data_path,
+        PROJECTPATHS.iris_data_path,
         encoding="utf-8",
     )
 
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     #     encoding="utf-8",
     # )
 
-    dir_path = get_path("outputs", root=PATHS.tmp, create=True)
+    dir_path = get_path("outputs", root=PROJECTPATHS.tmp, create=True)
 
     # plot_boxplots_from_dataframe(
     #     df_example,

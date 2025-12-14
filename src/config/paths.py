@@ -224,7 +224,7 @@ class Paths(BaseModel):
 
 # Singleton instance to be imported across the app
 _BUILDING_SINGLETON = True
-PATHS: Paths = Paths._build()
+PROJECTPATHS: Paths = Paths._build()
 _BUILDING_SINGLETON = False
 
 
@@ -248,7 +248,7 @@ def get_path(
         >>> p = get_path("data", "new_dir", create=True)
         >>> p = get_path(Path("outputs"), "results", root=PATHS.project_root)
     """
-    base = root or PATHS.project_root
+    base = root or PROJECTPATHS.project_root
     p = base.joinpath(*[str(part) for part in parts])
 
     if create:
@@ -279,7 +279,7 @@ def find_paths(
         >>> py_files = find_paths("*.py", recursive=False)
         >>> all_json = find_paths("**/*.json")
     """
-    base = root or PATHS.project_root
+    base = root or PROJECTPATHS.project_root
 
     try:
         if recursive:
@@ -322,4 +322,4 @@ def ensure_path_exists(path: Path, *, is_file: bool = False) -> Path:
     return path
 
 
-__all__ = ["Paths", "PATHS", "get_path", "find_paths", "ensure_path_exists"]
+__all__ = ["Paths", "PROJECTPATHS", "get_path", "find_paths", "ensure_path_exists"]

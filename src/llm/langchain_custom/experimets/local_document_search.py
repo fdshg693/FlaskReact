@@ -9,7 +9,7 @@ from typing import Callable, List, Optional, TypeVar
 from langchain_core.tools import BaseTool, tool
 from loguru import logger
 
-from config import PATHS
+from config import PROJECTPATHS
 
 # Security constants
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB limit to prevent memory issues
@@ -30,7 +30,7 @@ def decorator(func: Callable[..., T]) -> Callable[..., BaseTool]:
     """
 
     def wrapper(
-        base_path: Path = PATHS.llm_data / "text_documents",
+        base_path: Path = PROJECTPATHS.llm_data / "text_documents",
     ) -> BaseTool:
         """
         base_pathを固定したツール関数を返す
@@ -68,7 +68,7 @@ def decorator(func: Callable[..., T]) -> Callable[..., BaseTool]:
 @decorator
 def create_search_local_text_tool(
     search_directory_path: Optional[Path | str] = None,
-    base_path: Path = PATHS.llm_data / "text_documents",
+    base_path: Path = PROJECTPATHS.llm_data / "text_documents",
 ) -> str:
     """
     ローカルドキュメントディレクトリ内のテキストファイルを検索します。
@@ -81,7 +81,7 @@ def create_search_local_text_tool(
 
     # デフォルトでは、base_path配下のtext_documentsディレクトリ配下のみを検索可能とする
     if not search_directory_path:
-        search_directory_path = PATHS.llm_data / "text_documents"
+        search_directory_path = PROJECTPATHS.llm_data / "text_documents"
 
     if isinstance(search_directory_path, str):
         search_directory_path = base_path / search_directory_path
@@ -152,8 +152,8 @@ if __name__ == "__main__":
     # 特定のサブディレクトリを指定してテスト
     print("\nTesting with specific subdirectory:")
     search_tool: BaseTool = create_search_local_text_tool(
-        base_path=PATHS.llm_data / "text_documents"
+        base_path=PROJECTPATHS.llm_data / "text_documents"
     )
     # base_pathより上の階層にアクセスしようとしているので、警告が出ることを期待
-    result = search_tool.run({"search_directory_path": PATHS.llm_data})
+    result = search_tool.run({"search_directory_path": PROJECTPATHS.llm_data})
     print(result)

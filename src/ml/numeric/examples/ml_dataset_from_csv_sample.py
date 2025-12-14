@@ -1,6 +1,6 @@
 from loguru import logger
 
-from config import PATHS
+from config import PROJECTPATHS
 from ml.numeric.dataset import MLCompatibleDataset, MLDatasetConverter
 from ml.numeric.pipeline import (
     execute_machine_learning_pipeline,
@@ -8,7 +8,7 @@ from ml.numeric.pipeline import (
 )
 
 iris_data: MLCompatibleDataset = MLDatasetConverter.convert(
-    PATHS.iris_data_path,
+    PROJECTPATHS.iris_data_path,
     features=[
         "sepal length (cm)",
         "sepal width (cm)",

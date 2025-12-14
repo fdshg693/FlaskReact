@@ -27,8 +27,8 @@ def load_dotenv_workspace(env_path: Path | None = None, override=False) -> None:
         overrideはload_dotenv関数に渡され、既存の環境変数を上書きするかどうかを制御します。
     """
     if env_path is None:
-        from config.paths import PATHS
+        from config.paths import PROJECTPATHS
 
-        env_path = PATHS.project_root / ".env"
+        env_path = PROJECTPATHS.project_root / ".env"
 
     load_dotenv(dotenv_path=env_path, override=override)
