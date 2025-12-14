@@ -16,17 +16,17 @@ import pytest
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from deploy_agents import (  # noqa: E402
+from github_template.deployers.deploy_agents import (  # noqa: E402
     deploy_agents,
     filter_by_patterns,
     generate_dest_filename,
     process_agent_file,
 )
-from util.substitution_utils import (  # noqa: E402
+from github_template.util.substitution_utils import (  # noqa: E402
     get_output_values_without_name,
     substitute_custom_variables,
 )
-from util.yaml_utils import (  # noqa: E402
+from github_template.util.yaml_utils import (  # noqa: E402
     extract_custom_inputs,
     extract_outputs,
     parse_frontmatter,

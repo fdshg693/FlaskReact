@@ -1374,28 +1374,10 @@ multidict==6.7.0 \
     # via
     #   aiohttp
     #   yarl
-mypy==1.18.2 \
-    --hash=sha256:06a398102a5f203d7477b2923dda3634c36727fa5c237d8f859ef90c42a9924b \
-    --hash=sha256:07b8b0f580ca6d289e69209ec9d3911b4a26e5abfde32228a288eb79df129fcc \
-    --hash=sha256:0e2785a84b34a72ba55fb5daf079a1003a34c05b22238da94fcae2bbe46f3544 \
-    --hash=sha256:20c02215a080e3a2be3aa50506c67242df1c151eaba0dcbc1e4e557922a26075 \
-    --hash=sha256:22a1748707dd62b58d2ae53562ffc4d7f8bcc727e8ac7cbc69c053ddc874d47e \
-    --hash=sha256:62f0e1e988ad41c2a110edde6c398383a889d95b36b3e60bcf155f5164c4fdce \
-    --hash=sha256:6ca1e64b24a700ab5ce10133f7ccd956a04715463d30498e64ea8715236f9c9c \
-    --hash=sha256:749b5f83198f1ca64345603118a6f01a4e99ad4bf9d103ddc5a3200cc4614adf \
-    --hash=sha256:7ab28cc197f1dd77a67e1c6f35cd1f8e8b73ed2217e4fc005f9e6a504e46e7ba \
-    --hash=sha256:8795a039bab805ff0c1dfdb8cd3344642c2b99b8e439d057aba30850b8d3423d \
-    --hash=sha256:a431a6f1ef14cf8c144c6b14793a23ec4eae3db28277c358136e79d7d062f62d \
-    --hash=sha256:c3ad2afadd1e9fea5cf99a45a822346971ede8685cc581ed9cd4d42eaf940986 \
-    --hash=sha256:d924eef3795cc89fecf6bedc6ed32b33ac13e8321344f6ddbf8ee89f706c05cb \
-    --hash=sha256:ed4482847168439651d3feee5833ccedbf6657e964572706a2adb1f7fa4dfe2e
-    # via flaskreact
 mypy-extensions==1.1.0 \
     --hash=sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505 \
     --hash=sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558
-    # via
-    #   mypy
-    #   typing-inspect
+    # via typing-inspect
 narwhals==2.10.1 \
     --hash=sha256:d6e3a9b1c0904a82984dec58a3d12b3bc08e9d61bbee639e7bb05349e663d036 \
     --hash=sha256:eed3d9ec8f821963456fef306c1ad11017995982169fca1f38f71c97d6a97b9b
@@ -1404,6 +1386,10 @@ networkx==3.5 \
     --hash=sha256:0030d386a9a06dee3565298b4a734b68589749a544acbb6c412dc9e2489ec6ec \
     --hash=sha256:d4c6f9cf81f52d69230866796b82afbccdec3db7ae4fbd1b65ea750feed50037
     # via torch
+nodeenv==1.9.1 \
+    --hash=sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f \
+    --hash=sha256:ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9
+    # via pyright
 numpy==2.2.6 \
     --hash=sha256:038613e9fb8c72b0a41f025a7e4c3f0b7a1b5d768ece4796b674c8f3fe13efff \
     --hash=sha256:0811bb762109d9708cca4d0b13c4f67146e3c3b7cf8d34018c722adb2d957c84 \
@@ -1674,10 +1660,6 @@ pathable==0.4.4 \
     --hash=sha256:5ae9e94793b6ef5a4cbe0a7ce9dbbefc1eec38df253763fd0aeeacf2762dbbc2 \
     --hash=sha256:6905a3cd17804edfac7875b5f6c9142a218c7caef78693c2dbbbfbac186d88b2
     # via jsonschema-path
-pathspec==0.12.1 \
-    --hash=sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08 \
-    --hash=sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712
-    # via mypy
 pathvalidate==3.3.1 \
     --hash=sha256:5263baab691f8e1af96092fa5137ee17df5bdfbd6cff1fcac4d6ef4bc2e1735f \
     --hash=sha256:b18c07212bfead624345bb8e1d6141cdcf15a39736994ea0b94035ad2b1ba177
@@ -2075,6 +2057,10 @@ pyreadline3==3.5.4 ; sys_platform == 'win32' \
     --hash=sha256:8d57d53039a1c75adba8e50dd3d992b28143480816187ea5efbd5c78e6c885b7 \
     --hash=sha256:eaf8e6cc3c49bcccf145fc6067ba8643d1df34d604a1ec0eccbf7a18e6d3fae6
     # via humanfriendly
+pyright==1.1.407 \
+    --hash=sha256:099674dba5c10489832d4a4b2d302636152a9a42d317986c38474c76fe562262 \
+    --hash=sha256:6dd419f54fcc13f03b52285796d65e639786373f433e243f8b94cf93a7444d21
+    # via flaskreact
 pytest==8.4.2 \
     --hash=sha256:86c0d0b93306b961d58d62a4db4879f27fe25513d4b969df351abdddb3c30e01 \
     --hash=sha256:872f880de3fc3a5bdc88a11b39c9710c3497a547cfa9320bc3c5e62fbf272e79
@@ -2619,7 +2605,6 @@ typing-extensions==4.15.0 \
     #   grpcio
     #   huggingface-hub
     #   langchain-core
-    #   mypy
     #   openai
     #   openai-agents
     #   opentelemetry-api
@@ -2629,6 +2614,7 @@ typing-extensions==4.15.0 \
     #   py-key-value-shared
     #   pydantic
     #   pydantic-core
+    #   pyright
     #   sqlalchemy
     #   streamlit
     #   torch
