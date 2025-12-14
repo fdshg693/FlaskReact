@@ -1,8 +1,9 @@
-from langchain_core.documents import Document
-from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
 from typing import List
+
+from langchain_chroma import Chroma
+from langchain_core.documents import Document
 from langchain_core.runnables import chain
+from langchain_openai import OpenAIEmbeddings
 
 embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 

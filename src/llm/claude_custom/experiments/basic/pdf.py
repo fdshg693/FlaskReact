@@ -1,5 +1,6 @@
-import anthropic
 import base64
+
+import anthropic
 import httpx
 
 # 形式: https://raw.githubusercontent.com/{username}/{repo}/{branch}/{path/to/file.pdf}

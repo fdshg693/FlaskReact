@@ -1,13 +1,15 @@
 """Visualization utilities for training and evaluation."""
 
 import os
-import numpy as np
+
 import cv2
 import matplotlib
+import numpy as np
 
 matplotlib.use("Agg")  # Use non-interactive backend
-import matplotlib.pyplot as plt
 from typing import List, Optional
+
+import matplotlib.pyplot as plt
 import torch
 
 

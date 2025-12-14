@@ -4,8 +4,9 @@
 
 from __future__ import annotations
 
-import streamlit as st
 import time
+
+import streamlit as st
 
 
 def main() -> None:

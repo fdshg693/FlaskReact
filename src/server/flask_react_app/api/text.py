@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, request, Response
-from pydantic import BaseModel, Field, ValidationError
+from flask import Blueprint, Response, jsonify, request
 from loguru import logger
+from pydantic import BaseModel, Field, ValidationError
 
-from llm.langchain_custom.tools.others.text_splitter import split_text
+from llm.langchain_custom.tools.others.text_splitter import _split_text
 
 __all__ = ["text_bp"]
 
@@ -39,7 +39,7 @@ def handle_text_split_request() -> Response:
             }
         ), 400
 
-    chunks = split_text(
+    chunks = _split_text(
         body.text, chunk_size=body.chunk_size, chunk_overlap=body.validated_overlap
     )
     return jsonify({"chunks": chunks})

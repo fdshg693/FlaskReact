@@ -1,10 +1,11 @@
 import asyncio
 import subprocess
 import time
-from fastmcp import Client
 from pathlib import Path
-from fastmcp.client.client import CallToolResult
+
 import mcp as default_mcp
+from fastmcp import Client
+from fastmcp.client.client import CallToolResult
 
 client: Client = Client("http://localhost:8080/mcp")
 

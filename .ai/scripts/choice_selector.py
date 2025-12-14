@@ -9,8 +9,8 @@ Usage:
     python choice_selector.py --no-other "Your message" "Choice1" "Choice2"
 """
 
-import sys
 import platform
+import sys
 
 if platform.system() == "Windows":
     import msvcrt
@@ -29,8 +29,8 @@ if platform.system() == "Windows":
                 return "enter"
         return None
 else:
-    import tty
     import termios
+    import tty
 
     def get_arrow_key():
         """Read arrow key input on Unix/macOS."""

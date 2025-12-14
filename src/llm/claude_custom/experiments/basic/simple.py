@@ -1,7 +1,7 @@
 import anthropic
 from anthropic import Anthropic
 from anthropic.resources import Messages
-from anthropic.types import Message, ContentBlock, TextBlock
+from anthropic.types import ContentBlock, Message, TextBlock
 
 client: Anthropic = anthropic.Anthropic()
 

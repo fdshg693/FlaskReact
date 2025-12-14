@@ -2,10 +2,11 @@
 OpenWeatherMap APIを使用して日本の主要都市の天気予報を表示するStreamlitアプリケーション
 """
 
-import streamlit as st
-import requests
 import os
 from datetime import datetime
+
+import requests
+import streamlit as st
 
 # TODO:
 # - APIキーを環境変数から取得しているが、.envから読み込む設定は未実装

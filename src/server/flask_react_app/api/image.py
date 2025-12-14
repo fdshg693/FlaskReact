@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import torch
 from flask import Blueprint, Response, jsonify, request
 from loguru import logger
 from pydantic import BaseModel, ValidationError
-import torch
 
 from server.flask_react_app.config import Settings
 from services.image_service import predict_image_service

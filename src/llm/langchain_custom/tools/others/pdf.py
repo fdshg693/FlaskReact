@@ -7,7 +7,8 @@ from typing import Any, Iterator
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from loguru import logger
-from config import load_dotenv_workspace, PATHS, ensure_path_exists
+
+from config import PATHS, ensure_path_exists, load_dotenv_workspace
 
 
 def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:

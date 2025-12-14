@@ -5,11 +5,16 @@ RAGやドキュメント処理において、長いテキストを扱いやす�
 
 from __future__ import annotations
 
+from langchain_core.tools import tool
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 from loguru import logger
 
+__all__ = [
+    "split_text_tool",
+]
 
-def split_text(
+
+def _split_text(
     text: str, chunk_size: int = 1000, chunk_overlap: int = 200
 ) -> list[str]:
     """
@@ -45,6 +50,24 @@ def split_text(
     return chunks
 
 
+@tool
+def split_text_tool(
+    text: str, chunk_size: int = 1000, chunk_overlap: int = 200
+) -> list[str]:
+    """
+    A simple tool function to split text into chunks.
+
+    Args:
+        text: The text to be split.
+        chunk_size: The size of each chunk.
+        chunk_overlap: The number of overlapping characters between chunks.
+
+    Returns:
+        A list of text chunks.
+    """
+    return _split_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+
 if __name__ == "__main__":
     sample_text = (
         "This is a sample text that will be split into smaller chunks.\n"
@@ -53,7 +76,7 @@ if __name__ == "__main__":
     )
 
     logger.info("Starting text splitting demonstration")
-    chunks: list[str] = split_text(sample_text, chunk_size=50, chunk_overlap=10)
+    chunks: list[str] = _split_text(sample_text, chunk_size=50, chunk_overlap=10)
 
     for i, chunk in enumerate(chunks, 1):
         logger.info(f"Chunk {i}: {chunk}")

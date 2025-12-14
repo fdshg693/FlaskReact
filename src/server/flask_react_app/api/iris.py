@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import List, Annotated
-from flask import Blueprint, jsonify, request, Response
-from pydantic import BaseModel, Field, ValidationError
-from loguru import logger
 from functools import lru_cache
+from typing import Annotated, List
+
+from flask import Blueprint, Response, jsonify, request
+from loguru import logger
+from pydantic import BaseModel, Field, ValidationError
 
 from ml.numeric.eval_batch import evaluate_iris_batch
 from server.flask_react_app.config import Settings

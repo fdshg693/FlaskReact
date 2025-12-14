@@ -5,12 +5,13 @@ and a ``cli()`` wrapper that preserves the original command-line behavior.
 """
 
 from __future__ import annotations
-import json
 
+import json
 from pathlib import Path
 from typing import Any, Dict, Literal, Optional
 
 from loguru import logger
+
 from ml.image.core.evaluation.model_evaluator import ModelEvaluator
 
 

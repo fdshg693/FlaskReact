@@ -12,9 +12,9 @@
 結果はscripts/output配下にMarkdown形式で出力される
 """
 
+import subprocess
 from datetime import datetime
 from pathlib import Path
-import subprocess
 
 
 def get_project_root() -> Path:

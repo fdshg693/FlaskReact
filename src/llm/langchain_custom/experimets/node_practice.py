@@ -1,5 +1,5 @@
 from langgraph.channels import EphemeralValue
-from langgraph.pregel import Pregel, NodeBuilder
+from langgraph.pregel import NodeBuilder, Pregel
 from langgraph.pregel._write import ChannelWriteEntry
 
 

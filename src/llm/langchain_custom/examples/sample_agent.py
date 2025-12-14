@@ -1,5 +1,4 @@
-from llm.langchain_custom import agent_run, create_agent_executor, LLMModel
-
+from llm.langchain_custom import LLMModel, agent_run, create_agent_executor
 from llm.langchain_custom.examples.sample_tools import add_numbers
 
 
@@ -17,4 +16,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    from config import load_dotenv_workspace
+
+    load_dotenv_workspace()
     main()

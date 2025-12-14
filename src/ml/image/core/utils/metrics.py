@@ -1,8 +1,9 @@
 """Metrics calculation utilities."""
 
+from typing import Any, Dict
+
 import numpy as np
 import torch
-from typing import Dict, Any
 from sklearn.metrics import classification_report
 
 

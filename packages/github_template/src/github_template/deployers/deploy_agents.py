@@ -56,8 +56,8 @@ scripts/github_copilot/template_handle/config/deploy_agents.yaml.example
     python scripts/github_copilot/template_handle/deploy_agents.py --clean
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 from ..util.path_utils import get_project_root, path_to_dot_notation
 from ..util.substitution_utils import (

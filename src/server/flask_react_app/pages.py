@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flask import Blueprint, Response, send_from_directory, jsonify
+from flask import Blueprint, Response, jsonify, send_from_directory
 
 from config.paths import PATHS
 

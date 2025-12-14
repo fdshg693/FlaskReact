@@ -1,10 +1,12 @@
 """Wood classification dataset implementation."""
 
 import os
-import torch
-import numpy as np
-import cv2
 from typing import Tuple
+
+import cv2
+import numpy as np
+import torch
+
 from .base_dataset import BaseDataset
 
 

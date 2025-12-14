@@ -1,9 +1,10 @@
 """Base trainer interface for machine learning models."""
 
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Tuple
+
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from typing import Dict, Any, Tuple
 
 
 class BaseTrainer(ABC):

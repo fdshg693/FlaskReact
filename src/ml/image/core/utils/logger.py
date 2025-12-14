@@ -1,11 +1,12 @@
 """Logging utilities for training and evaluation."""
 
-import os
 import csv
+import datetime
 import json
 import logging
-import datetime
-from typing import Dict, Any, List, NamedTuple
+import os
+from typing import Any, Dict, List, NamedTuple
+
 import numpy as np
 
 

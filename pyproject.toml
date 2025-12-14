@@ -58,6 +58,9 @@ line-length = 88
 fix = true
 indent-width = 4
 
+[tool.ruff.lint]
+select = ["I"]  # インポートのソートを有効化
+
 # ======= pytest設定 =======
 [tool.pytest.ini_options]
 # Pythonパスに追加するディレクトリ

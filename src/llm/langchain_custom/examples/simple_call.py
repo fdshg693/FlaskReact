@@ -9,10 +9,6 @@ from langchain_core.messages import AIMessage
 
 from llm.langchain_custom.models import LLMModel, ModelProvider
 
-from config import load_dotenv_workspace
-
-load_dotenv_workspace()
-
 DEFAULT_PROVIDER: ModelProvider = ModelProvider.OPENAI
 DEFAULT_MODEL: LLMModel = LLMModel.GPT_4O_MINI
 
@@ -55,5 +51,8 @@ def main(prompt: str) -> str:
 
 
 if __name__ == "__main__":
+    from config import load_dotenv_workspace
+
+    load_dotenv_workspace()
     content = main("1+1")
     print(content)

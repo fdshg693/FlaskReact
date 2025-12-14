@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Iterable
 
 import numpy as np
 import pandas as pd
+from data_util.csv_util import read_csv_into_dataframe
 from loguru import logger
 from pydantic import (
     BaseModel,
@@ -12,8 +14,6 @@ from pydantic import (
     ValidationInfo,
     field_validator,
 )
-from pathlib import Path
-from data_util.csv_util import read_csv_into_dataframe
 from sklearn.utils import Bunch
 
 

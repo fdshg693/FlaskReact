@@ -1,18 +1,19 @@
 """Classification trainer for wood classification."""
 
 import time
+from typing import Any, Dict, Optional, Tuple
+
+import cv2
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from typing import Dict, Any, Tuple, Optional
-import cv2
 
-from .base_trainer import BaseTrainer
-from ..utils.metrics import MetricsCalculator
-from ..utils.visualization import Visualizer
 from ..utils.checkpoint import CheckpointManager
 from ..utils.logger import Logger
+from ..utils.metrics import MetricsCalculator
+from ..utils.visualization import Visualizer
+from .base_trainer import BaseTrainer
 
 
 class ClassificationTrainer(BaseTrainer):

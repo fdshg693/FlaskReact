@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pandas as pd
-
 from data_util.csv_plot import plot_histograms_from_dataframe
 
 

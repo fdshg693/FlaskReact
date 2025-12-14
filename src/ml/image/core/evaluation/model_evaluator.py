@@ -1,13 +1,14 @@
 """Model evaluation utilities for wood classification."""
 
-import torch
-import torch.nn.functional as F
-import numpy as np
-import cv2
+import json
 import os
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-import json
+from typing import Any, Dict, List, Optional
+
+import cv2
+import numpy as np
+import torch
+import torch.nn.functional as F
 
 from ..models.image_model import ImageModel
 

@@ -1,17 +1,17 @@
 from pathlib import Path
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
 
-import numpy as np
 import joblib
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from loguru import logger
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from loguru import logger
+from torch.utils.data import DataLoader
 
-from ml.numeric.dataset import MLCompatibleDataset
 from config import ensure_path_exists
+from ml.numeric.dataset import MLCompatibleDataset
 
 
 class BaseMLModel:

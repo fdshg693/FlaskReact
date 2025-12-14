@@ -1,6 +1,8 @@
-import anthropic
 import base64
+
+import anthropic
 import httpx
+
 from config import load_dotenv_workspace
 
 image_url = "https://upload.wikimedia.org/wikipedia/commons/a/a7/Camponotus_flavomarginatus_ant.jpg"

@@ -1,6 +1,6 @@
-from pydantic import BaseModel
 from anthropic import Anthropic
 from anthropic.types.beta.parsed_beta_message import ParsedBetaMessage
+from pydantic import BaseModel
 
 
 class SentenceInfo(BaseModel):

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
+from functools import wraps
+
 from flask import Flask, jsonify
 from flask_cors import CORS
+from loguru import logger
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-from functools import wraps
-from loguru import logger
-
-from server.flask_react_app.config import Settings
-from server.flask_react_app.api import image_bp, iris_bp, pdf_bp, text_bp
-from server.flask_react_app.pages import pages_bp
 
 from config import PATHS
+from server.flask_react_app.api import image_bp, iris_bp, pdf_bp, text_bp
+from server.flask_react_app.config import Settings
+from server.flask_react_app.pages import pages_bp
 
 
 # TODO: validate_file_uploadを util/file_validation.py に移動し、責任の分離を図る

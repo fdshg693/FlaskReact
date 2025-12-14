@@ -12,9 +12,9 @@ Usage:
     sync:  差分を解消してlabel.yamlに一致させる
 """
 
+import json
 import subprocess
 import sys
-import json
 from pathlib import Path
 
 

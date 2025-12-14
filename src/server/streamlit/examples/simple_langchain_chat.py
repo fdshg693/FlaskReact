@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import streamlit as st
 
-
 from llm.langchain_custom.examples.simple_call import main as call_simple_model
 
 

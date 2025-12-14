@@ -1,7 +1,8 @@
-from agents import Agent, InputGuardrail, GuardrailFunctionOutput, Runner
+import asyncio
+
+from agents import Agent, GuardrailFunctionOutput, InputGuardrail, Runner
 from agents.exceptions import InputGuardrailTripwireTriggered
 from pydantic import BaseModel
-import asyncio
 
 
 class ShoppingOutput(BaseModel):

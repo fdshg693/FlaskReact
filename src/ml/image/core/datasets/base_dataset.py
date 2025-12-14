@@ -1,9 +1,10 @@
 """Base dataset interface for wood classification datasets."""
 
 from abc import ABC, abstractmethod
+from typing import Optional, Tuple
+
 import torch
 from torch.utils.data import Dataset
-from typing import Tuple, Optional
 
 
 class BaseDataset(Dataset, ABC):

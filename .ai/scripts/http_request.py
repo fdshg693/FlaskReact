@@ -14,8 +14,8 @@ Usage:
 import argparse
 import json
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 
 
 def parse_headers(header_list):

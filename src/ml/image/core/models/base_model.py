@@ -1,9 +1,10 @@
 """Base model interface for wood classification models."""
 
 from abc import ABC, abstractmethod
+from typing import Any, Dict
+
 import torch
 import torch.nn as nn
-from typing import Dict, Any
 
 
 class BaseModel(nn.Module, ABC):

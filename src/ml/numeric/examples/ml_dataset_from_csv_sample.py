@@ -1,10 +1,11 @@
-from ml.numeric.dataset import MLDatasetConverter, MLCompatibleDataset
+from loguru import logger
+
 from config import PATHS
+from ml.numeric.dataset import MLCompatibleDataset, MLDatasetConverter
 from ml.numeric.pipeline import (
     execute_machine_learning_pipeline,
     store_model_and_learning_logs,
 )
-from loguru import logger
 
 iris_data: MLCompatibleDataset = MLDatasetConverter.convert(
     PATHS.iris_data_path,

@@ -1,14 +1,14 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import TensorDataset
 from loguru import logger
+from torch.utils.data import TensorDataset
 
+from ml.numeric.dataset import MLCompatibleDataset
 from ml.numeric.models.base_model import BaseMLModel
 from ml.numeric.simple_nn import SimpleNeuralNetwork
-from ml.numeric.dataset import MLCompatibleDataset
 
 
 class RegressionMLModel(BaseMLModel):

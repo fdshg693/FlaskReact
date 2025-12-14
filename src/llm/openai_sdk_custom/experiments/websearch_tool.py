@@ -1,6 +1,6 @@
 import asyncio
 
-from agents import Agent, Runner, WebSearchTool, trace, RunResult
+from agents import Agent, Runner, RunResult, WebSearchTool, trace
 
 # OPENAI AGENT SDK EXAMPLE
 

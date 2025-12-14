@@ -1,12 +1,13 @@
-from pathlib import Path
-from typing import Any, Dict, List, Literal, Union, Optional
+import csv
 import time
+from pathlib import Path
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import matplotlib.pyplot as plt
-import csv
 import torch
 import torch.nn as nn
 from loguru import logger
+
 from config import PATHS
 
 

@@ -1,7 +1,7 @@
 import anthropic
 from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
-from anthropic.types.messages.batch_create_params import Request
 from anthropic.types.messages import MessageBatch
+from anthropic.types.messages.batch_create_params import Request
 
 client = anthropic.Anthropic()
 

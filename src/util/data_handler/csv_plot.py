@@ -3,11 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
-import pandas as pd
 import matplotlib.pyplot as plt
-from loguru import logger
-from config import PATHS, get_path
+import pandas as pd
 from data_util.csv_util import read_csv_into_dataframe
+from loguru import logger
+
+from config import PATHS, get_path
 
 
 def plot_histograms_from_dataframe(

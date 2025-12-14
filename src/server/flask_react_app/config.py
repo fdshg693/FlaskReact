@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import List, Set
+
+from loguru import logger
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from loguru import logger
 
 from config import PATHS
 

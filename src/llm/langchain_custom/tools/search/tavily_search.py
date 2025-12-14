@@ -4,14 +4,19 @@ Tavilyは細かい調整や、WEB UIでの確認ができて、カスタマイ�
 DuckDuckGoはシンプルで使いやすい、またAPIキー不要で利用可能
 """
 
-from langchain_tavily import TavilySearch
-from langchain_core.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_core.tools import tool
+from langchain_tavily import TavilySearch
+
+__all__ = [
+    "tavily_search_tool",
+    "duckduckgo_search_tool",
+]
 
 ####===================== Tavily =====================####
 
 
-def tavily_search(search_query: str, max_results: int) -> str:
+def _tavily_search(search_query: str, max_results: int) -> str:
     """
     Tavilyを使用してウェブ検索を実行します。
     Args:
@@ -40,11 +45,11 @@ def tavily_search_tool(
     Returns:
         str: 検索結果の文字列形式
     """
-    return tavily_search(search_query, max_results)
+    return _tavily_search(search_query, max_results)
 
 
 ####===================== DuckDuckGo =====================####
-def duckduckgo_search(search_query: str) -> str:
+def _duckduckgo_search(search_query: str) -> str:
     """
     DuckDuckGoを使用してウェブ検索を実行します。
     Args:
@@ -70,13 +75,13 @@ def duckduckgo_search_tool(
     Returns:
         str: 検索結果の文字列形式
     """
-    return duckduckgo_search(search_query)
+    return _duckduckgo_search(search_query)
 
 
 if __name__ == "__main__":
     ###===================== Tavily =====================###
     # 関数として利用する場合
-    print(tavily_search(search_query="東京の今日の天気", max_results=2))
+    print(_tavily_search(search_query="東京の今日の天気", max_results=2))
 
     # ツールとして利用する場合
     print(
@@ -85,7 +90,7 @@ if __name__ == "__main__":
 
     ###===================== DuckDuckGo =====================###
     # 関数として利用する場合
-    print(duckduckgo_search(search_query="東京の今日の天気"))
+    print(_duckduckgo_search(search_query="東京の今日の天気"))
 
     # ツールとして利用する場合
     print(duckduckgo_search_tool.run({"search_query": "東京の今日の天気"}))

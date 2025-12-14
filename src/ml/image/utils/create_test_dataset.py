@@ -4,9 +4,9 @@
 木材分類のテスト用にダミー画像を生成します
 """
 
+import random
 from pathlib import Path
 from typing import NamedTuple
-import random
 
 import numpy as np
 from loguru import logger
