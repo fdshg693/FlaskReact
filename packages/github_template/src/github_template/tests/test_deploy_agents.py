@@ -307,7 +307,7 @@ class TestFilterByPatterns:
 class TestProcessAgentFile:
     """process_agent_file関数のテスト"""
 
-    def test_process_valid_file(self, tmp_path):
+    def test_process_valid_file(self, tmp_path: Path) -> None:
         """正常なファイルの処理"""
         # テンプレートディレクトリを作成
         template_dir = tmp_path / ".github_copilot_template"
@@ -361,7 +361,7 @@ outputs:
         assert "custom_inputs" not in default_content
         assert "outputs" not in custom_content
 
-    def test_process_file_without_outputs(self, tmp_path):
+    def test_process_file_without_outputs(self, tmp_path: Path) -> None:
         """outputsがないファイルはエラー"""
         template_dir = tmp_path / ".github_copilot_template"
         agent_dir = template_dir / "test"
@@ -391,7 +391,7 @@ description: テスト
 class TestDeployAgents:
     """deploy_agents関数のテスト"""
 
-    def test_deploy_with_clean(self, tmp_path):
+    def test_deploy_with_clean(self, tmp_path: Path) -> None:
         """クリーンモードでデプロイ"""
         # テンプレートを作成
         template_dir = tmp_path / ".github_copilot_template"
@@ -425,7 +425,7 @@ outputs:
         assert str(old_file) in deleted[0]
         assert len(copied) == 1
 
-    def test_deploy_no_overwrite(self, tmp_path):
+    def test_deploy_no_overwrite(self, tmp_path: Path) -> None:
         """上書きなしモードでデプロイ"""
         template_dir = tmp_path / ".github_copilot_template"
         agent_dir = template_dir / "test"

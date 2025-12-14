@@ -5,7 +5,7 @@ PyYAMLを使用してYAMLファイルおよびフロントマターを解析し�
 """
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -66,8 +66,9 @@ def extract_custom_inputs(frontmatter: dict[str, Any]) -> dict[str, str]:
 
     for item in inputs_list:
         if isinstance(item, dict) and "name" in item:
-            name = item["name"]
-            default = item.get("default", "")
+            item_dict = cast(dict[str, Any], item)
+            name = cast(str, item_dict["name"])
+            default = cast(str, item_dict.get("default", ""))
             custom_inputs[name] = default
 
     return custom_inputs
@@ -116,7 +117,10 @@ class _FlowStyleListDumper(yaml.SafeDumper):
     pass
 
 
-def _represent_list_as_flow(dumper: yaml.Dumper, data: list) -> yaml.Node:
+def _represent_list_as_flow(
+    dumper: _FlowStyleListDumper,
+    data: list[Any],
+) -> yaml.Node:
     """リストをフロースタイルで表現する"""
     return dumper.represent_sequence("tag:yaml.org,2002:seq", data, flow_style=True)
 
