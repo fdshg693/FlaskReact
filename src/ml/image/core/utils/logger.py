@@ -5,9 +5,10 @@ import datetime
 import json
 import logging
 import os
-from typing import Any, Dict, List, NamedTuple
+from typing import Any, Dict, List, NamedTuple, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 class EpochMetrics(NamedTuple):
@@ -223,10 +224,11 @@ class Logger:
             if isinstance(value, (int, float)):
                 self.log_info(f"{key}: {value:.6f}")
             elif isinstance(value, np.ndarray):
-                if value.size <= 10:  # Only log small arrays
-                    self.log_info(f"{key}: {value}")
+                array_value = cast(NDArray[np.generic], value)
+                if array_value.size <= 10:  # Only log small arrays
+                    self.log_info(f"{key}: {array_value}")
                 else:
-                    self.log_info(f"{key}: array shape {value.shape}")
+                    self.log_info(f"{key}: array shape {array_value.shape}")
             else:
                 self.log_info(f"{key}: {value}")
 

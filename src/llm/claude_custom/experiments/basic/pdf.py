@@ -2,6 +2,7 @@ import base64
 
 import anthropic
 import httpx
+from anthropic.types import TextBlock
 
 # 形式: https://raw.githubusercontent.com/{username}/{repo}/{branch}/{path/to/file.pdf}
 pdf_url = (
@@ -34,8 +35,9 @@ def pdf_read_url() -> None:
             }
         ],
     )
-
-    print(message.content[0].text)
+    first_block = message.content[0]
+    assert isinstance(first_block, TextBlock)
+    print(first_block.text)
 
 
 def pdf_url_base64() -> None:
@@ -63,8 +65,9 @@ def pdf_url_base64() -> None:
             }
         ],
     )
-
-    print(message.content[0].text)
+    first_block = message.content[0]
+    assert isinstance(first_block, TextBlock)
+    print(first_block.text)
 
 
 if __name__ == "__main__":

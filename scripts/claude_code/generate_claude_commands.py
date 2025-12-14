@@ -11,20 +11,21 @@ import logging
 import re
 import sys
 from pathlib import Path
+from typing import Final, TypeAlias, cast
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # Model shorthand to full name mapping
-MODEL_MAP = {
+MODEL_MAP: Final[dict[str, str]] = {
     "haiku": "claude-haiku-4-5",
     "sonnet": "claude-sonnet-4-5",
     "opus": "claude-opus-4-5",
 }
 
 # All available Claude tools
-ALL_TOOLS = [
+ALL_TOOLS: Final[list[str]] = [
     "Bash",
     "Edit",
     "Glob",
@@ -40,8 +41,14 @@ ALL_TOOLS = [
     "WebSearch",
 ]
 
+YamlList: TypeAlias = list[str]
+YamlValue: TypeAlias = str | int | YamlList
+YamlDict: TypeAlias = dict[str, YamlValue]
 
-def parse_yaml_with_frontmatter(content: str) -> tuple[dict, dict]:
+EMPTY_STR_LIST: Final[list[str]] = []
+
+
+def parse_yaml_with_frontmatter(content: str) -> tuple[YamlDict, YamlDict]:
     """
     Parse YAML content with front matter format (two --- delimited sections).
 
@@ -63,13 +70,13 @@ def parse_yaml_with_frontmatter(content: str) -> tuple[dict, dict]:
     return config_section, output_section
 
 
-def parse_simple_yaml(yaml_str: str) -> dict:
+def parse_simple_yaml(yaml_str: str) -> YamlDict:
     """
     Parse simple YAML without external dependencies.
     Supports: strings, numbers, lists, and nested keys.
     """
-    result = {}
-    current_list_key = None
+    result: YamlDict = {}
+    current_list_key: str | None = None
     lines = yaml_str.split("\n")
 
     for line in lines:
@@ -82,7 +89,7 @@ def parse_simple_yaml(yaml_str: str) -> dict:
         if list_match and current_list_key:
             value = list_match.group(2).strip()
             value = value.strip('"').strip("'")
-            result[current_list_key].append(value)
+            cast(list[str], result[current_list_key]).append(value)
             continue
 
         # Check for key-value pair
@@ -94,7 +101,7 @@ def parse_simple_yaml(yaml_str: str) -> dict:
             if value == "":
                 # Could be a list starting on next line
                 current_list_key = key
-                result[key] = []
+                result[key] = cast(list[str], [])
             elif value.startswith('"') and value.endswith('"'):
                 result[key] = value[1:-1]
                 current_list_key = None
@@ -111,17 +118,17 @@ def parse_simple_yaml(yaml_str: str) -> dict:
     return result
 
 
-def serialize_yaml_with_frontmatter(config: dict, output: dict) -> str:
+def serialize_yaml_with_frontmatter(config: YamlDict, output: YamlDict) -> str:
     """
     Serialize config and output sections back to YAML with front matter format.
     """
 
-    def serialize_value(value, indent=0):
+    def serialize_value(value: YamlValue, indent: int = 0) -> str:
         if isinstance(value, list):
             if not value:
                 return ""
-            lines = []
-            for item in value:
+            lines: list[str] = []
+            for item in cast(list[str], value):
                 lines.append(f'{"  " * indent}  - "{item}"')
             return "\n".join(lines)
         elif isinstance(value, str):
@@ -155,14 +162,14 @@ def serialize_yaml_with_frontmatter(config: dict, output: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def generate_command(config: dict) -> tuple[str, str]:
+def generate_command(config: YamlDict) -> tuple[str, str]:
     """
     Generate Claude CLI command from configuration.
 
     Returns:
         Tuple of (command, error_message)
     """
-    errors = []
+    errors: list[str] = []
 
     # Validate required fields
     if "name" not in config:
@@ -175,10 +182,10 @@ def generate_command(config: dict) -> tuple[str, str]:
         return "", "; ".join(errors)
 
     # Build command parts
-    cmd_parts = ["claude", "-p"]
+    cmd_parts: list[str] = ["claude", "-p"]
 
     # Model mapping
-    model_short = config["model"]
+    model_short = cast(str, config["model"])
     if model_short not in MODEL_MAP:
         return (
             "",
@@ -188,8 +195,8 @@ def generate_command(config: dict) -> tuple[str, str]:
     cmd_parts.extend(["--model", MODEL_MAP[model_short]])
 
     # System prompt handling
-    system_prompt = config.get("system_prompt", "").strip()
-    system_prompt_file = config.get("system_prompt_file", "").strip()
+    system_prompt = cast(str, config.get("system_prompt", "")).strip()
+    system_prompt_file = cast(str, config.get("system_prompt_file", "")).strip()
 
     if system_prompt:
         # Inline system prompt takes priority
@@ -204,14 +211,14 @@ def generate_command(config: dict) -> tuple[str, str]:
         )
 
     # Tool permissions
-    allowed_tools = config.get("allowed_tools", [])
+    allowed_tools = cast(list[str], config.get("allowed_tools", EMPTY_STR_LIST))
 
     if not allowed_tools:
         # No tools allowed - disallow all
         disallowed_tools = ALL_TOOLS.copy()
     else:
         # Validate allowed tools
-        valid_allowed = []
+        valid_allowed: list[str] = []
         for tool in allowed_tools:
             if tool in ALL_TOOLS:
                 valid_allowed.append(tool)
@@ -226,7 +233,7 @@ def generate_command(config: dict) -> tuple[str, str]:
             cmd_parts.append(f'"{tool}"')
 
     # Max turns
-    max_turns = config.get("max_turns", 5)
+    max_turns = cast(int, config.get("max_turns", 5))
     cmd_parts.extend(["--max-turns", str(max_turns)])
 
     return " ".join(cmd_parts), ""
@@ -282,8 +289,8 @@ def resolve_paths(path_input: str) -> list[Path]:
     Resolve comma-separated paths to list of YAML files.
     Handles files, directories, and glob patterns.
     """
-    files = []
-    paths = [p.strip() for p in path_input.split(",")]
+    files: list[Path] = []
+    paths: list[str] = [p.strip() for p in path_input.split(",")]
 
     for path_str in paths:
         if not path_str:

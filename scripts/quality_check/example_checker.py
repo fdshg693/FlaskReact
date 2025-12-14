@@ -33,7 +33,7 @@ def find_example_files(project_root: Path) -> list[Path]:
     プロジェクト配下の全ての.exampleファイルを取得する
     .venvや.gitディレクトリは除外する
     """
-    example_files = []
+    example_files: list[Path] = []
     exclude_dirs = {".venv", ".git", "__pycache__", ".mypy_cache", ".pytest_cache"}
 
     for path in project_root.rglob("*.example"):
@@ -64,7 +64,7 @@ def get_git_tracked_files(project_root: Path) -> set[Path]:
             text=True,
             check=True,
         )
-        tracked_files = set()
+        tracked_files: set[Path] = set()
         for line in result.stdout.strip().split("\n"):
             if line:
                 tracked_files.add(project_root / line)

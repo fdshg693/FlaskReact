@@ -29,9 +29,10 @@ def cite_text() -> None:
         ],
     )
     content: list[ContentBlock] = response.content
-    text: TextBlock = content[0].text
-    print("回答:", text.text)
-    print("引用情報:", text.citations)
+    first_block = content[0]
+    assert isinstance(first_block, TextBlock)
+    print("回答:", first_block.text)
+    print("引用情報:", first_block.citations)
 
 
 if __name__ == "__main__":

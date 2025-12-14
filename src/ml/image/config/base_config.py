@@ -10,6 +10,35 @@ import yaml
 class BaseConfig:
     """YAML-based configuration class with validation and path management."""
 
+    # NOTE: This class sets most fields dynamically from YAML/dicts.
+    # These annotations exist to satisfy static type checkers (e.g., Pylance).
+    dataset_name: str
+    dataset_path: str
+    num_class: int
+    img_size: int
+    img_scale: float
+    aug_scale: float
+    aug_brightness: float
+
+    layer: int
+    num_hidden: int
+    l2softmax: bool
+    dropout_rate: float
+
+    epoch: int
+    batch_size_train: int
+    batch_size_test: int
+    learning_rate: float
+
+    device: str
+    log_dir: str
+    checkpoint_dir: str
+
+    auto_timestamp: bool
+    auto_cuda_detection: bool
+    experiment_name_template: str
+    experiment_name: str
+
     def __init__(self, config_data: Optional[Dict[str, Any]] = None):
         """Initialize configuration from dictionary data."""
         if config_data is None:
@@ -116,7 +145,7 @@ class BaseConfig:
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary."""
         # Create dictionary from all attributes that don't start with _
-        config_dict = {}
+        config_dict: Dict[str, Any] = {}
         for key, value in self.__dict__.items():
             if not key.startswith("_"):
                 config_dict[key] = value
@@ -129,13 +158,13 @@ class BaseConfig:
         """Load configuration from YAML file with optional base config inheritance."""
 
         # Load base configuration if specified
-        base_config = {}
+        base_config: Dict[str, Any] = {}
         if base_config_path and os.path.exists(base_config_path):
             with open(base_config_path, "r", encoding="utf-8") as f:
                 base_config = yaml.safe_load(f) or {}
 
         # Load experiment-specific configuration
-        experiment_config = {}
+        experiment_config: Dict[str, Any] = {}
         if os.path.exists(yaml_path):
             with open(yaml_path, "r", encoding="utf-8") as f:
                 experiment_config = yaml.safe_load(f) or {}

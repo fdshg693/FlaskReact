@@ -1,7 +1,9 @@
 """Wood classification dataset implementation."""
 
+# ruff: noqa: I001
+
 import os
-from typing import Tuple
+from typing import Any, Callable, Tuple, cast
 
 import cv2
 import numpy as np
@@ -10,8 +12,18 @@ import torch
 from .base_dataset import BaseDataset
 
 
+ImageArray = np.ndarray[Any, Any]
+
+_TorchFromNumpy = Callable[[np.ndarray[Any, Any]], torch.Tensor]
+TORCH_FROM_NUMPY = cast(_TorchFromNumpy, getattr(torch, "from_numpy"))
+
+
 class WoodDataset(BaseDataset):
     """Dataset class for wood classification."""
+
+    fpath_list: list[str]
+    label_list: list[int]
+    num_data: np.ndarray[Any, Any]
 
     def __init__(
         self,
@@ -78,7 +90,7 @@ class WoodDataset(BaseDataset):
                 ]
             )
 
-        self.num_data = np.zeros(self.num_class)
+        self.num_data = np.zeros(self.num_class, dtype=np.float64)
         self.fpath_list = []
         self.label_list = []
 
@@ -128,11 +140,15 @@ class WoodDataset(BaseDataset):
         denom[denom < 1] = 1
 
         # Calculate weights inversely proportional to class frequency
-        self.weight = denom / denom.min()
-        self.weight = torch.from_numpy(self.weight).float()
+        weight_np: np.ndarray[Any, Any] = denom / denom.min()
+        weight_tensor = TORCH_FROM_NUMPY(weight_np).float()
+        self.weight = weight_tensor
 
-        print(f"Class weights: {self.weight.numpy()}")
-        print(f"Sum of weights: {self.weight.sum().item()}")
+        tensor_numpy = cast(
+            Callable[..., np.ndarray[Any, Any]], getattr(weight_tensor, "numpy")
+        )
+        print(f"Class weights: {tensor_numpy()}")
+        print(f"Sum of weights: {weight_tensor.sum().item()}")
 
     def __len__(self) -> int:
         """Return dataset length."""
@@ -163,8 +179,10 @@ class WoodDataset(BaseDataset):
             # Return dummy data for robustness
             img = np.zeros((self.img_size, self.img_size, 3), dtype=np.uint8)
 
+        img = cast(ImageArray, img)
+
         # Apply scaling
-        img = self._apply_scaling(img)
+        img = cast(ImageArray, self._apply_scaling(img))
 
         # Check image size constraints
         if self.img_size > img.shape[0] or self.img_size > img.shape[1]:
@@ -175,28 +193,34 @@ class WoodDataset(BaseDataset):
             scale_factor = max(
                 self.img_size / img.shape[0], self.img_size / img.shape[1]
             )
-            img = cv2.resize(img, None, fx=scale_factor, fy=scale_factor)
+            img = cast(
+                ImageArray,
+                cv2.resize(cast(Any, img), None, fx=scale_factor, fy=scale_factor),
+            )
 
         # Apply augmentations
         if self.augmentation:
-            img = self._apply_augmentations(img)
+            img = cast(ImageArray, self._apply_augmentations(img))
 
         # Random crop to target size
-        img = self._random_crop(img)
+        img = cast(ImageArray, self._random_crop(img))
 
         # Normalize to [0, 1]
         if img.max() > 1.0:
             img = img.astype(np.float32) / 255.0
+            img = cast(ImageArray, img)
 
         # Create one-hot label
-        label = np.eye(self.num_class)[int(self.label_list[idx])]
+        label = np.eye(self.num_class, dtype=np.float32)[int(self.label_list[idx])]
 
         # Convert to tensors and transpose image for PyTorch (C, H, W)
-        return torch.from_numpy(img.transpose(2, 0, 1)).float(), torch.from_numpy(
-            label
+        img_tensor = TORCH_FROM_NUMPY(
+            cast(np.ndarray[Any, Any], img.transpose(2, 0, 1))
         ).float()
+        label_tensor = TORCH_FROM_NUMPY(cast(np.ndarray[Any, Any], label)).float()
+        return img_tensor, label_tensor
 
-    def _apply_scaling(self, img: np.ndarray) -> np.ndarray:
+    def _apply_scaling(self, img: ImageArray) -> ImageArray:
         """Apply scaling to image.
 
         Args:
@@ -215,9 +239,11 @@ class WoodDataset(BaseDataset):
         else:
             img_scale = self.img_size / img.shape[1] * self.img_scale
 
-        return cv2.resize(img, None, fx=img_scale, fy=img_scale)
+        return cast(
+            ImageArray, cv2.resize(cast(Any, img), None, fx=img_scale, fy=img_scale)
+        )
 
-    def _apply_augmentations(self, img: np.ndarray) -> np.ndarray:
+    def _apply_augmentations(self, img: ImageArray) -> ImageArray:
         """Apply data augmentations to image.
 
         Args:
@@ -241,7 +267,7 @@ class WoodDataset(BaseDataset):
 
         return img
 
-    def _random_crop(self, img: np.ndarray) -> np.ndarray:
+    def _random_crop(self, img: ImageArray) -> ImageArray:
         """Apply random crop to image.
 
         Args:

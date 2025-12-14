@@ -2,6 +2,7 @@ import base64
 
 import anthropic
 import httpx
+from anthropic.types import TextBlock
 
 from config import load_dotenv_workspace
 
@@ -43,7 +44,9 @@ def send_base64_image() -> None:
             }
         ],
     )
-    print(message.content[0].text)
+    first_block = message.content[0]
+    assert isinstance(first_block, TextBlock)
+    print(first_block.text)
 
 
 def send_url_image() -> None:
@@ -69,7 +72,9 @@ def send_url_image() -> None:
             }
         ],
     )
-    print(message_from_url.content[0].text)
+    first_block = message_from_url.content[0]
+    assert isinstance(first_block, TextBlock)
+    print(first_block.text)
 
 
 if __name__ == "__main__":

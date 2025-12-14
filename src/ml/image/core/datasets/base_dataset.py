@@ -10,8 +10,20 @@ from torch.utils.data import Dataset
 class BaseDataset(Dataset, ABC):
     """Abstract base class for all datasets."""
 
+    dataset_path: str
+    num_class: int
+    img_size: int
+    dataset_params: dict[str, object]
+    fpath_list: list[str]
+    label_list: list[int]
+    weight: Optional[torch.Tensor]
+
     def __init__(
-        self, dataset_path: str, num_class: int = 0, img_size: int = 256, **kwargs
+        self,
+        dataset_path: str,
+        num_class: int = 0,
+        img_size: int = 256,
+        **kwargs: object,
     ):
         """Initialize base dataset.
 
@@ -77,5 +89,5 @@ class BaseDataset(Dataset, ABC):
             "num_class": self.num_class,
             "img_size": self.img_size,
             "total_samples": len(self),
-            "dataset_params": self.dataset_params,
+            "dataset_params": self.dataset_params,  # type: ignore
         }

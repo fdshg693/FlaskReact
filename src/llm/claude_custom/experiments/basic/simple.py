@@ -69,7 +69,9 @@ def force_single_concise_answer() -> None:
     print("出力トークン")
     print(message.usage.output_tokens)
     print("回答")
-    print(message.content[0].text)
+    first_block = message.content[0]
+    assert isinstance(first_block, TextBlock)
+    print(first_block.text)
 
 
 if __name__ == "__main__":
