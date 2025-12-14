@@ -217,61 +217,69 @@ _BUILDING_SINGLETON = False
 def get_path(
     *parts: str | Path, root: Path | None = None, create: bool = False
 ) -> Path:
-    """Join parts to root (defaults to PATHS.project_root). Optionally create directories.
+    """
+    ルートからの相対パスを結合してPathオブジェクトを取得するユーティリティ関数。
 
     Args:
-        *parts: Path components to join.
-        root: Base path (defaults to PATHS.project_root).
-        create: If True, create the directory structure.
+        *parts: 結合するパスの部分となり、カンマ区切りで任意の数だけ指定可能。拡張子付きファイル名は含めないでください。
+        root: ベースとなるディレクトリパス（デフォルトはPATHS.project_root）。
+        create: ディレクトリ構造を作成する場合はTrue。
 
     Returns:
-        Resolved Path object.
+        解決されたPathオブジェクト。
 
     Raises:
-        OSError: If directory creation fails.
+        OSError: ディレクトリ作成に失敗した場合。
+
+    Note:
+        ファイルパスを含める場合は、ensure_path_exists関数を使用して親ディレクトリを作成してください。
 
     Example:
+        >>> # デフォルトのプロジェクトルートからdata/new_dirを取得して、ディレクトリを作成
         >>> p = get_path("data", "new_dir", create=True)
-        >>> p = get_path(Path("outputs"), "results", root=PATHS.project_root)
+
+        >>> # カスタムルートからoutputs/resultsを取得
+        >>> p = get_path(Path("outputs"), "results", root=PATHS.custom_root)
     """
-    base = root or PROJECTPATHS.project_root
-    p = base.joinpath(*[str(part) for part in parts])
+    base: Path = root or PROJECTPATHS.project_root
+    joined_path: Path = base.joinpath(*[str(part) for part in parts])
 
     if create:
         try:
-            p.mkdir(parents=True, exist_ok=True)
-            logger.debug("Created directory: {}", p)
+            joined_path.mkdir(parents=True, exist_ok=True)
+            logger.debug("Created directory: {}", joined_path)
         except OSError as e:
-            logger.error("Failed to create directory {}: {}", p, e)
+            logger.error("Failed to create directory {}: {}", joined_path, e)
             raise
 
-    return p
+    return joined_path
 
 
 def find_paths(
     pattern: str, root: Path | None = None, recursive: bool = True
 ) -> list[Path]:
-    """Find files via glob under root (defaults to PATHS.project_root).
+    """
+    ルート配下にあるパスをグロブパターンで検索するユーティリティ関数。
 
     Args:
-        pattern: Glob pattern (e.g., "*.py", "**/*.json").
-        root: Base path to search (defaults to PATHS.project_root).
-        recursive: If True, use rglob for recursive search.
+        pattern: グロブパターン（例: "*.py", "**/*.json"）。
+        root: ベースとなるパス（デフォルトはPATHS.project_root）。
+        recursive: 再帰的に検索する場合はTrue。
 
     Returns:
-        List of matching Path objects.
+        一致するPathオブジェクトのリスト。
 
     Example:
         >>> py_files = find_paths("*.py", recursive=False)
         >>> all_json = find_paths("**/*.json")
     """
-    base = root or PROJECTPATHS.project_root
+    base: Path = root or PROJECTPATHS.project_root
 
     try:
         if recursive:
-            results = list(base.rglob(pattern))
+            results: list[Path] = list(base.rglob(pattern))
         else:
-            results = list(base.glob(pattern))
+            results: list[Path] = list(base.glob(pattern))
         logger.debug("Found {} paths matching '{}' in {}", len(results), pattern, base)
         return results
     except Exception as e:
@@ -282,21 +290,22 @@ def find_paths(
 
 
 def ensure_path_exists(path: Path, *, is_file: bool = False) -> Path:
-    """Ensure a path exists, creating parent directories if needed.
+    """
+    指定されたパス（ディレクトリまたはファイルの親ディレクトリ）が存在することを保証するユーティリティ関数。
 
     Args:
-        path: Path to ensure exists.
-        is_file: If True, only create parent directories (not the file itself).
-                 Always set True for file paths, because if not, it will try to create a directory with the file name.
+        path: 存在を保証するパス。（ファイルパス・ディレクトリパスのいずれか）
+        is_file: ファイルパスの場合はTrueに設定してください。
+                 Trueの場合、親ディレクトリのみ作成し、ファイル自体は作成しません。
 
     Returns:
-        The exact path given(for chaining).
+        指定されたPathオブジェクト。（チェーン可能とするために返されます）
 
     Example:
         >>> log_file = ensure_path_exists(PATHS.logs / "app.log", is_file=True)
-            This will create the logs directory if it doesn't exist.
+            これは、logsディレクトリが存在しない場合に作成しますが、app.logファイル自体は作成しません。
         >>> data_dir = ensure_path_exists(PATHS.data / "cache")
-            This will create the data/cache directory if it doesn't exist.
+            これは、data/cacheディレクトリが存在しない場合に作成します。
     """
     if is_file:
         path.parent.mkdir(parents=True, exist_ok=True)
