@@ -5,7 +5,7 @@ from flask import Blueprint, Response, jsonify, request
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from server.flask_react_app.config import Settings
+from server.flask_react_app.config import get_settings
 from services.image_service import predict_image_service
 from util.filestorage_to_tensor import filestorage_to_tensor_no_tv
 
@@ -37,7 +37,7 @@ def handle_image_analysis_request() -> Response:
             {"error": {"code": "VALIDATION_ERROR", "message": "No image file provided"}}
         ), 400
 
-    settings = Settings()
+    settings = get_settings()
 
     filename = image_file.filename or "unnamed"
     if (

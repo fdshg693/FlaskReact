@@ -7,7 +7,7 @@ from flask import Blueprint, Response, jsonify, request
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from server.flask_react_app.config import Settings
+from server.flask_react_app.config import get_settings
 from services.pdf_service import extract_pdf_text_service
 
 __all__ = ["pdf_bp"]
@@ -40,7 +40,7 @@ def handle_pdf_text_extraction_request() -> Response:
             {"error": {"code": "VALIDATION_ERROR", "message": "No PDF file provided"}}
         ), 400
 
-    settings = Settings()
+    settings = get_settings()
 
     # Validate upload constraints
     filename = pdf_file.filename or "unnamed.pdf"

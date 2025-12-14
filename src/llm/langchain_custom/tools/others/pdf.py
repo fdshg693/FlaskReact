@@ -8,7 +8,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from loguru import logger
 
-from config import PATHS, ensure_path_exists, load_dotenv_workspace
+from config import PATHS, ensure_path_exists
 
 
 def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
@@ -25,8 +25,6 @@ def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
         FileNotFoundError: If the PDF file does not exist
         ValueError: If the PDF file cannot be processed
     """
-    load_dotenv_workspace()
-
     # Convert to Path object if string is provided
     if isinstance(pdf_path, str):
         pdf_path = Path(pdf_path)
@@ -62,6 +60,9 @@ def extract_text_from_pdf(pdf_path: Path | str) -> list[dict[str, Any]]:
 
 
 if __name__ == "__main__":
+    from config import load_dotenv_workspace
+
+    load_dotenv_workspace()
     pdf_path = PATHS.llm_data / "pdf" / "sample.pdf"
 
     logger.info("Starting PDF text extraction demonstration")

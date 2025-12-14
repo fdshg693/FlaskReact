@@ -7,14 +7,15 @@ from anthropic.types import TextBlock
 from config import load_dotenv_workspace
 
 image_url = "https://upload.wikimedia.org/wikipedia/commons/a/a7/Camponotus_flavomarginatus_ant.jpg"
-load_dotenv_workspace()
-client = anthropic.Anthropic()
 
 
 def send_base64_image() -> None:
     """
     URLから画像を取得し、Base64エンコードしてClaudeに送信する例
     """
+    load_dotenv_workspace()
+    client = anthropic.Anthropic()
+
     image_media_type = "image/jpeg"
     # Wikimedia requires a User-Agent header
     headers = {
@@ -53,6 +54,9 @@ def send_url_image() -> None:
     """
     URLのみをClaudeに送信する例
     """
+    load_dotenv_workspace()
+    client = anthropic.Anthropic()
+
     message_from_url = client.messages.create(
         model="claude-haiku-4-5",
         max_tokens=1024,

@@ -83,7 +83,7 @@ Flask アプリケーションファクトリ関数。**直接実行せず、必
 **初期化処理:**
 
 1. 静的ファイルディレクトリの設定（CDN React 対応）
-2. 環境変数からの設定読み込み（`Settings()` 経由）
+2. 環境変数からの設定読み込み（`get_settings()` 経由）
 3. CORS 設定の適用
 4. Blueprint の登録:
    - `pages_bp`: ページルーティング
@@ -110,7 +110,7 @@ Pydantic Settings を使用した型安全な環境変数管理。
 アプリケーション全体の設定を一元管理します。
 
 **環境変数プレフィックス:** `FLASKREACT_`  
-**設定ファイル:** `.env`（オプション）
+**設定ファイル:** `.env`（オプション、起動時に `load_dotenv_workspace()` で読み込み）
 
 **設定項目:**
 
@@ -129,9 +129,9 @@ Pydantic Settings を使用した型安全な環境変数管理。
 **使用例:**
 
 ```python
-from server.config import Settings
+from server.flask_react_app.config import get_settings
 
-settings = Settings()
+settings = get_settings()
 print(settings.max_image_size_mb)  # 5
 ```
 

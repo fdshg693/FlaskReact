@@ -7,13 +7,15 @@ from __future__ import annotations
 import streamlit as st
 
 from config import load_dotenv_workspace
-from llm.langchain_custom.examples.simple_call import main as call_simple_model
-
-# .envを読み込む
-load_dotenv_workspace()
 
 
 def main() -> None:
+    # .envを読み込む（既存のシステム環境変数は上書きしない）
+    load_dotenv_workspace()
+
+    # 実行時に import して、import-time 副作用を避ける
+    from llm.langchain_custom.examples.simple_call import main as call_simple_model
+
     st.set_page_config(page_title="LangChain Chat", page_icon="💬", layout="centered")
 
     st.title("LangChain Chat")

@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import BaseModel, Field, ValidationError
 
 from ml.numeric.eval_batch import evaluate_iris_batch
-from server.flask_react_app.config import Settings
+from server.flask_react_app.config import get_settings
 
 __all__ = ["iris_bp"]
 
@@ -60,7 +60,7 @@ def handle_iris_prediction_request() -> Response:
             {"error": {"code": "VALIDATION_ERROR", "message": "Invalid input"}}
         ), 400
 
-    settings = Settings()
+    settings = get_settings()
     pred = _predict_cached(
         str(settings.model_path), str(settings.scaler_path), tuple(body.features)
     )
@@ -85,7 +85,7 @@ def handle_user_data_batch_request() -> Response:
             }
         ), 400
 
-    settings = Settings()
+    settings = get_settings()
     batch = tuple(tuple(row) for row in body.data)
     pred = _predict_batch_cached(
         str(settings.model_path), str(settings.scaler_path), batch

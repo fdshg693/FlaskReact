@@ -2,15 +2,12 @@ from typing import Any, List
 
 from langchain.agents import create_agent
 from langchain_core.tools import BaseTool
-from langgraph.graph.state import CompiledStateGraph
+from langgraph.graph.state import CompiledStateGraph  # type: ignore
 
-from config import load_dotenv_workspace
 from llm.langchain_custom.experimets.local_document_search import (
     create_search_local_text_tool,
 )
 from llm.langchain_custom.models import LLMModel
-
-load_dotenv_workspace()
 
 
 def function_calling(
@@ -32,13 +29,16 @@ def function_calling(
         tools=tools,
     )
 
-    result = agent.invoke(
+    result = agent.invoke(  # type: ignore
         {"messages": [{"role": "user", "content": query}]},
     )
     return result["messages"][-1].content
 
 
 if __name__ == "__main__":
+    from config import load_dotenv_workspace
+
+    load_dotenv_workspace()
     text_search_tool: BaseTool = create_search_local_text_tool()
     tools: List[BaseTool] = [text_search_tool]
     search_query: str = "名前順にテキストファイルを並べてください。"

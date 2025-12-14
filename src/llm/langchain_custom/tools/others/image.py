@@ -7,7 +7,7 @@ from typing import Any
 from langchain_openai import ChatOpenAI
 from loguru import logger
 
-from config import PATHS, load_dotenv_workspace
+from config import PATHS
 from llm.langchain_custom.models import LLMModel
 
 """
@@ -36,9 +36,6 @@ def analyze_image_raw(image_data: str) -> str:
         raise ValueError("image_data cannot be empty")
 
     logger.info("Starting image analysis with OpenAI GPT-4o")
-
-    # Load environment variables from .env file
-    load_dotenv_workspace()
 
     try:
         # Pass to LLM
@@ -137,5 +134,8 @@ def test_analyze_image_from_url():
 
 
 if __name__ == "__main__":
+    from config import load_dotenv_workspace
+
+    load_dotenv_workspace()
     # test_analyze_image_raw()
     test_analyze_image_from_url()

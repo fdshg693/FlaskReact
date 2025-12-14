@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 from typing import List, Set
 
@@ -7,7 +8,21 @@ from loguru import logger
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from config import PATHS
+from config import PATHS, load_dotenv_workspace
+
+
+def init_env() -> None:
+    """Load .env once without overriding existing system env vars."""
+
+    load_dotenv_workspace(override=False)
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> "Settings":
+    """Return a process-wide Settings singleton (validated once)."""
+
+    init_env()
+    return Settings()
 
 
 class Settings(BaseSettings):
@@ -28,9 +43,9 @@ class Settings(BaseSettings):
         checkpoint_path: モデルチェックポイントのファイルパス
     """
 
-    # SettingsConfigDict を使用して設定を指定
+    # NOTE: ".env" is loaded once at startup via config.load_setting.load_dotenv_workspace().
+    # Keep system env precedence by using override=False there (do not use Pydantic env_file).
     model_config = SettingsConfigDict(
-        env_file=".env",
         env_prefix="FLASKREACT_",
         extra="ignore",
     )

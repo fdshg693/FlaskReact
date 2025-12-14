@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 
 from config import PATHS
 from server.flask_react_app.api import image_bp, iris_bp, pdf_bp, text_bp
-from server.flask_react_app.config import Settings
+from server.flask_react_app.config import get_settings
 from server.flask_react_app.pages import pages_bp
 
 
@@ -116,7 +116,7 @@ def create_app() -> Flask:
     注意: この関数を直接呼び出さず、必ず `uv run run_app.py` を使用してください。
 
     主な処理内容:
-    - Settings()からCORS設定とファイルサイズ制限を読み込み
+    - get_settings()からCORS設定とファイルサイズ制限を読み込み
     - 静的ファイル配信の設定(CDN React用)
     - Blueprintの登録:
         * pages_bp: ページルーティング(/, /image など)
@@ -140,8 +140,8 @@ def create_app() -> Flask:
     # Flaskクラスの引数の意味[__name__: モジュール名。Flaskはこれを使ってリソースの場所を特定する。][#static_folder: staticのディレクトリパス。][#static_url_path: staticにアクセスするためのURLパス。]
     # static_url_pathを空文字列にすることで、各ページディレクトリ配下のアセット(home/js/App.js等)を直接参照可能にする
     app = Flask(__name__, static_folder=str(static_dir), static_url_path="")
-    # .envファイルからFLASKREACT_プレフィックス付きの環境変数を自動読み込み（実際には"FLASKREACT_"プレフィックスが存在していないため、何も渡されていない）
-    settings = Settings()
+    # Settings are loaded once per process; system env wins over .env.
+    settings = get_settings()
 
     # CORS: 異なるオリジン（localhost:3000のReactアプリ等）からのAPIリクエストを許可
     CORS(

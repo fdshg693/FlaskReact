@@ -8,8 +8,10 @@ from datetime import datetime
 import requests
 import streamlit as st
 
+from config import load_dotenv_workspace
+
 # TODO:
-# - APIキーを環境変数から取得しているが、.envから読み込む設定は未実装
+# - APIキーを環境変数から取得している（.envは load_dotenv_workspace() で読み込み済み）
 # - paramsとしてAPIキーを渡してしまっているので、Bearer等の認証方式に変更するべき
 # - weather_dataが単なるdictであるため、型ヒントが曖昧
 #   → Pydanticモデルなどで型定義を行うと理想。最低でも、TypeDictやカスタムクラスで型定義を行うべき
@@ -17,7 +19,7 @@ import streamlit as st
 # OpenWeatherMap API の設定
 # APIキーは https://openweathermap.org/api で無料アカウントを作成して取得してください
 # .envファイルの OPENWEATHER_API_KEY に設定するか、サイドバーで入力してください
-API_KEY = os.getenv("OPENWEATHER_API_KEY", "YOUR_API_KEY_HERE")
+API_KEY_PLACEHOLDER = "YOUR_API_KEY_HERE"
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 
@@ -134,13 +136,18 @@ def format_weather_as_chat_response(weather_data: dict) -> str:
 
 
 def main() -> None:
+    # .env を一度だけ読み込む（既存のシステム環境変数は上書きしない）
+    load_dotenv_workspace()
+
+    api_key_from_env = os.getenv("OPENWEATHER_API_KEY", API_KEY_PLACEHOLDER)
+
     st.set_page_config(page_title="天気予報", page_icon="🌤️", layout="centered")
 
     st.title("🌤️ 天気予報アプリ")
     st.markdown("日本の主要都市の現在の天気を確認できます")
 
     # APIキーの確認
-    if API_KEY == "YOUR_API_KEY_HERE":
+    if api_key_from_env == API_KEY_PLACEHOLDER:
         st.warning("""
         ⚠️ APIキーが設定されていません
         
@@ -155,7 +162,7 @@ def main() -> None:
         st.header("⚙️ 設定")
         api_key_input = st.text_input(
             "APIキー",
-            value=API_KEY if API_KEY != "YOUR_API_KEY_HERE" else "",
+            value=api_key_from_env if api_key_from_env != API_KEY_PLACEHOLDER else "",
             type="password",
             help="OpenWeatherMap APIキーを入力してください",
         )
@@ -169,7 +176,7 @@ def main() -> None:
         """)
 
     # 使用するAPIキー
-    current_api_key = api_key_input if api_key_input else API_KEY
+    current_api_key = api_key_input if api_key_input else api_key_from_env
 
     # 日本の主要都市
     cities = {
@@ -197,7 +204,7 @@ def main() -> None:
 
     # 実行ボタン
     if st.button("🔍 天気を取得", type="primary", use_container_width=True):
-        if current_api_key == "YOUR_API_KEY_HERE" or not current_api_key:
+        if current_api_key == API_KEY_PLACEHOLDER or not current_api_key:
             st.error("APIキーを設定してください")
         else:
             with st.spinner(f"{selected_region}の天気を取得中..."):
@@ -225,7 +232,7 @@ def main() -> None:
     # チャット入力
     if prompt := st.chat_input("地名を入力してください（例: 東京、大阪、福岡）"):
         # APIキーのチェック
-        if current_api_key == "YOUR_API_KEY_HERE" or not current_api_key:
+        if current_api_key == API_KEY_PLACEHOLDER or not current_api_key:
             st.error("APIキーを設定してください")
         else:
             # ユーザーメッセージを追加
