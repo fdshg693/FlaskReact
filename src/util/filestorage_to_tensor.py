@@ -1,8 +1,9 @@
 from typing import Optional, Tuple, Union
-from werkzeug.datastructures import FileStorage
-from PIL import Image, ImageOps
+
 import numpy as np
 import torch
+from PIL import Image, ImageOps
+from werkzeug.datastructures import FileStorage
 
 
 def filestorage_to_tensor_no_tv(

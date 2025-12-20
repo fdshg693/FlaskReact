@@ -1,0 +1,32 @@
+# dataフォルダのGIT管理
+
+# ============================
+# original_sourcesフォルダ内のファイル管理
+# ============================
+
+# PDFはファイル容量などを考えて、sampleから始まるファイルのみGITに追加する
+original_sources/**/*.pdf
+!original_sources/**/sample*.pdf
+# 画像ファイルも同様にして、sampleから始まるファイルのみGITに追加する
+original_sources/**/*.png
+!original_sources/**/sample*.png
+
+original_sources/**/*.jpeg
+!original_sources/**/sample*.jpeg
+original_sources/**/*.jpg
+!original_sources/**/sample*.jpg
+
+# csv, txt ファイルなどは基本的にGIT管理する
+
+
+# ============================
+# tmp, outputs, logsフォルダの管理
+# ============================
+
+# tmp, outputs, logsフォルダはGIT管理しない
+tmp/
+temp/
+output/
+outputs/
+log/
+logs/

@@ -1,1 +1,0 @@
-# 各主要フォルダに、`.github/copilot-instructions.md` ファイルを適宜作成して、そのフォルダに特化した GitHub Copilot の知識を記述します。

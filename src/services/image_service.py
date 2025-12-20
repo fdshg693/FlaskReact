@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from typing import Any
-from image.core.evaluation.evaluator import predict_image_data
+
 import torch
+
+from ml.image.core.evaluation.model_evaluator import predict_image_data
 
 
 def predict_image_service(checkpoint_path: str, img_tensor: torch.Tensor) -> Any:

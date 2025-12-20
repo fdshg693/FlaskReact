@@ -1,0 +1,32 @@
+# ISSUE用のラベル定義
+
+# ISSUEの種類を表すラベル
+type-app-enhancement: アプリ本体の機能改善
+type-app-feature: アプリ本体の新機能追加
+type-app-tooling: 開発支援用ツール開発要望
+type-bug: バグ報告
+type-documentation: ドキュメント関連
+type-new-tool: 新しい便利ツールの導入
+type-new-library: 新しいライブラリの導入
+type-new-framework: 新しいフレームワークの導入
+type-new-architecture: 新しいアーキテクチャの導入
+# ISSUEの工数を表すラベル
+size-xs: 超小規模 (1時間未満)
+size-s: 小規模 (1時間〜4時間)
+size-m: 中規模 (4時間〜1日)
+size-l: 大規模 (1日〜3日)
+size-xl: 超大規模 (3日以上)
+# ISSUEの優先度を表すラベル
+priority-low: 低優先度
+priority-medium: 中優先度
+priority-high: 高優先度
+priority-critical: 緊急対応
+# ISSUEの状態を表すラベル
+status-in-progress: 進行中
+status-on-hold: 保留中
+status-needs-review: レビュー待ち
+status-completed: 完了
+# ISSUEの難易度を表すラベル
+difficulty-easy: 簡単
+difficulty-medium: 普通
+difficulty-hard: 難しい
