@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-procman.py - Simple process manager for background command execution.
+.procmanファイルを利用して、バックグラウンドでコマンドを実行するシンプルなプロセスマネージャ。
 
 Usage:
     python procman.py run <cmd>   - Run command in background
@@ -38,7 +38,7 @@ def get_next_id(processes):
     """Get the next available ID."""
     if not processes:
         return 1
-    return max(int(k) for k in processes.keys()) + 1
+    return max(int(k) for k in processes.keys()) + 1  # type: ignore
 
 
 def is_alive(pid):
