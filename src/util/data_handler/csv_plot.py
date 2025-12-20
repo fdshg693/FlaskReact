@@ -5,10 +5,10 @@ from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from data_util.csv_util import read_csv_into_dataframe
 from loguru import logger
 
 from config import PROJECTPATHS, get_path
+from util.data_handler.csv_util import read_csv_into_dataframe
 
 
 def plot_histograms_from_dataframe(

@@ -1,8 +1,8 @@
-# src/data_util モジュール コードレビュー
+# src/util.data_handler モジュール コードレビュー
 
 ## 総合評価: 8/10
 
-`src/data_util`モジュールは、CSV操作とデータ可視化のための実用的なユーティリティを提供しています。モダンなPythonのベストプラクティス（`pathlib`、型ヒント、`loguru`）に概ね準拠しており、コードの品質は高いレベルにあります。
+`src/util.data_handler`モジュールは、CSV操作とデータ可視化のための実用的なユーティリティを提供しています。モダンなPythonのベストプラクティス（`pathlib`、型ヒント、`loguru`）に概ね準拠しており、コードの品質は高いレベルにあります。
 
 ---
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 **改善提案:**
 ```python
 # examples/ ディレクトリに適切な例示ファイルを作成するか、削除する
-# 例: src/data_util/examples/plot_examples.py
+# 例: src/util.data_handler/examples/plot_examples.py
 ```
 
 ---
@@ -198,4 +198,4 @@ save_data_to_csv.py
 ---
 
 **レビュー実施日:** 2025-11-23  
-**レビュー対象:** `src/data_util/` モジュール全体
+**レビュー対象:** `src/util.data_handler/` モジュール全体

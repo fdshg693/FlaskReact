@@ -21,7 +21,7 @@
 レビューを行なってください　target_directory=path/to/target/folder
 ```
 
-スラッシュコマンドを使って、タスクファイルを参照させることも可能です。
+スラッシュコマンドからプロンプトを与えて、プロンプトファイル内に記載されたタスクファイルを参照させることも可能です。
 
 ### 2. GitHub Copilot CLI を使った並列レビュー
 
@@ -81,7 +81,7 @@ src/llm/claude_custom/ モジュールのみをレビューしてください。
 |------------|---------|---------|
 | **AI Review** | PR作成/更新、手動 | AIによるコードレビュー |
 | **Tests** | Push、PR | pytest実行 |
-| **Lint** | Push、PR | ruff/mypyによるチェック |
+| **Lint** | Push、PR | ruffによるチェック |
 
 ---
 
@@ -89,4 +89,4 @@ src/llm/claude_custom/ モジュールのみをレビューしてください。
 
 - [AI活用・自動化ガイド](../../project_overview/05_AI活用・自動化.md)
 - [GitHub Copilot 活用方針](../github_copilot/README.md)
-- [開発規約](../../dev_contract/INDEX.md)
+- [開発規約](../../dev_contract/00_INDEX.md)

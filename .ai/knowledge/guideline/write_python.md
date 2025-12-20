@@ -5,7 +5,7 @@
 - you are under virtual environment (`.venv` directory)
 - You are using a modern Python development environment with the following libraries:
   - `pathlib`
-  - `mypy`
+  - `pyright`
   - `ruff`
   - `pytest`
   - `loguru`
@@ -20,7 +20,7 @@
 
 ### Modern Python Features (Required)
 - **Type hints**: Add type annotations to all functions and variables
-    - use mypy to check type hints
+    - use pyright to check type hints
 - **f-strings**: Use f-string formatting instead of `.format()` or `%` formatting
 - **pathlib**: Use `pathlib.Path` for all file system operations instead of `os.path`
 - **pydoc**: Use `pydoc` for generating documentation

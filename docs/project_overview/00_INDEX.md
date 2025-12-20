@@ -1,4 +1,4 @@
-# プロジェクト概要 INDEX
+# プロジェクト概要 00_INDEX
 
 このフォルダには、プロジェクトの全体像を理解するための概要ドキュメントが含まれています。
 
@@ -26,14 +26,6 @@
 2. **[05_AI活用・自動化.md](./05_AI活用・自動化.md)** でAIツールを活用
 
 ### 詳細なルールを確認したい方
-- 開発規約: [../dev_contract/INDEX.md](../dev_contract/INDEX.md)
+- 開発規約: [../dev_contract/00_INDEX.md](../dev_contract/00_INDEX.md)
 - 技術知識: [../tech_knowledge/](../tech_knowledge/)
-- 課題管理: [../problems/INDEX.md](../problems/INDEX.md)
-
----
-
-## 📝 更新履歴
-
-| 日付 | 内容 |
-|------|------|
-| 2025-11-30 | プロジェクト概要を体系的に再編成 |
+- 課題管理: [../problems/00_INDEX.md](../problems/00_INDEX.md)

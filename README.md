@@ -9,7 +9,7 @@
 詳細なドキュメントは以下を参照してください：
 
 - **[プロジェクト概要](docs/project_overview/00_INDEX.md)**: プロジェクトの全体像、環境構築、実行方法
-- **[開発規約](docs/dev_contract/INDEX.md)**: コーディング規約、テスト戦略、Git運用
+- **[開発規約](docs/dev_contract/00_INDEX.md)**: コーディング規約、テスト戦略、Git運用
 - **[技術ナレッジ](docs/tech_knowledge/)**: Python、React、ツールの詳細仕様
 - **[課題管理](docs/problems/INDEX.md)**: 既知の問題、TODO管理
 

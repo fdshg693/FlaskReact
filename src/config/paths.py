@@ -1,3 +1,8 @@
+"""
+パス設定モジュール。
+パスの詳細は、src/config/_create_paths_file.pyを実行することで、src/config/paths.txtに作成される。
+"""
+
 from __future__ import annotations
 
 import os
@@ -264,7 +269,7 @@ def find_paths(
     Args:
         pattern: グロブパターン（例: "*.py", "**/*.json"）。
         root: ベースとなるパス（デフォルトはPATHS.project_root）。
-        recursive: 再帰的に検索する場合はTrue。
+        recursive: 再帰的に検索する場合はTrue。(rglobを使用)
 
     Returns:
         一致するPathオブジェクトのリスト。
@@ -276,6 +281,8 @@ def find_paths(
     base: Path = root or PROJECTPATHS.project_root
 
     try:
+        # rglobは再帰的に全てのサブディレクトリを探索
+        # globはデフォルトで現在のディレクトリのみ探索、**を使うと再帰的に探索可能
         if recursive:
             results: list[Path] = list(base.rglob(pattern))
         else:
@@ -294,7 +301,7 @@ def ensure_path_exists(path: Path, *, is_file: bool = False) -> Path:
     指定されたパス（ディレクトリまたはファイルの親ディレクトリ）が存在することを保証するユーティリティ関数。
 
     Args:
-        path: 存在を保証するパス。（ファイルパス・ディレクトリパスのいずれか）
+        path: ファイルパスの場合は、親ディレクトリの存在を、ディレクトリパスの場合はそのディレクトリ自体の存在を保証します。ただし、既に存在する場合は何もしません。
         is_file: ファイルパスの場合はTrueに設定してください。
                  Trueの場合、親ディレクトリのみ作成し、ファイル自体は作成しません。
 

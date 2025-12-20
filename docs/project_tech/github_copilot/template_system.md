@@ -42,18 +42,8 @@
 │       ├── .agent.md           # エージェント定義
 │       ├── default.prompt.md   # デフォルトプロンプト
 │       └── refactor.prompt.md  # リファクタリング用プロンプト
-├── docs/                       # カテゴリ: ドキュメント系
-│   ├── ai_knowledge/
-│   │   └── .agent.md
-│   ├── readme/
-│   │   └── .agent.md
-│   └── review/
-│       └── .agent.md
-└── general/                    # カテゴリ: 汎用
-    ├── basic/
-    │   └── .agent.md
-    └── folder_specific/
-        └── .agent.md
+...
+
 ```
 
 ### 生成先
@@ -62,18 +52,16 @@
 .github/
 ├── agents/
 │   ├── coder.script.default.agent.md
-│   ├── docs.ai_knowledge.default.agent.md
-│   ├── docs.readme.default.agent.md
-│   ├── docs.review.default.agent.md
-│   ├── general.basic.default.agent.md
-│   └── general.folder_specific.default.agent.md
+│   ...
+│
 ├── prompts/
 │   ├── coder.script.default.prompt.md
-│   └── coder.script.refactor.prompt.md
+│   ├── coder.script.refactor.prompt.md
+│   ....
+│
 └── tasks/
     ├── coder.script.md
-    ├── docs.ai_knowledge.md
-    └── general.basic.md
+    ....
 ```
 
 ---
@@ -163,22 +151,7 @@ outputs:
       log_level: DEBUG
   - name: strict            # coder.script.strict.agent.md
     variables:
-      strictness: high
-```
-
-### 本文
-
-```markdown
-# Role
-エージェントの役割を明確に定義
-
-# Constraints
-- 制約1
-- 制約2
-
-# Workflow
-1. ステップ1
-2. ステップ2
+      log_level: ERROR
 ```
 
 ---
@@ -194,56 +167,6 @@ outputs:
 | `${type}` | タイプ名 | `script` |
 | `${output}` | 出力名 | `default` |
 
-### 使用例
-
-**テンプレート**:
-```markdown
-# Settings
-- Log Level: ${custom:log_level}
-- Category: ${category}
-- Type: ${type}
-```
-
-**フロントマター**:
-```yaml
-outputs:
-  - name: debug
-    variables:
-      log_level: DEBUG
-```
-
-**生成後**:
-```markdown
-# Settings
-- Log Level: DEBUG
-- Category: coder
-- Type: script
-```
-
----
-
-## 📝 プロンプト定義の書き方
-
-### フロントマター
-
-```yaml
----
-agent: coder.script.default
----
-```
-
-### 本文
-
-```markdown
----
-agent: coder.script.default
----
-
-read .github/tasks/coder.script.md to understand your task.
-
-{追加の指示}
-```
-
 ---
 
 ## 🔄 開発ワークフロー
@@ -258,32 +181,12 @@ read .github/tasks/coder.script.md to understand your task.
 3. プロンプト作成（手動 or 自動生成）
    └─ create-default-prompt
 
-4. タスク生成
+4. タスク生成(任意)
    └─ create-task-from-agent
 
 5. 動作確認
    └─ VSCodeでエージェント・プロンプトを使用
 ```
-
----
-
-## 🐛 トラブルシューティング
-
-### エージェントが生成されない
-
-```bash
-# テンプレートファイルの存在確認
-find .github_copilot_template -name ".agent.md"
-
-# フロントマターの構文確認（YAMLとして正しいか）
-python -c "import yaml; yaml.safe_load(open('.github_copilot_template/coder/script/.agent.md').read().split('---')[1])"
-```
-
-### 変数が置換されない
-
-- 変数名が正しいか確認（`${custom:variable_name}`）
-- `outputs` フィールドに `variables` が定義されているか確認
-- 変数名がスネークケースか確認（ケバブケースは非対応）
 
 ---
 

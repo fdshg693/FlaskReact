@@ -1,0 +1,23 @@
+# Auto-generated from PROJECTPATHS
+# Root: /Users/seiwan/CodeStudy/FlaskReact
+.
+├── data/ (data)
+│   ├── original_sources/ (original_data)
+│   │   ├── llm/ (llm_data)
+│   │   └── ml/ (ml_data)
+│   │       ├── diabetes/
+│   │       │   └── diabetes.csv (diabetes_data_path)
+│   │       ├── iris/
+│   │       │   └── iris.csv (iris_data_path)
+│   │       └── others/
+│   │           ├── titanic_test.csv (titanic_test_data_path)
+│   │           └── titanic_train.csv (titanic_train_data_path)
+│   ├── outputs/ (outputs)
+│   │   └── ml/ (ml_outputs)
+│   │       ├── image/ (ml_image_data)
+│   │       └── learning_curves/ (ml_learning_curves_dir)
+│   └── tmp/ (tmp)
+├── frontend/ (frontend)
+│   └── flask_static/ (flask_static)
+├── logs/ (logs)
+└── src/ (src)

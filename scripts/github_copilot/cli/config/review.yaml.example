@@ -1,6 +1,6 @@
 root_dirs:
   - src/util
-  - src/data_util
+  - src/util.data_handler
 agent: folder_specific_agent
 prompt: >
   target_directory=${root_dir}

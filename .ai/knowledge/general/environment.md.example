@@ -1,3 +1,5 @@
+これはデフォルトファイルです。
+ユーザはこれを正しく編集して、環境固有の情報を記載してください。
 # This file contains environment-specific information for This PC.
 
 ## OS
@@ -8,4 +10,11 @@ Mac | Windows | Linux
 - source /Users/seiwan/CodeStudy/FlaskReact/.venv/bin/activate: activate virtual environment
 - pyhon3・pip3: available without activating virtual environment
 - python・pip: available after activating virtual environment
+- etc.
+
+## Tools installed
+- uv: for dependency management and tool management
+- python3.13: programming language
+- git: version control system
+- nodejs: for frontend development
 - etc.

@@ -2,12 +2,11 @@ from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
-from data_util.csv_util import save_csv_to_path
 from loguru import logger
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.utils._bunch import Bunch
 
-from config import DIABETES_DATA_PATH
+from util.data_handler.csv_util import save_csv_to_path
 
 
 def _resolve_save_path(save_path: Path | str, default_filename: str) -> Path:

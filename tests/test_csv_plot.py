@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import pandas as pd
-from data_util.csv_plot import plot_histograms_from_dataframe
+
+from util.data_handler.csv_plot import plot_histograms_from_dataframe
 
 
 def test_plot_histograms_tmpdir(tmp_path: Path):
@@ -37,7 +38,7 @@ def test_plot_boxplots_tmpdir(tmp_path: Path):
         }
     )
 
-    from data_util.csv_plot import plot_boxplots_from_dataframe
+    from util.data_handler.csv_plot import plot_boxplots_from_dataframe
 
     out = plot_boxplots_from_dataframe(df, save_dir=tmp_path)
 

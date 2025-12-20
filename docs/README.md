@@ -11,7 +11,7 @@
 | フォルダ | 目的 | 管理方針 | リンク |
 |---------|------|---------|--------|
 | **project_overview/** | プロジェクト全体像の理解 | プロジェクト固有情報。新規メンバー向け | [INDEX](./project_overview/00_INDEX.md) |
-| **dev_contract/** | 開発規約・ルール | チーム共通のルール。Git管理 | [INDEX](./dev_contract/INDEX.md) |
+| **dev_contract/** | 開発規約・ルール | チーム共通のルール。Git管理 | [INDEX](./dev_contract/00_INDEX.md) |
 | **problems/** | 課題・改善点の管理 | 優先度とステータスで体系的に管理 | GithubのIssueによる管理[ISSUE管理](./problems/ISSUE管理.md)|
 | **project_tech/** | プロジェクト固有の技術情報 | プロジェクト固有の技術情報。Git管理 | [フォルダ](./project_tech/) |
 | **tech_knowledge/** | 技術的な知識・ノウハウ | 汎用的な技術情報。Git管理 | [フォルダ](./tech_knowledge/) |
@@ -50,7 +50,7 @@ docs/tech_knowledge/
 ### 初めてプロジェクトに参加する場合
 
 1. **[project_overview/00_INDEX.md](./project_overview/00_INDEX.md)** - プロジェクト概要を理解
-2. **[dev_contract/INDEX.md](./dev_contract/INDEX.md)** - 開発規約を確認
+2. **[dev_contract/00_INDEX.md](./dev_contract/00_INDEX.md)** - 開発規約を確認
 
 ### 開発中にドキュメントを探す場合
 
@@ -125,7 +125,7 @@ docs/tech_knowledge/
 ## 📚 関連リソース
 
 - **プロジェクトルート**: [../README.md](../README.md)
-- **開発規約**: [dev_contract/INDEX.md](./dev_contract/INDEX.md)
+- **開発規約**: [dev_contract/00_INDEX.md](./dev_contract/00_INDEX.md)
 
 ---
 

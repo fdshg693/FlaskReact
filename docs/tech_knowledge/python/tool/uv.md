@@ -24,7 +24,7 @@ uv run `*.py`
 
 ### パッケージの追加
 - uv add `package_name`
-    - mypy, flaskなどのパッケージを追加する場合は、`uv add`コマンドを使用します。
+    - pyright, flaskなどのパッケージを追加する場合は、`uv add`コマンドを使用します。
     - project.tomlに追加されます。
     - uv syncを実行することで、仮想環境にインストールされます。
 ### パッケージのアンインストール
@@ -97,7 +97,6 @@ authors = ["author <author@example.com>"]
 license = "MIT"
 python = ">=3.13"
 [tool.uv.dependencies]
-mypy = ">=0.991"
 ruff = ">=0.7"
 [tool.uv.dev-dependencies]
 black = ">=23.0"
