@@ -35,7 +35,7 @@ def handle_image_analysis_request() -> Response:
         logger.error(f"Validation error in image: {e}")
         return jsonify(
             {"error": {"code": "VALIDATION_ERROR", "message": "No image file provided"}}
-        ), 400
+        )
 
     settings = get_settings()
 
@@ -51,7 +51,7 @@ def handle_image_analysis_request() -> Response:
                     "message": f"File type not allowed. Allowed: {settings.allowed_image_extensions}",
                 }
             }
-        ), 400
+        )
 
     image_file.seek(0, 2)
     size = image_file.tell()
@@ -64,7 +64,7 @@ def handle_image_analysis_request() -> Response:
                     "message": f"File too large. Maximum size: {settings.max_image_size_mb}MB",
                 }
             }
-        ), 400
+        )
 
     img_tensor: torch.Tensor = filestorage_to_tensor_no_tv(image_file)
 
