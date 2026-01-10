@@ -68,6 +68,10 @@ pythonpath = ["src"]
 # テストファイルを探索するディレクトリ
 testpaths = ["tests"]
 
+markers = [
+    "visual: generates plot/image artifacts for manual inspection; skipped unless RUN_VISUAL_TESTS=1 or selected via -m visual",
+]
+
 # テストファイルの命名パターン
 python_files = ["test_*.py", "*_test.py"]
 

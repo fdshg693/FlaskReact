@@ -10,22 +10,22 @@ from loguru import logger
 def read_csv_into_dataframe(
     path: str | Path, *, encoding: Optional[str] = None
 ) -> pd.DataFrame:
-    """Read a CSV file from a filesystem path and return a pandas DataFrame.
+    """ファイルパスから CSV を読み込み、pandas DataFrame を返します。
 
-    Uses pathlib.Path for path handling and loguru for logging to match project
-    conventions.
+    パス処理は pathlib.Path を使い、ログは loguru を使ってプロジェクトの
+    既存慣習に合わせています。
 
     Args:
-        path: Path or string pointing to the CSV file.
-        encoding: Optional text encoding (passed to pandas.read_csv).
+        path: CSV ファイルのパス（Path または str）。
+        encoding: 文字エンコーディング（pandas.read_csv に渡されます）。
 
     Returns:
-        pandas.DataFrame loaded from the CSV.
+        読み込んだ pandas.DataFrame。
 
     Raises:
-        FileNotFoundError: If the path does not exist or is not a file.
-        pd.errors.EmptyDataError: If the CSV is empty.
-        Exception: Propagates pandas parsing errors and others.
+        FileNotFoundError: パスが存在しない、またはファイルではない場合。
+        pd.errors.EmptyDataError: CSV が空の場合。
+        Exception: pandas のパースエラー等はそのまま送出します。
     """
     p = Path(path)
     logger.debug("read_csv_from_path() -> resolving path: {}", p)
@@ -35,10 +35,10 @@ def read_csv_into_dataframe(
         raise FileNotFoundError(f"CSV file not found: {p}")
 
     try:
-        df = pd.read_csv(p, encoding=encoding) if encoding else pd.read_csv(p)
+        df = pd.read_csv(p, encoding=encoding) if encoding else pd.read_csv(p)  # pyright: ignore[reportUnknownMemberType]
         logger.info("Loaded CSV with shape {} from {}", df.shape, p)
         return df
-    except Exception:  # keep broad to let callers handle pandas exceptions
+    except Exception:  # 呼び出し側で pandas 例外等を扱えるよう広めに捕捉
         logger.exception("Failed to read CSV from %s", p)
         raise
 
@@ -52,21 +52,22 @@ def save_csv_to_path(
     header: bool | list[str] | None = True,
     encoding: Optional[str] = None,
 ) -> Path:
-    """Save a pandas DataFrame to CSV at the given path, creating parents.
+    """pandas DataFrame を CSV として保存します（親ディレクトリは作成）。
 
     Args:
-            df: DataFrame to save.
-            path: Destination file path (string or Path).
-            index: Whether to write row index.
-            overwrite: If False and file exists, raise FileExistsError.
-            encoding: Optional text encoding (passed to DataFrame.to_csv).
+        df: 保存する DataFrame。
+        path: 保存先ファイルパス（str または Path）。
+        index: 行インデックスを書き込むかどうか。
+        overwrite: False かつファイルが存在する場合は FileExistsError。
+        header: 列名を書き込むか、またはカスタム列名リスト。
+        encoding: 文字エンコーディング（DataFrame.to_csv に渡されます）。
 
     Returns:
-            Path: The absolute Path to the saved CSV file.
+        保存した CSV ファイルの絶対パス（Path）。
 
     Raises:
-            FileExistsError: If file exists and overwrite is False.
-            Exception: Propagates IO or pandas errors.
+        FileExistsError: ファイルが存在し、overwrite が False の場合。
+        Exception: IO や pandas のエラーはそのまま送出します。
     """
     p = Path(path)
     logger.debug("save_csv_to_path() -> target path: {}", p)
@@ -75,13 +76,13 @@ def save_csv_to_path(
         logger.error("File already exists and overwrite=False: {}", p)
         raise FileExistsError(f"File exists and overwrite is False: {p}")
 
-    # ensure parent directories exist
+    # 親ディレクトリがなければ作成
     if not p.parent.exists():
         logger.debug("Creating parent directories for {}", p.parent)
         p.parent.mkdir(parents=True, exist_ok=True)
 
     try:
-        # Respect header and optional encoding when saving
+        # header/encoding の指定を尊重して保存
         to_csv_kwargs = {"index": index, "header": header}
         if encoding:
             to_csv_kwargs["encoding"] = encoding

@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 _BUILDING_SINGLETON = False
 
 
-class Paths(BaseModel):
+class _PATHS(BaseModel):
     """
     プロジェクトパスを格納したシングルトンPROJECTPATHSを作成するためのクラス。
 
@@ -89,7 +89,7 @@ class Paths(BaseModel):
     # model_validatorは、モデル全体のバリデーションを行うためのデコレータ。
     # mode="after"は、全てのフィールドのバリデーションが終わった後にこのメソッドが呼び出されることを意味する。
     @model_validator(mode="after")
-    def _validate_paths(self) -> Paths:
+    def _validate_paths(self) -> _PATHS:
         """Validate that all paths are properly formed."""
         global _BUILDING_SINGLETON  # noqa: PLW0603
 
@@ -114,7 +114,7 @@ class Paths(BaseModel):
         return self
 
     @classmethod
-    def _build(cls, root: Path | None = None) -> Paths:
+    def _build(cls, root: Path | None = None) -> _PATHS:
         """
         シングルトンPROJECTPATHSを構築するためのクラスメソッド。
         外部からこのメソッドを呼び出してインスタンス化しないこと。
@@ -215,7 +215,7 @@ class Paths(BaseModel):
 
 # このファイルのこの部分でのみシングルトンインスタンスを構築可能にする
 _BUILDING_SINGLETON = True
-PROJECTPATHS: Paths = Paths._build()
+PROJECTPATHS: _PATHS = _PATHS._build()
 _BUILDING_SINGLETON = False
 
 
@@ -324,4 +324,4 @@ def ensure_path_exists(path: Path, *, is_file: bool = False) -> Path:
     return path
 
 
-__all__ = ["Paths", "PROJECTPATHS", "get_path", "find_paths", "ensure_path_exists"]
+__all__ = ["PROJECTPATHS", "get_path", "find_paths", "ensure_path_exists"]

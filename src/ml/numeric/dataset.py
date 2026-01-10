@@ -15,7 +15,7 @@ from pydantic import (
 )
 from sklearn.utils import Bunch
 
-from util.data_handler.csv_util import read_csv_into_dataframe
+from util.csv_plot.util import read_csv_into_dataframe
 
 
 class MLCompatibleDataset(BaseModel):
