@@ -326,7 +326,7 @@ df["data"] = df[["col1", "col2"]].values.tolist()
 - `src/config/paths.py`: Defines `PATHS.ml_outputs` for artifact storage
 - `src/server/api/iris.py`: Flask endpoints consuming this module
 - `src/services/iris_service.py`: Caching layer for predictions
-- `src/util.data_handler/csv_util.py`: CSV reading utilities used by converter
+- `src/util.csv_plot/csv_util.py`: CSV reading utilities used by converter
 
 ## Key Dependencies
 

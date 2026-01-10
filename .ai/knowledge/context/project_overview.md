@@ -16,6 +16,8 @@ Experimental Flask + React (CDN) + Streamlit project for ML & LLM utilities.
 - Sets up project root environment
 - Enables absolute imports like `from llm.image import analyze_image`
 
+**ALWAYS use `uv run *.py`** for other scripts to ensure dependencies are correctly managed.
+
 ## Development Environment Standards
 
 **Python Environment (3.13 + uv)**:
@@ -111,5 +113,3 @@ Baseline:
 - Logging with `loguru.logger` instead of print statements
 - Type annotations for all function parameters and returns
 - File operations exclusively with `pathlib.Path`
-
-Additional reference: `.github/explanation.md` for prompt taxonomy.

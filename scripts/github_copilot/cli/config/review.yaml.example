@@ -1,6 +1,6 @@
 root_dirs:
   - src/util
-  - src/util.data_handler
+  - src/util.csv_plot
 agent: folder_specific_agent
 prompt: >
   target_directory=${root_dir}

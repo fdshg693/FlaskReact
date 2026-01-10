@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from config.paths import PROJECTPATHS, Paths, ensure_path_exists, find_paths, get_path
+from config.paths import _PATHS, PROJECTPATHS, ensure_path_exists, find_paths, get_path
 
 
 class TestPaths:
@@ -17,7 +17,7 @@ class TestPaths:
         """
         Pathsインスタンスは、正しく初期化されたこと、プロジェクトルートが存在することを確認
         """
-        assert isinstance(PROJECTPATHS, Paths)
+        assert isinstance(PROJECTPATHS, _PATHS)
         assert isinstance(PROJECTPATHS.project_root, Path)
         assert PROJECTPATHS.project_root.exists()
         assert PROJECTPATHS.project_root.is_absolute()
@@ -27,7 +27,7 @@ class TestPaths:
         生成されたパスがすべてPaathlibのPath型であることを確認
         """
         # Use Paths.model_fields (class) instead of PATHS.model_fields (instance)
-        for field_name in Paths.model_fields:
+        for field_name in _PATHS.model_fields:
             value = getattr(PROJECTPATHS, field_name)
             assert isinstance(value, Path), f"{field_name} is not a Path: {type(value)}"
 
@@ -63,7 +63,7 @@ class TestPaths:
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
-            _ = Paths(
+            _ = _PATHS(
                 project_root=Path("/tmp"),
                 src=Path("/tmp/src"),
                 data=Path("/tmp/data"),
@@ -104,7 +104,7 @@ class TestPaths:
         2. 発生したエラーのメッセージに "Expected Path or str" が含まれていることを確認
         """
         with pytest.raises(TypeError, match="Expected Path or str"):
-            Paths(
+            _PATHS(
                 project_root=123,  # type: ignore[arg-type]
                 src=Path("/tmp/src"),
                 data=Path("/tmp/data"),
@@ -140,7 +140,7 @@ class TestPaths:
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
-            paths = Paths(
+            paths = _PATHS(
                 # Pydantic converts str -> Path at runtime; keep this as a str for test coverage.
                 project_root="/tmp",  # type: ignore[arg-type]
                 src=Path("/tmp/src"),
