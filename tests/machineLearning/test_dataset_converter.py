@@ -19,7 +19,7 @@ def test_dataframe_to_ml_dataset_happy_path():
         }
     )
 
-    ds = MLDatasetConverter.convert(df)
+    ds = MLDatasetConverter.convert(source=df, dtype=np.dtype("float64"))
 
     assert hasattr(ds, "data") and hasattr(ds, "target")
     assert isinstance(ds.data, np.ndarray) and isinstance(ds.target, np.ndarray)

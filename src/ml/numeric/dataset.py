@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, cast
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from loguru import logger
 from pydantic import (
@@ -23,8 +24,8 @@ class MLCompatibleDataset(BaseModel):
     execute_machine_learning_pipelineなどのMLパイプラインで利用可能なデータセット形式。
 
     必須属性:
-    - data: ２次元配列（N行のサンプル、M列の特徴量）
-    - target: １次元配列（N行のターゲット（予測する値））
+    - data: 2次元配列（N行のサンプル、M列の特徴量）
+    - target: 1次元配列（N行のターゲット（予測する値））
 
     例：
         data = np.array([
@@ -40,8 +41,8 @@ class MLCompatibleDataset(BaseModel):
     - descr: free-form description
     """
 
-    data: np.ndarray  # ２次元配列（N行のサンプル、M列の特徴量）
-    target: np.ndarray  # １次元配列（N行のターゲット（予測する値））
+    data: npt.NDArray[Any]  # 2次元配列（N行のサンプル、M列の特徴量）
+    target: npt.NDArray[Any]  # １次元配列（N行のターゲット（予測する値））
     feature_names: list[str] | None = None
     target_names: list[str] | None = None
     descr: str | None = None
@@ -60,13 +61,13 @@ class MLCompatibleDataset(BaseModel):
         dataに入る値が2D配列であることを保証する。
         その上で、float32型に変換する。
         """
-        arr = np.asarray(v)
+        arr = cast(npt.NDArray[Any], np.asarray(v))
         if arr.ndim != 2:
             raise ValueError(
                 f"data must be 2D array-like (n_samples, n_features); got shape {arr.shape}"
             )
         # Prefer float32 for downstream torch conversion
-        return arr.astype(np.float32, copy=False)
+        return cast(npt.NDArray[Any], arr.astype(np.float32, copy=False))
 
     @field_validator("target", mode="before")
     @classmethod
@@ -74,7 +75,7 @@ class MLCompatibleDataset(BaseModel):
         """
         targetに入る値が1D配列であることを保証する。
         """
-        arr = np.asarray(v).reshape(-1)
+        arr = cast(npt.NDArray[Any], np.asarray(v).reshape(-1))
         if arr.ndim != 1:
             raise ValueError("target must be 1D array-like (n_samples,)")
         return arr
@@ -82,26 +83,26 @@ class MLCompatibleDataset(BaseModel):
     # インスタンス生成後のバリデーション
     @field_validator("target")
     @classmethod
-    def _match_lengths(cls, t: np.ndarray, info: ValidationInfo) -> np.ndarray:
+    def _match_lengths(
+        cls, t: npt.NDArray[Any], info: ValidationInfo
+    ) -> npt.NDArray[Any]:
         """
         インスタンス生成時のバリデーションを上で行なっているため、
-        dataが２次元配列であることは保証されている。
+        dataが2次元配列であることは保証されている。
         ここでは、dataとtargetのサンプル数（一致するか）を確認する。
         """
         data = info.data.get("data") if hasattr(info, "data") else None
-        if (
-            isinstance(data, np.ndarray)
-            and data.ndim == 2
-            and data.shape[0] != t.shape[0]
-        ):
-            raise ValueError(
-                f"Length mismatch: len(target)={t.shape[0]} vs n_samples (data)={data.shape[0]}"
-            )
+        if isinstance(data, np.ndarray):
+            data_arr = cast(npt.NDArray[Any], data)
+            if data_arr.ndim == 2 and data_arr.shape[0] != t.shape[0]:
+                raise ValueError(
+                    f"Length mismatch: len(target)={t.shape[0]} vs n_samples (data)={data_arr.shape[0]}"
+                )
         return t
 
 
 def _stack_data_column(
-    col: Iterable[Any], *, dtype: np.dtype | None = np.float32
+    col: Iterable[Any], *, dtype: npt.DTypeLike | None = np.float32
 ) -> np.ndarray:
     """
     1次元配列要素を持つイテラブルを受け取り、2次元配列にスタックする。
@@ -115,10 +116,10 @@ def _stack_data_column(
     ]
     -> np.ndarray(shape=(3, 3))
     """
-    rows: list[np.ndarray] = []
+    rows: list[npt.NDArray[Any]] = []
     try:
         for i, item in enumerate(col):
-            arr: np.ndarray = np.asarray(item)
+            arr = cast(npt.NDArray[Any], np.asarray(item))
             if arr.ndim != 1:
                 raise ValueError(
                     f"Row {i}: data element must be 1D; got shape {arr.shape}"
@@ -128,7 +129,7 @@ def _stack_data_column(
     except Exception as exc:  # pragma: no cover - numpy provides clear error details
         raise ValueError("Failed to stack 'data' column into 2D array") from exc
     if dtype is not None:
-        stacked = stacked.astype(dtype, copy=False)
+        stacked = stacked.astype(np.dtype(dtype), copy=False)
     return stacked
 
 
@@ -158,7 +159,7 @@ class MLDatasetConverter:
         *,
         data_col: str = "data",
         target_col: str = "target",
-        dtype: np.dtype | None = np.float32,
+        dtype: npt.DTypeLike | None = np.float32,
     ) -> MLCompatibleDataset:
         """
         'data'と'target'カラムを持つDATAFRAMEをMLCompatibleDatasetに変換する。
@@ -215,8 +216,8 @@ class MLDatasetConverter:
         """
         # 必須属性 data, target の存在確認＋取得
         try:
-            data = bunch.data
-            target = bunch.target
+            data: Any = getattr(bunch, "data")
+            target: Any = getattr(bunch, "target")
         except AttributeError as exc:  # pragma: no cover - trivial attr access
             raise ValueError(
                 "Provided object lacks 'data' and/or 'target' attributes"
@@ -247,7 +248,7 @@ class MLDatasetConverter:
         target: str | None = None,
         encoding: str | None = None,
         dropna: bool = False,
-        dtype: np.dtype | None = np.float32,
+        dtype: npt.DTypeLike | None = np.float32,
     ) -> MLCompatibleDataset:
         """
         CSVデータをMLCompatibleDatasetに変換する。
@@ -290,7 +291,7 @@ class MLDatasetConverter:
 
         if dropna:
             before = len(work)
-            work = work.dropna(axis=0, how="any")
+            work = cast(pd.DataFrame, work.dropna(axis=0, how="any"))  # pyright: ignore[reportUnknownMemberType]
             after = len(work)
             if before != after:
                 logger.info(
@@ -303,7 +304,7 @@ class MLDatasetConverter:
             if X.ndim != 2:
                 raise ValueError(f"Features matrix must be 2D; got {X.ndim}D")
             if dtype is not None:
-                X = X.astype(dtype, copy=False)
+                X = X.astype(np.dtype(dtype), copy=False)
         except Exception as exc:
             raise ValueError("Failed to build feature matrix from CSV") from exc
 
@@ -335,7 +336,7 @@ class MLDatasetConverter:
         encoding: str | None = None,
         dropna: bool = False,
         # 共通パラメータ
-        dtype: np.dtype,
+        dtype: npt.DTypeLike | None = np.float32,
     ) -> MLCompatibleDataset:
         """
         入力データの型を自動判定し、適切な変換メソッドを呼び出す。
