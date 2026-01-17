@@ -3,7 +3,8 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, jsonify, request
+from flask.typing import ResponseReturnValue
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
@@ -21,7 +22,7 @@ class _PdfUpload(BaseModel):
 
 
 @pdf_bp.route("/pdf", methods=["POST"])
-def handle_pdf_text_extraction_request() -> Response:
+def handle_pdf_text_extraction_request() -> ResponseReturnValue:
     try:
         # Validate JSON body if needed later; here we just ensure request is form-data with a file
         _ = _PdfUpload()

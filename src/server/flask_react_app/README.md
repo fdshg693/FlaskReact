@@ -114,17 +114,14 @@ Pydantic Settings を使用した型安全な環境変数管理。
 
 **設定項目:**
 
-| 属性                       | 型          | デフォルト値                            | 説明                       |
-| -------------------------- | ----------- | --------------------------------------- | -------------------------- |
-| `cors_origins`             | `List[str]` | `["http://localhost:3000", ...]`        | CORS 許可オリジン          |
-| `allowed_image_extensions` | `Set[str]`  | `{"png", "jpg", "jpeg", "gif"}`         | 画像ファイル許可拡張子     |
-| `allowed_pdf_extensions`   | `Set[str]`  | `{"pdf"}`                               | PDF ファイル許可拡張子     |
-| `max_image_size_mb`        | `int`       | `5`                                     | 画像最大サイズ（MB）       |
-| `max_pdf_size_mb`          | `int`       | `10`                                    | PDF 最大サイズ（MB）       |
-| `app_root`                 | `Path`      | `PATHS.src`                             | アプリケーションルート     |
-| `model_path`               | `Path`      | `PATHS.ml_outputs/param/models_*.pth`   | 機械学習モデルパス         |
-| `scaler_path`              | `Path`      | `PATHS.ml_outputs/scaler/scaler.joblib` | データスケーラーパス       |
-| `checkpoint_path`          | `Path`      | `PATHS.ml_outputs/checkpoints/...`      | モデルチェックポイントパス |
+| 属性                       | 型          | デフォルト値                     | 説明                   |
+| -------------------------- | ----------- | -------------------------------- | ---------------------- |
+| `cors_origins`             | `List[str]` | `["http://localhost:3000", ...]` | CORS 許可オリジン      |
+| `allowed_image_extensions` | `Set[str]`  | `{"png", "jpg", "jpeg", "gif"}`  | 画像ファイル許可拡張子 |
+| `allowed_pdf_extensions`   | `Set[str]`  | `{"pdf"}`                        | PDF ファイル許可拡張子 |
+| `max_image_size_mb`        | `int`       | `5`                              | 画像最大サイズ（MB）   |
+| `max_pdf_size_mb`          | `int`       | `10`                             | PDF 最大サイズ（MB）   |
+| `app_root`                 | `Path`      | `PATHS.src`                      | アプリケーションルート |
 
 **使用例:**
 

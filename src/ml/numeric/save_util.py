@@ -1,7 +1,7 @@
 import csv
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Sequence, Union
 
 import matplotlib.pyplot as plt
 import torch
@@ -57,7 +57,7 @@ def store_model_and_learning_logs(
 
     # プロジェクトルートの決定
     if log_dirs_root is None:
-        log_dirs_root = PROJECTPATHS.ml_outputs
+        log_dirs_root = PROJECTPATHS.ml_logs
 
     # 保存先ディレクトリの設定 (実験ごとのフォルダを作成)
     experiment_dir = log_dirs_root / experiment_name
@@ -93,10 +93,10 @@ def store_model_and_learning_logs(
     # CSVファイルの保存
     try:
         # データの変換（エポック番号と値のペア）
-        loss_data_for_csv = [
+        loss_data_for_csv: List[Sequence[Union[str, float, int]]] = [
             [epoch + 1, loss_value] for epoch, loss_value in enumerate(loss_history)
         ]
-        accuracy_data_for_csv = [
+        accuracy_data_for_csv: List[Sequence[Union[str, float, int]]] = [
             [epoch + 1, accuracy_value]
             for epoch, accuracy_value in enumerate(accuracy_history)
         ]
@@ -179,13 +179,13 @@ def _save_training_curve_2_png(
         output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Create plot with proper resource management
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 6))  # type: ignore
         total_epochs = len(training_data)
-        ax.plot(range(1, total_epochs + 1), training_data)
-        ax.set_xlabel("Epoch")
-        ax.set_ylabel(f"Average {metric_label}")
-        ax.set_title(f"Training {metric_label} Curve")
-        fig.savefig(output_file_path)
+        ax.plot(range(1, total_epochs + 1), training_data)  # pyright: ignore[reportUnknownMemberType]
+        ax.set_xlabel("Epoch")  # pyright: ignore[reportUnknownMemberType]
+        ax.set_ylabel(f"Average {metric_label}")  # pyright: ignore[reportUnknownMemberType]
+        ax.set_title(f"Training {metric_label} Curve")  # pyright: ignore[reportUnknownMemberType]
+        fig.savefig(output_file_path)  # pyright: ignore[reportUnknownMemberType]
 
         logger.info(f"{output_file_path} に保存しました。")
 
@@ -193,12 +193,12 @@ def _save_training_curve_2_png(
         logger.error(f"Failed to save plot to {output_file_path}: {e}")
         raise
     finally:
-        plt.close(fig)  # Ensure cleanup even if error occurs
+        plt.close(fig)  # type: ignore # Ensure cleanup even if error occurs
 
 
 # loss.csv や acc.csv そして、 trained_model.csv を保存する関数
 def _save_csv_data(
-    tabular_data: List[List[Union[str, float, int]]],
+    tabular_data: List[Sequence[Union[str, float, int]]],
     output_file_path: Union[str, Path],
     write_mode: Literal["w", "a"] = "w",
 ) -> None:

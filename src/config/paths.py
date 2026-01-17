@@ -1,15 +1,16 @@
 """
 パス設定モジュール。
-パスの詳細は、src/config/_create_paths_file.pyを実行することで、src/config/paths.txtに作成される。
+設定ファイル: src/config/pahts.ini
 """
 
 from __future__ import annotations
 
+import configparser
 import os
 from pathlib import Path
 
 from loguru import logger
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 # シングルトンビルド中フラグ
 # 基本FALSEに設定して、このファイル内のシングルトンインスタンス生成の直前にTRUEに設定する（生成後はFALSEに戻す）
@@ -31,17 +32,17 @@ class _PATHS(BaseModel):
         /path/to/project/data
     """
 
-    # root
+    # このプロジェクトのルートパス
     project_root: Path
 
-    # top-level dirs
+    # ルート直下の主要ディレクトリ
     src: Path
     data: Path
     frontend: Path
     flask_static: Path
     logs: Path
 
-    # dataset dirs/files
+    # データ関連パス
     original_data: Path
     outputs: Path
     tmp: Path
@@ -51,10 +52,14 @@ class _PATHS(BaseModel):
     titanic_test_data_path: Path
     titanic_train_data_path: Path
 
-    # ML outputs
-    ml_outputs: Path
+    # ML出力関連パス
     ml_image_data: Path
     ml_learning_curves_dir: Path
+    ml_logs: Path
+
+    # サーバー側で利用するデフォルトモデルパス
+    default_iris_model_path: Path
+    default_iris_scaler_path: Path
 
     llm_data: Path
 
@@ -63,34 +68,11 @@ class _PATHS(BaseModel):
     # frozen=True -> インスタンスを不変にする
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
-    # field_validatorは、モデルのフィールドごとにバリデーションを行うためのデコレータ。
-    # "*"は全フィールドを意味するワイルドカード。全てのPathフィールドに対して適用される。
-    # mode="before"は、自動型変換などのバリデーションが行われる前にこのメソッドが呼び出されることを意味する。
-    @field_validator("*", mode="before")
-    @classmethod
-    def _ensure_path_type(cls, value: object) -> Path:
-        """
-        全てのPathフィールドに対して、strが渡された場合にPathに変換するバリデータ。
-        """
-        if isinstance(value, Path):
-            return value
-        if isinstance(value, str):
-            import warnings
-
-            warnings.warn(
-                f"Converting string to Path (prefer passing Path objects): {value}",
-                UserWarning,
-                stacklevel=3,
-            )
-            return Path(value)
-        msg = f"Expected Path or str, got {type(value).__name__}"
-        raise TypeError(msg)
-
     # model_validatorは、モデル全体のバリデーションを行うためのデコレータ。
     # mode="after"は、全てのフィールドのバリデーションが終わった後にこのメソッドが呼び出されることを意味する。
     @model_validator(mode="after")
     def _validate_paths(self) -> _PATHS:
-        """Validate that all paths are properly formed."""
+        """各パスが存在するかをチェック。存在しない場合は警告を出力。"""
         global _BUILDING_SINGLETON  # noqa: PLW0603
 
         # シングルトン以外での直接インスタンス化を警告
@@ -104,30 +86,33 @@ class _PATHS(BaseModel):
                 stacklevel=3,
             )
 
-        # Additional validation: ensure project_root is absolute
-        if not self.project_root.is_absolute():
-            logger.warning("project_root is not absolute: {}", self.project_root)
-            # Convert to absolute
-            object.__setattr__(self, "project_root", self.project_root.resolve())
+        # パス存在チェック - 存在しない場合は警告をコンソール出力
+        for field_name, field_value in self:
+            if isinstance(field_value, Path):
+                if not field_value.exists():
+                    logger.warning(
+                        "Path does not exist: {} = {}", field_name, field_value
+                    )
 
-        logger.debug("Paths instance validated successfully")
         return self
 
     @classmethod
-    def _build(cls, root: Path | None = None) -> _PATHS:
+    def _build(cls, root: Path | None = None, config_path: str | None = None) -> _PATHS:
         """
         シングルトンPROJECTPATHSを構築するためのクラスメソッド。
         外部からこのメソッドを呼び出してインスタンス化しないこと。
 
         Args:
             root: このプロジェクトのルートパス。Noneの場合、自動検出される。
-            Noneの場合、環境変数PROJECT_ROOTから取得し、設定されていない場合はこのファイルの2階層上をルートとする。
+                  Noneの場合、環境変数PROJECT_ROOTから取得し、設定されていない場合はこのファイルの2階層上をルートとする。
+            config_path: 設定ファイルの相対パス（プロジェクトルートからの相対パス）。
+                        デフォルトは "src/config/pahts.ini"。
 
         Returns:
             Paths: 構築されたPathsインスタンス。
 
         Raises:
-            RuntimeError: プロジェクトルートが特定できない場合に発生。
+            RuntimeError: プロジェクトルートが特定できない場合、または設定ファイルが見つからない場合に発生。
         """
         if root is None:
             env_root = os.getenv("PROJECT_ROOT")
@@ -144,73 +129,63 @@ class _PATHS(BaseModel):
             logger.error(msg)
             raise RuntimeError(msg)
 
-        # Build all paths
-        src = root / "src"
+        # 設定ファイルパスの決定
+        if config_path is None:
+            config_path = "src/config/pahts.ini"
 
-        # フロントエンド
-        frontend = root / "frontend"
+        config_file = root / config_path
 
-        # Flaskサーバー利用静的ファイル
-        flask_static = frontend / "flask_static"
+        if not config_file.exists():
+            msg = f"Config file does not exist: {config_file}"
+            logger.error(msg)
+            raise RuntimeError(msg)
 
-        # ログファイル格納ディレクトリ
-        logs = root / "logs"
+        # 設定ファイルを読み込む
+        logger.info("Loading configuration from: {}", config_file)
+        config = configparser.ConfigParser()
+        config.read(config_file)
 
-        # data関連
-        data = root / "data"
-        # =============
-        # 一次データ
-        # =============
-        original_data = data / "original_sources"
+        # paths セクションから読み込み
+        if "paths" not in config:
+            msg = f"Config file missing [paths] section: {config_file}"
+            logger.error(msg)
+            raise RuntimeError(msg)
 
-        ml_data = original_data / "ml"
+        paths_section = config["paths"]
 
-        iris_data_path = ml_data / "iris" / "iris.csv"
-        diabetes_data_path = ml_data / "diabetes" / "diabetes.csv"
-        titanic_test_data_path = ml_data / "others" / "titanic_test.csv"
-        titanic_train_data_path = ml_data / "others" / "titanic_train.csv"
+        # 相対パスを絶対パスに変換
+        def resolve_path(relative_path: str) -> Path:
+            """相対パスをプロジェクトルートからの絶対パスに変換"""
+            # ダブルクォートを削除
+            relative_path = relative_path.strip("\"'")
+            return (root / relative_path).resolve()
 
-        llm_data = original_data / "llm"
-
-        # =============
-        # 生成データ（参照・加工用）
-        # =============
-        outputs = data / "outputs"
-
-        ml_outputs = outputs / "ml"
-
-        # テスト用画像の出力先
-        ml_image_data = ml_outputs / "image"
-
-        ml_learning_curves_dir = ml_outputs / "learning_curves"
-
-        # =============
-        # 一時出力データ（参照・加工されることを想定しない）
-        # =============
-        tmp = data / "tmp"
+        # 設定ファイルから各パスを読み込み
+        # クラスフィールドごとにループして path_dict を構築
+        try:
+            path_dict = {}
+            for field_name in cls.model_fields.keys():
+                if field_name == "project_root":
+                    # project_root は設定ファイルにないため、直接指定
+                    path_dict[field_name] = root
+                else:
+                    # 設定ファイルから同一名の値を取得
+                    relative_path = paths_section.get(field_name)
+                    if relative_path is None:
+                        msg = f"Missing required path in config: {field_name}"
+                        logger.error(msg)
+                        raise RuntimeError(msg)
+                    path_dict[field_name] = resolve_path(relative_path)
+        except RuntimeError:
+            raise
+        except Exception as e:
+            msg = f"Error parsing config file: {e}"
+            logger.error(msg)
+            raise RuntimeError(msg) from e
 
         logger.info("Building Paths instance from root: {}", root)
 
-        return cls(
-            project_root=root,
-            src=src,
-            data=data,
-            frontend=frontend,
-            original_data=original_data,
-            outputs=outputs,
-            tmp=tmp,
-            flask_static=flask_static,
-            logs=logs,
-            ml_data=ml_data,
-            iris_data_path=iris_data_path,
-            diabetes_data_path=diabetes_data_path,
-            titanic_test_data_path=titanic_test_data_path,
-            titanic_train_data_path=titanic_train_data_path,
-            ml_outputs=ml_outputs,
-            ml_image_data=ml_image_data,
-            ml_learning_curves_dir=ml_learning_curves_dir,
-            llm_data=llm_data,
-        )
+        return cls(**path_dict)
 
 
 # このファイルのこの部分でのみシングルトンインスタンスを構築可能にする

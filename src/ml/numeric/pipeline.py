@@ -18,7 +18,7 @@ from ml.numeric.save_util import store_model_and_learning_logs
 def _decide_task_type(target: np.ndarray) -> str:
     """Very small heuristic: クラス数が 20 以下 かつ (target が整数 or 0,1,..) -> classification"""
     unique_vals = np.unique(target)
-    if unique_vals.dtype.kind in {"i", "u"} and len(unique_vals) <= 20:
+    if unique_vals.dtype.kind in {"i", "u"} and len(unique_vals) <= 20:  # pyright: ignore[reportUnknownMemberType]
         return "classification"
     # 整数でも異なる値が多い場合は連続値とみなす
     if len(unique_vals) <= 10 and np.allclose(unique_vals, unique_vals.astype(int)):
@@ -51,7 +51,7 @@ def execute_machine_learning_pipeline(
         experiment_name = time.strftime("%Y%m%d_%H%M%S")
 
     if log_dirs_root is None:
-        log_dirs_root = PROJECTPATHS.ml_outputs
+        log_dirs_root = PROJECTPATHS.ml_logs
 
     save_dir = log_dirs_root / experiment_name
 

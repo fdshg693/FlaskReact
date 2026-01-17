@@ -1,5 +1,5 @@
-# Auto-generated from PROJECTPATHS
-# Root: /Users/seiwan/CodeStudy/FlaskReact
+# Auto-generated from PROJECTPATHS by _create_paths_file.py
+# Root: /Users/seiwan/CodeRoot/FlaskReact
 .
 ├── data/ (data)
 │   ├── original_sources/ (original_data)
@@ -13,9 +13,13 @@
 │   │           ├── titanic_test.csv (titanic_test_data_path)
 │   │           └── titanic_train.csv (titanic_train_data_path)
 │   ├── outputs/ (outputs)
-│   │   └── ml/ (ml_outputs)
+│   │   └── ml/
 │   │       ├── image/ (ml_image_data)
-│   │       └── learning_curves/ (ml_learning_curves_dir)
+│   │       ├── learning_curves/ (ml_learning_curves_dir)
+│   │       └── ml_logs/ (ml_logs)
+│   ├── server_models/
+│   │   ├── iris_model.pkl (default_iris_model_path)
+│   │   └── iris_scaler.pkl (default_iris_scaler_path)
 │   └── tmp/ (tmp)
 ├── frontend/ (frontend)
 │   └── flask_static/ (flask_static)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from functools import wraps
+from typing import Callable, ParamSpec, TypeVar
 
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -32,7 +33,7 @@ def validate_file_upload(
         ValueError: ファイルが未選択、拡張子が不正、またはサイズ超過の場合
     """
     # ファイルの存在チェック: ファイルが選択されているか確認
-    if not file or file.filename == "":
+    if not file or file.filename == "" or file.filename is None:
         raise ValueError("No file selected")
 
     # 拡張子のバリデーション: 許可された拡張子かチェック
@@ -60,7 +61,7 @@ def validate_file_upload(
     return secure_filename(file.filename) or "unnamed_file"
 
 
-def handle_api_errors(f):
+def handle_api_errors(f: Callable) -> Callable:
     """APIエンドポイントの共通エラーハンドリングを行うデコレータ。
 
     このデコレータを適用することで、各エンドポイント関数内で個別に
@@ -113,7 +114,7 @@ def create_app() -> Flask:
     """Flaskアプリケーションファクトリ関数。
 
     プロジェクトの推奨起動パターンに準拠したアプリケーション初期化を実行します。
-    注意: この関数を直接呼び出さず、必ず `uv run run_app.py` を使用してください。
+    注意: この関数を直接呼び出さず、必ず `uv run {entry_file}.py` を使用してください。
 
     主な処理内容:
     - get_settings()からCORS設定とファイルサイズ制限を読み込み
@@ -130,7 +131,7 @@ def create_app() -> Flask:
         Flask: 設定済みのFlaskアプリケーションインスタンス
 
     Note:
-        この関数は run_app.py から呼び出されることで、
+        この関数は {entry_file}.py から呼び出されることで、
         プロジェクトルートがPython pathに追加され、
         絶対インポート(from llm.image import ...)が正しく動作します。
     """

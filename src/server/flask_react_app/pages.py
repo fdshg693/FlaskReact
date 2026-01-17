@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from flask import Blueprint, Response, jsonify, send_from_directory
+from flask import Blueprint, jsonify, send_from_directory
+from flask.typing import ResponseReturnValue
 
 from config.paths import PROJECTPATHS
 
@@ -10,58 +11,58 @@ pages_bp = Blueprint("pages", __name__)
 
 
 @pages_bp.route("/")
-def serve_root_page() -> Response:
+def serve_root_page() -> ResponseReturnValue:
     """
     ルートパス ('/') へのアクセス時にホームページを返す
 
     Returns:
-        Response: static/home/index.html を配信
+        ResponseReturnValue: static/home/index.html を配信
     """
     home_static_path = PROJECTPATHS.flask_static / "home"
     return send_from_directory(str(home_static_path), "index.html")
 
 
 @pages_bp.route("/home")
-def serve_home_page() -> Response:
+def serve_home_page() -> ResponseReturnValue:
     """
     '/home' パスへのアクセス時にホームページを返す
     Iris予測(単一・バッチ)機能を提供するページ
 
     Returns:
-        Response: static/home/index.html を配信
+        ResponseReturnValue: static/home/index.html を配信
     """
     home_static_path = PROJECTPATHS.flask_static / "home"
     return send_from_directory(str(home_static_path), "index.html")
 
 
 @pages_bp.route("/csvTest")
-def serve_csv_test_page() -> Response:
+def serve_csv_test_page() -> ResponseReturnValue:
     """
     '/csvTest' パスへのアクセス時にCSVテストページを返す
     CSVファイルのアップロードと処理をテストするページ
 
     Returns:
-        Response: static/csvTest/index.html を配信
+        ResponseReturnValue: static/csvTest/index.html を配信
     """
     csv_test_static_path = PROJECTPATHS.flask_static / "csvTest"
     return send_from_directory(str(csv_test_static_path), "index.html")
 
 
 @pages_bp.route("/image")
-def serve_image_page() -> Response:
+def serve_image_page() -> ResponseReturnValue:
     """
     '/image' パスへのアクセス時に画像処理ページを返す
     画像分析・PDF処理・テキスト分割などのLLM機能を提供するページ
 
     Returns:
-        Response: static/image/index.html を配信
+        ResponseReturnValue: static/image/index.html を配信
     """
     image_static_path = PROJECTPATHS.flask_static / "image"
     return send_from_directory(str(image_static_path), "index.html")
 
 
 @pages_bp.route("/data/<path:path>")
-def serve_data_files(path: str) -> Response:
+def serve_data_files(path: str) -> ResponseReturnValue:
     """
     '/data/<path>' パスへのアクセス時にstatic/data配下のファイルを配信
 
@@ -74,7 +75,7 @@ def serve_data_files(path: str) -> Response:
         path: 要求されたファイルパス (例: 'sample.csv')
 
     Returns:
-        Response: 要求されたファイル、またはエラーレスポンス
+        ResponseReturnValue: 要求されたファイル、またはエラーレスポンス
             - 400: 不正なパス形式
             - 403: アクセス権限なし
             - 404: ファイルが見つからない

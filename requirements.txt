@@ -908,6 +908,10 @@ joblib==1.5.2 \
     --hash=sha256:3faa5c39054b2f03ca547da9b2f52fde67c06240c31853f306aea97f13647b55 \
     --hash=sha256:4e1f0bdbb987e6d843c70cf43714cb276623def372df3c22fe5266b2670bc241
     # via scikit-learn
+joblib-stubs==1.5.3.1.20260117 \
+    --hash=sha256:d420f9e26636df01e1bda851bf5bce9a8dbd6db84f08afe1dfdb963e6651e724 \
+    --hash=sha256:ef9f570617b232263c8166f5b4351a5dcc90669d8b07e7e2cd7b25c3b0f26d5f
+    # via flaskreact
 jsonpatch==1.33 \
     --hash=sha256:0ae28c0cd062bbd8b8ecc26d7d164fbbea9652a1a3693f3b956c1eae5145dade \
     --hash=sha256:9fcd4009c41e6d12348b4a0ff2563ba56a2923a7dfee731d004e212e1ee5030c
@@ -2604,6 +2608,7 @@ typing-extensions==4.15.0 \
     #   chromadb
     #   grpcio
     #   huggingface-hub
+    #   joblib-stubs
     #   langchain-core
     #   openai
     #   openai-agents

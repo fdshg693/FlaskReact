@@ -56,7 +56,7 @@ def evaluate_iris_batch(
     # n_features_in_ (sklearn >=0.24) か mean_ の shape で判定
     try:
         expected_features = int(
-            getattr(scaler, "n_features_in_", None) or scaler.mean_.shape[0]
+            getattr(scaler, "n_features_in_", None) or scaler.mean_.shape[0]  # type: ignore
         )
     except Exception as e:  # pragma: no cover
         logger.error(f"スケーラーから特徴量数を取得できません: {e}")
@@ -114,12 +114,12 @@ def evaluate_iris_batch(
     # --- 前処理 & Tensor 化 ---
     input_array = np.asarray(input_data_list, dtype=np.float32)
     try:
-        scaled_array = scaler.transform(input_array)
+        scaled_array = scaler.transform(input_array)  # type: ignore
     except Exception as e:
         logger.error(f"スケーリングに失敗: {e}")
         return []
 
-    input_tensor = torch.tensor(scaled_array, dtype=torch.float32)
+    input_tensor = torch.tensor(scaled_array, dtype=torch.float32)  # pyright: ignore[reportPrivateImportUsage]
     # --- 推論 ---
     if output_dim == 1:
         # 回帰
@@ -147,7 +147,7 @@ def evaluate_iris_batch(
     with torch.no_grad():
         logits = model(input_tensor)
         probs = F.softmax(logits, dim=1)
-        pred_idx = torch.argmax(probs, dim=1).tolist()
+        pred_idx: list[int] = torch.argmax(probs, dim=1).tolist()  # type: ignore
     predictions = [str(class_names[i]) for i in pred_idx]
     logger.debug(
         f"Batch classification prediction completed | samples={len(predictions)} features={expected_features} output_dim={output_dim}"

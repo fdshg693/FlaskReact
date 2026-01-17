@@ -1,33 +1,26 @@
 {
-    "servers": {
-        // Github CopilotにWEB検索機能を追加するMCP
-        // 単なるWEBページ取得なら、組み込みの#tool:fetchで十分ですが、
-        // 検索エンジンを使ったり、ページの要約を取得したりする場合に便利です。
-        "tavily-remote-mcp": {
-            "type": "stdio",
-            "command": "npx",
-            "args": [
-                "-y",
-                "mcp-remote",
-                // NEVER COMMIT YOUR API KEY!!!!!
-                "https://mcp.tavily.com/mcp/?tavilyApiKey=<YOUR_API_KEY_HERE>",
-            ]
-        },
-        // Githubの操作を行うMCP
-        // ただ、最新アップデートでGithub Copilotに組み込まれたので、なくても良いかも。
-        "github-remote-mcp": {
-			"url": "https://api.githubcopilot.com/mcp/",
-			"type": "http"
-		},
-        // ローカルに設置したMCPを使う場合の例
-        "test": {
-			"type": "stdio",
-			"command": "uv",
-			"args": [
-				"run",
-				"/Users/seiwan/CodeStudy/FlaskReact/src/llm/mcp_custom/experiments/simple_server.py"
-			]
-		}
-    },    
-    "inputs": []
+  "servers": {
+    "tavily-remote-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.tavily.com/mcp/?tavilyApiKey=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"
+      ]
+    },
+    "github-remote-mcp": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "type": "http"
+    },
+    "test": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "${workspaceFolder}/src/llm/mcp_custom/experiments/simple_server.py"
+      ]
+    }
+  },
+  "inputs": []
 }

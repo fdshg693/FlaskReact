@@ -134,7 +134,7 @@ def main() -> None:
 
     out_path = Path(__file__).with_name("paths.txt")
     lines = [
-        "# Auto-generated from PROJECTPATHS",
+        f"# Auto-generated from PROJECTPATHS by {Path(__file__).name}",
         f"# Root: {project_root}",
         *_render_tree(root_node),
         "",

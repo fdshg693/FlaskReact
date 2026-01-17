@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, jsonify, request
+from flask.typing import ResponseReturnValue
 from loguru import logger
 from pydantic import BaseModel, Field, ValidationError
 
@@ -23,7 +24,7 @@ class TextSplitRequest(BaseModel):
 
 
 @text_bp.route("/textSplit", methods=["POST"])
-def handle_text_split_request() -> Response:
+def handle_text_split_request() -> ResponseReturnValue:
     try:
         data = request.get_json(silent=True) or {}
         body = TextSplitRequest(**data)
