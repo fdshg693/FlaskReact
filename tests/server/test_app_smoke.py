@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from server.app import create_app
+from server.flask_react_app.app import create_app
 
 
 @pytest.fixture

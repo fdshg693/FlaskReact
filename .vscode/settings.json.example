@@ -1,0 +1,41 @@
+{
+  // Set PYTHONPATH for integrated terminal on macOS so terminals inherit project src path
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}/src"
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}\\src"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    // ファイル保存時のアクション
+    // explicit: 明示的にファイル保存された場合にのみ実行
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit", // ruffによるコードの自動修正
+      "source.organizeImports.ruff": "explicit" // ruffによるimportの整理
+    }
+  },
+  "editor.formatOnSave": true,
+  "ruff.path": [
+    "${workspaceFolder}/.venv/bin/ruff"
+  ],
+  // filesystemFirstの場合はpyproject.tomlの設定が、エディタの設定より優先して適用される
+  // editorFirstの場合はエディタの設定が、pyproject.tomlの設定より優先して適用される
+  "ruff.configurationPreference": "filesystemFirst",
+  "ruff.interpreter": [
+    "${workspaceFolder}/.venv/bin/python3" //Windowsの場合は、"${workspaceFolder}\\.venv\\Scripts\\python.exe"
+  ],
+  "python.analysis.autoImportCompletions": true, // 自動インポート補完を有効化
+  "python.analysis.diagnosticMode": "openFilesOnly", // workspace->全体を解析 openFilesOnly->開いているファイルのみ解析
+  "python.analysis.diagnosticsSource": "Pylance", // workspaceのPYthonコード解析にPylanceを使用(pyrightも選択可能)
+  "python.analysis.enableTroubleshootMissingImports": true, // インポート不足の自動トラブルシューティングを有効化
+  // pytestに渡す引数の設定
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.pytestEnabled": true,
+  // デフォルトのPythonインタープリターとpytestのパスを仮想環境内に設定
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python3", //Windowsの場合は、"${workspaceFolder}\\.venv\\Scripts\\python.exe"
+  "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest", //Windowsの場合は、"${workspaceFolder}\\.venv\\Scripts\\pytest.exe"
+}

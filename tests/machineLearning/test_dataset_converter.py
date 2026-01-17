@@ -4,11 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from machineLearning.dataset import dataframe_to_ml_dataset
+from ml.numeric.dataset import MLDatasetConverter
 
 
 def test_dataframe_to_ml_dataset_happy_path():
-    df = pd.DataFrame(
+    df: pd.DataFrame = pd.DataFrame(
         {
             "data": [
                 [1.0, 2.0, 3.0],
@@ -19,7 +19,7 @@ def test_dataframe_to_ml_dataset_happy_path():
         }
     )
 
-    ds = dataframe_to_ml_dataset(df)
+    ds = MLDatasetConverter.convert(source=df, dtype=np.dtype("float64"))
 
     assert hasattr(ds, "data") and hasattr(ds, "target")
     assert isinstance(ds.data, np.ndarray) and isinstance(ds.target, np.ndarray)
@@ -31,7 +31,7 @@ def test_dataframe_to_ml_dataset_happy_path():
 def test_missing_columns_raises():
     df = pd.DataFrame({"data": [[1, 2], [3, 4]]})  # missing target
     with pytest.raises(ValueError):
-        dataframe_to_ml_dataset(df)
+        MLDatasetConverter.convert(df)
 
 
 def test_inconsistent_row_lengths_raises():
@@ -45,7 +45,7 @@ def test_inconsistent_row_lengths_raises():
         }
     )
     with pytest.raises(ValueError):
-        dataframe_to_ml_dataset(df)
+        MLDatasetConverter.convert(df)
 
 
 def test_length_mismatch_raises():
@@ -61,4 +61,4 @@ def test_length_mismatch_raises():
                 "target": [0],  # mismatch
             }
         )
-        dataframe_to_ml_dataset(df)
+        MLDatasetConverter.convert(df)

@@ -1,0 +1,12 @@
+---
+name: "research_assistant"
+model: "sonnet"
+system_prompt_file: ".claude/prompts/research.txt"
+allowed_tools:
+  - "Read"
+  - "Grep"
+  - "WebSearch"
+max_turns: 10
+---
+command: "claude -p --model claude-sonnet-4-5 --system-prompt-file .claude/prompts/research.txt --disallowedTools "Bash" "Edit" "Glob" "KillShell" "NotebookEdit" "Skill" "SlashCommand" "Task" "Write" "WebFetch" --max-turns 10"
+error: ""

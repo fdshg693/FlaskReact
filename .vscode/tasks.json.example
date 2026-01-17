@@ -1,0 +1,74 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "すべてのpytestを実行",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "-q"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "現在開いているファイルのpytestを実行",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "-q",
+                "${file}"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "pytest: ファイル/パターンを選択して実行",
+            "type": "shell",
+            "command": "uv",
+            "args": [
+                "run",
+                "pytest",
+                "-q",
+                "${input:pytestFile}"
+            ],
+            "group": "test",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "RUFFを実行して自動修正",
+            "type": "shell",
+            "command": "uv run ruff check . --fix && uv run ruff format .",
+            "isBackground": false,
+            "problemMatcher": [],
+            "group": "none"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "pytestFile",
+            "type": "promptString",
+            "description": "パスか、pytestのパターン(e.g., tests/test_csv_plot.py or tests/test_csv_plot.py::TestClass::test_func or -k expr)",
+            "default": "tests/test_*.py"
+        }
+    ]
+}

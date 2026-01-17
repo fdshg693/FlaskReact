@@ -1,3 +1,89 @@
+# =======================================
+# プロジェクト固有の無視設定
+# =======================================
+
+# dataはdataフォルダ配下にまとめて、data直下の.gitignoreで個別に無視設定する
+# ここでは、汎用的なミニマルな無視設定を行う
+
+# 機械学習関連の一時的な成果物
+param/
+params/
+scaler/
+checkpoints/
+*.gz
+*.joblib
+*.pth
+
+# 様々なバックアップ
+.backup/
+
+# 出力成果物
+log/
+logs/
+tmp/
+temp/
+output/
+outputs/
+
+# 設定YAMLファイルはGITから外して、サンプルYAMLファイルのみGITに追加する
+**.yaml
+**.yml
+!.github/workflows/**.yml
+!.github/ISSUE_TEMPLATE/config.yml
+!**.yaml.example
+!**.yml.example
+
+# サンプルVSCODE設定ファイルはGITに追加する
+.vscode/**.**
+!.vscode/*.example
+
+# chromaのローカルDBは無視する
+chroma_langchain_db/
+
+# 個人ドキュメントのため無視する
+## ディレクトリごと無視
+sekishiro/
+maikuma/
+seiwan/
+tamashiro/
+taishi/
+## 以下の名前が含まれているファイル・ディレクトリを無視する
+**sekishiro_experiments**
+**maikuma_experiments**
+**seiwan_experiments**
+**tamashiro_experiments**
+**taishi_experiments**
+
+# Environments
+.env
+.venv
+.env/
+.venv/
+env/
+venv/
+ENV/
+VENV/
+env.bak/
+venv.bak/
+
+# MacOS関連
+.DS_Store
+
+# テンプレートから自動生成されるGithub Copilot設定ファイル群
+.github/agents/
+.github/prompts/
+.github_copilot_template/**/default.prompt.md
+
+# AI用の一時的なタスクファイル
+.github/tasks
+
+# 環境固有の情報（Mac・Windows・使えるコマンドの種類など）
+**environment.md
+
+# =======================================
+# 一般的なpython・pythonツール無視設定
+# =======================================
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -51,16 +137,6 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
 # Flask stuff:
 instance/
 .webassets-cache
@@ -82,31 +158,6 @@ target/
 profile_default/
 ipython_config.py
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
-
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
-
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
-
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
-
 # pdm
 #   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
 #pdm.lock
@@ -126,15 +177,6 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # Spyder project settings
 .spyderproject
@@ -160,66 +202,8 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
-
 # Ruff stuff:
 .ruff_cache/
 
 # PyPI configuration file
 .pypirc
-
-*/log/*
-*/param/*
-*/save/*
-*/*.pthƒ
-.DS_Store
-*/*.png
-*.pth
-*.jpg
-*.jpegß
-*.png
-*.gif
-
-# CSVデータは基本的に無視するが、dataフォルダ配下のcsvファイルはGITに追加する
-*.csv
-!data/
-!data/**/*.csv
-
-# memo
-memo.md
-
-# 一時的な成果物
-/param/*
-/log/*
-param/*
-log/
-logs/
-scaler/
-checkpoints/
-*.gz
-
-# 色々実験用のディレクトリ
-# ディレクトリだけ残して、配下のファイルは無視する
-/experiment/*
-
-# Copilot review files
-review/
-
-# _から始まるプロンプトファイルは無視する
-.github/prompts/_*
-.github/prompts/＿*
-
-# サンプルVSCODE設定ファイルはGITに追加する
-.vscode/**.**
-!.vscode/sample*
-
-
-# tmpフォルダ本体だけ残して、配下のファイルは無視する
-/tmp/*
-!/tmp/.gitkeep
-

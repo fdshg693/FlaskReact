@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from .paths import PATHS, Paths, get_path, find_paths
 from .load_setting import load_dotenv_workspace
+from .paths import _PATHS, PROJECTPATHS, ensure_path_exists, find_paths, get_path
 
 __all__ = [
-    "PATHS",
-    "Paths",
+    "PROJECTPATHS",
+    "_PATHS",
     "get_path",
     "find_paths",
+    "ensure_path_exists",
     "load_dotenv_workspace",
 ]

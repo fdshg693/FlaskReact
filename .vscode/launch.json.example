@@ -1,0 +1,53 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "現在開いているファイルをPythonスクリプトとしてデバッグ（UV使用、srcレイアウト）",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "python": "${workspaceFolder}/.venv/bin/python", // Windowsなら Scripts/python.exe
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Streamlitアプリをデバッグ（srcレイアウト）",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit",
+            "args": [
+                "run",
+                "${file}",
+                "--server.headless=false",
+                "--server.port=8501",
+                "--server.runOnSave=true"
+            ],
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "0"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "subProcess": true
+        },
+        {
+            "name": "引数付きで、現在開いているファイルをPythonスクリプトとしてデバッグ（UV使用、srcレイアウト）",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "python": "${workspaceFolder}/.venv/bin/python", // Windowsなら Scripts/python.exe
+            "cwd": "${workspaceFolder}",
+            "args": "${command:pickArgs}", // 引数を選択するコマンド
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+    ]
+}

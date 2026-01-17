@@ -41,8 +41,10 @@ on:
     outputs:
       review:
         description: 'AI review text'
+        value: ${{ jobs.ai_review.outputs.review }}
       has_changes:
         description: 'Whether diff had changes'
+        value: ${{ jobs.ai_review.outputs.has_changes }}
 
 name: Reusable AI Code Review
 
