@@ -39,14 +39,20 @@ dependencies = [
     "torch>=2.7.1",
 ]
 
+# ======= ビルド設定 =======
+
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# パッケージとしてインストールするモジュールの場所を指定
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# ======= uv設定 =======
+
 [tool.uv]
+# システムにインストールされているPythonを優先的に使用
 python-preference = "system"
 
 [tool.uv.sources]
@@ -59,7 +65,7 @@ fix = true
 indent-width = 4
 
 [tool.ruff.lint]
-select = ["I"]  # インポートのソートを有効化
+select = ["I"] # インポートのソートを有効化
 
 # ======= pytest設定 =======
 [tool.pytest.ini_options]
@@ -84,7 +90,7 @@ python_classes = ["Test*"]
 # ======= pyright設定 =======
 [tool.pyright]
 pythonVersion = "3.13"
-typeCheckingMode = "standard"  # "strict"は厳しすぎることも
+typeCheckingMode = "standard"       # "strict"は厳しすぎることも
 reportMissingTypeStubs = "warning"
 reportUnknownMemberType = "warning"
 venvPath = "."

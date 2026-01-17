@@ -1,0 +1,10 @@
+name: Placeholder2
+on:
+  push:
+    branches:
+      - "this-branch-will-never-exist-12345"
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: "true"

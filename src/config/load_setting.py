@@ -1,3 +1,9 @@
+"""
+.envファイルから環境変数を読み込むユーティリティ。
+run_onceデコレーターにより、リセットされない限り一度だけ実行される。
+`uv run *.py`の形で実行する場合は、.envを自動で読み込むため、この関数を明示的に呼び出す必要はない。
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
